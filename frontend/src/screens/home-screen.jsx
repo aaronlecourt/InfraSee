@@ -10,10 +10,16 @@ function HomeScreen() {
   };
 
   return (
-    <div>
-      <h1>Landing Page</h1>
-      <Button onClick={handleReportClick}>Make a report</Button>
+    <div className="bg-[url('../public/bg.jpg')] bg-cover bg-no-repeat bg-bottom min-h-screen flex overflow-hidden">
+    <div className="p-4">
+    
+    <Button onClick={handleReportClick} className="mt-4">Make a report</Button>
     </div>
+    
+    
+  </div>
+
+  
   );
 }
 
