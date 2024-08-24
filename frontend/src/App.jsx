@@ -1,15 +1,14 @@
-import { Button } from "./components/ui/button";
+import { Outlet } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-
-function App() {
+const App = () => {
   return (
     <>
-      <h1>InfraSee</h1>
-      <div className="px-20">
-        <Button>Make A report</Button>
-      </div>
+      <ToastContainer />
+      <Outlet />
     </>
   );
-}
+};
 
 export default App;
