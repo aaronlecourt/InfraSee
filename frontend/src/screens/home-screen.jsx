@@ -13,6 +13,10 @@ import { ArrowRight } from "lucide-react";
 function HomeScreen() {
   const navigate = useNavigate();
 
+  const handleLogoClick = () => {
+    navigate("/");
+  };
+  
   const handleContactClick = () => {
     navigate("/contact-us");
   };
@@ -22,8 +26,8 @@ function HomeScreen() {
 
   return (
     <div className="bg-[url('../public/bg.jpg')] bg-cover bg-no-repeat bg-bottom min-h-screen flex-row overflow-hidden">
-      <div className="w-full h-fit p-3 flex align-middle justify-between">
-        <div className="w-[6rem] mt-1">
+      <div className="w-full h-fit p-3 flex align-middle justify-between border-b border-slate-400">
+        <div className="w-[6rem] mt-1" onClick={handleLogoClick}>
           <img src="/infrasee_black.png" alt="Infrasee Logomark" />
         </div>
         <div>
