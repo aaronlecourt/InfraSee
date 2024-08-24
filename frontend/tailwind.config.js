@@ -41,27 +41,27 @@ module.exports = {
       '2xl': ['1.8rem', {
         lineHeight: '2rem',
         letterSpacing: '-0.02em',
-        fontWeight: '800',
+        fontWeight: '700',
       }],
       '3xl': ['1.875rem', {
         lineHeight: '2.25rem',
         letterSpacing: '-0.02em',
-        fontWeight: '800',
+        fontWeight: '700',
       }],
       '4xl': ['2rem', {
         lineHeight: '2.25rem',
         letterSpacing: '-0.02em',
-        fontWeight: '800',
+        fontWeight: '700',
       }],
       '5xl': ['2.2rem', {
         lineHeight: '2.25rem',
         letterSpacing: '-0.02em',
-        fontWeight: '800',
+        fontWeight: '700',
       }],
       '6xl': ['2.5rem', {
-        lineHeight: '3rem',
+        lineHeight: '2.75rem',
         letterSpacing: '-0.04em',
-        fontWeight: '800',
+        fontWeight: '700',
       }],
     },
     container: {
