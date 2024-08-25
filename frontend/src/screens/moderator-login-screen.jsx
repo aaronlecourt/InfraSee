@@ -1,24 +1,24 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { useAdminLoginMutation } from "../slices/users-api-slice";
+import { useModeratorLoginMutation } from "../slices/users-api-slice";
 import { setCredentials } from "../slices/auth-slice";
 import { toast } from "react-toastify";
 
-function AdminLoginScreen() {
+function ModeratorLoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [login] = useAdminLoginMutation();
+  const [login] = useModeratorLoginMutation();
 
   const { userInfo } = useSelector((state) => state.auth);
 
   useEffect(() => {
     if (userInfo) {
-      navigate("/admin/dashboard");
+      navigate("/moderator/dashboard");
     }
   }, [navigate, userInfo]);
 
@@ -27,7 +27,7 @@ function AdminLoginScreen() {
     try {
       const res = await login({ email, password }).unwrap();
       dispatch(setCredentials({ ...res }));
-      navigate("/admin/dashboard");
+      navigate("/moderator/dashboard");
     } catch (err) {
       toast.error(err?.data?.message || err.error);
     }
@@ -37,20 +37,20 @@ function AdminLoginScreen() {
     <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="bg-gray-100 p-8 rounded-lg shadow-lg w-full max-w-md">
         <h1 className="text-3xl font-bold mb-6 text-center text-gray-900">
-          Admin Login
+          Moderator Login
         </h1>
 
         <form onSubmit={submitHandler}>
           <div className="mb-4">
             <label
               className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="admin-email"
+              htmlFor="moderator-email"
             >
               Email Address
             </label>
             <input
               className="bg-white text-gray-900 shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 leading-tight focus:outline-none focus:ring-2 focus:ring-[#0e0d0e]"
-              id="admin-email"
+              id="moderator-email"
               type="email"
               placeholder="Enter your email"
               value={email}
@@ -61,13 +61,13 @@ function AdminLoginScreen() {
           <div className="mb-6">
             <label
               className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="admin-password"
+              htmlFor="moderator-password"
             >
               Password
             </label>
             <input
               className="bg-white text-gray-900 shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-[#0e0d0e]"
-              id="admin-password"
+              id="moderator-password"
               type="password"
               placeholder="Enter your password"
               value={password}
@@ -95,4 +95,4 @@ function AdminLoginScreen() {
   );
 }
 
-export default AdminLoginScreen;
+export default ModeratorLoginScreen;

@@ -16,11 +16,12 @@ import AdminLoginScreen from "./screens/admin-login-screen.jsx";
 import ReportScreen from "./screens/report-screen.jsx";
 import PrivateRoute from "./components/private-route.jsx";
 import SettingsScreen from "./screens/settings-screen.jsx";
-import ModeratorLoginScreen from "./screens/moderator-login.jsx";
+import ModeratorLoginScreen from "./screens/moderator-login-screen.jsx";
 import AdminDashboardScreen from "./screens/admin-dashboard-screen.jsx";
 import ModeratorDashboardScreen from "./screens/moderator-dashboard-screen.jsx";
 import AdminRoute from "./components/admin-route.jsx";
 import ModeratorRoute from "./components/moderator-route.jsx";
+import UnauthorizedPage from "./screens/unauthorized-screen.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -32,15 +33,16 @@ const router = createBrowserRouter(
       <Route path="" element={<PrivateRoute />}>
         <Route path="/settings" element={<SettingsScreen />} />
       </Route>
-      <Route path="" element={<PrivateRoute />}>
+      <Route path="" element={<AdminRoute />}>
         <Route path="/admin/dashboard" element={<AdminDashboardScreen />} />
       </Route>
-      <Route path="" element={<PrivateRoute />}>
+      <Route path="" element={<ModeratorRoute />}>
         <Route
           path="/moderator/dashboard"
           element={<ModeratorDashboardScreen />}
         />
       </Route>
+      <Route path="/unauthorized" element={<UnauthorizedPage />} />
     </Route>
   )
 );
