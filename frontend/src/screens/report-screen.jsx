@@ -4,6 +4,8 @@ import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"; // Im
 import { Menu } from "lucide-react"; // Use Lucide's Menu icon
 import { useNavigate } from "react-router-dom";
 
+import { ComboBoxResponsive } from "@/components/elements/combo";
+
 function ReportScreen() {
   const navigate = useNavigate();
   const [isSheetOpen, setSheetOpen] = useState(false); // State to control the Sheet
@@ -50,6 +52,8 @@ function ReportScreen() {
 
       <main>
         {/* Main content goes here */}
+        combobox
+        <ComboBoxResponsive/>
       </main>
     </div>
   );
