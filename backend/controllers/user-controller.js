@@ -28,36 +28,6 @@ const authUser = asyncHandler(async (req, res) => {
 
 // @desc    Auth user & get token
 // @route   POST /api/users/auth
-// @access  Public
-const moderatorUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-
-  const user = await User.findOne({ email });
-
-  if (user && (await user.matchPassword(password))) {
-    // Check if user is a moderator
-    if (!user.isModerator) {
-      res.status(403);
-      throw new Error("Access denied: Not a moderator");
-    }
-
-    generateToken(res, user._id);
-
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      isAdmin: user.isAdmin,
-      isModerator: user.isModerator,
-    });
-  } else {
-    res.status(401);
-    throw new Error("Invalid email or password");
-  }
-});
-
-// @desc    Auth user & get token
-// @route   POST /api/users/auth
 // @access  Private
 const adminUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -86,6 +56,36 @@ const adminUser = asyncHandler(async (req, res) => {
   }
 });
 
+
+// @desc    Auth user & get token
+// @route   POST /api/users/auth
+// @access  Public
+const moderatorUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (user && (await user.matchPassword(password))) {
+    // Check if user is a moderator
+    if (!user.isModerator) {
+      res.status(403);
+      throw new Error("Access denied: Not a moderator");
+    }
+
+    generateToken(res, user._id);
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      isModerator: user.isModerator,
+    });
+  } else {
+    res.status(401);
+    throw new Error("Invalid email or password");
+  }
+});
 
 
 // @desc    Register a new user
