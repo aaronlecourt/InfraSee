@@ -1,10 +1,13 @@
+// src/screens/not-found-page.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import { ArrowLeft, Home, Unlink } from 'lucide-react'; // Import icons
+import { Button } from '@/components/ui/button';
 const NotFoundPage = () => {
   const navigate = useNavigate();
 
   const handleGoBack = () => {
+    // Determine if we should go back or navigate to the home page
     if (window.history.length > 2) {
       navigate(-1);
     } else {
@@ -13,24 +16,33 @@ const NotFoundPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="bg-[#0e0d0e] p-8 rounded-lg shadow-lg text-center max-w-md w-full">
-        <h1 className="text-4xl font-extrabold text-white mb-6">404 - Page Not Found</h1>
-        <p className="text-lg text-gray-300 mb-4">
+    <div className="min-h-screen w-screen flex items-center justify-center bg-[url('/bg.jpg')] bg-cover bg-no-repeat">
+      <div className=" p-8 rounded-lg text-center max-w-md w-full">
+        <div className="flex items-center justify-center mb-4">
+          <Unlink strokeWidth={3} className="mr-2" />
+          <h1 className="text-3xl font-extrabold">404 - Page Not Found</h1>
+        </div>
+        <p className="text-base text-gray-500 mb-6">
           The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
         </p>
-        <button
-          onClick={handleGoBack}
-          className="inline-block px-6 py-3 bg-white text-[#0e0d0e] font-semibold rounded-lg shadow-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0e0d0e] transition duration-150 ease-in-out"
-        >
-          Go Back
-        </button>
-        <button
-          onClick={() => navigate('/')}
-          className="inline-block px-6 py-3 bg-white text-[#0e0d0e] font-semibold rounded-lg shadow-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0e0d0e] transition duration-150 ease-in-out ml-4"
-        >
-          Go to Home
-        </button>
+        <div className="flex items-center justify-center gap-4">
+          <Button
+            variant="ghost"
+            onClick={handleGoBack}
+            className="font-semibold"
+          >
+            <ArrowLeft size={16} className="mr-2" />
+            Go Back
+          </Button>
+          <Button
+
+            onClick={() => navigate('/')}
+            className="font-semibold"
+          >
+            <Home size={16} className="mr-2" />
+            Go to Home
+          </Button>
+        </div>
       </div>
     </div>
   );
