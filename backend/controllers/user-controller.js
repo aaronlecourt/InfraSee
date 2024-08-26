@@ -2,9 +2,9 @@ import asyncHandler from "express-async-handler";
 import User from "../models/user-model.js";
 import generateToken from "../utils/generate-token.js";
 
-// @desc Auth user/set token
-// route POST /api/users/auth
-// @access Public
+// @desc    Auth user & get token
+// @route   POST /api/users/auth
+// @access  Private
 const authUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -12,10 +12,13 @@ const authUser = asyncHandler(async (req, res) => {
 
   if (user && (await user.matchPassword(password))) {
     generateToken(res, user._id);
-    res.status(201).json({
+
+    res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
+      isAdmin: user.isAdmin,
+      isModerator: user.isModerator,
     });
   } else {
     res.status(401);
@@ -23,9 +26,71 @@ const authUser = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc Register a user
-// route POST /api/users/
-// @access Public
+// @desc    Auth user & get token
+// @route   POST /api/users/auth
+// @access  Public
+const moderatorUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (user && (await user.matchPassword(password))) {
+    // Check if user is a moderator
+    if (!user.isModerator) {
+      res.status(403);
+      throw new Error("Access denied: Not a moderator");
+    }
+
+    generateToken(res, user._id);
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      isModerator: user.isModerator,
+    });
+  } else {
+    res.status(401);
+    throw new Error("Invalid email or password");
+  }
+});
+
+// @desc    Auth user & get token
+// @route   POST /api/users/auth
+// @access  Private
+const adminUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (user && (await user.matchPassword(password))) {
+    // Check if user is an admin
+    if (!user.isAdmin) {
+      res.status(403);
+      throw new Error("Access denied: Not an admin");
+    }
+
+    generateToken(res, user._id);
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      isModerator: user.isModerator,
+    });
+  } else {
+    res.status(401);
+    throw new Error("Invalid email or password");
+  }
+});
+
+
+
+// @desc    Register a new user
+// @route   POST /api/users
+// @access  Public
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -44,10 +109,13 @@ const registerUser = asyncHandler(async (req, res) => {
 
   if (user) {
     generateToken(res, user._id);
+
     res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
+      isAdmin: user.isAdmin,
+      isModerator: user.isModerator,
     });
   } else {
     res.status(400);
@@ -55,52 +123,62 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc Logout user
-// route POST /api/users/logout
-// @access Public
-const logoutUser = asyncHandler(async (req, res) => {
+// @desc    Logout user / clear cookie
+// @route   POST /api/users/logout
+// @access  Public
+const logoutUser = (req, res) => {
   res.cookie("jwt", "", {
     httpOnly: true,
     expires: new Date(0),
   });
+  res.status(200).json({ message: "Logged out successfully" });
+};
 
-  res.status(200).json({ message: "User logged out" });
-});
-
-// @desc Get user profile
-// route GET /api/users/profile
-// @access Private
+// @desc    Get user profile
+// @route   GET /api/users/profile
+// @access  Private
 const getUserProfile = asyncHandler(async (req, res) => {
-  const user = {
-    _id: req.user._id,
-    name: req.user.name,
-    email: req.user.email,
-  };
+  const user = await User.findById(req.user._id);
 
-  res.status(200).json(user);
+  if (user) {
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      isModerator: user.isModerator,
+    });
+  } else {
+    res.status(404);
+    throw new Error("User not found");
+  }
 });
 
-// @desc Update user profile
-// route PUT /api/users/profile
-// @access Private
+// @desc    Update user profile
+// @route   PUT /api/users/profile
+// @access  Private
 const updateUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
   if (user) {
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
+    user.isAdmin = req.body.isAdmin || user.isAdmin ;
+    user.isModerator = req.body.isModerator || isModerator;
 
-      if (req.body.password){
-        user.password = req.body.password
-      }
+    if (req.body.password) {
+      user.password = req.body.password;
+    }
 
-      const updatedUser = await user.save()
+    const updatedUser = await user.save();
 
-      res.status(200).json({
-        _id:updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email
-      })
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      isAdmin: updatedUser.isAdmin,
+      isModerator: updatedUser.isModerator,
+    });
   } else {
     res.status(404);
     throw new Error("User not found");
@@ -109,6 +187,8 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 
 export {
   authUser,
+  adminUser,
+  moderatorUser,
   registerUser,
   logoutUser,
   getUserProfile,
