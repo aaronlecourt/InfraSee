@@ -1,20 +1,61 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useModeratorLoginMutation } from "../slices/users-api-slice";
 import { setCredentials } from "../slices/auth-slice";
-import { toast } from "react-toastify";
+import { toast } from "sonner"; // Import Sonner toast
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Eye, EyeOff, Lock } from "lucide-react"; // Import Lucide icons
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"; // Import Sheet components
+import { Menu } from "lucide-react"; // Use Lucide's Menu icon
+
+// Validation schema
+const formSchema = z.object({
+  email: z.string().email({ message: "Invalid email address." }),
+  password: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters long." })
+    .regex(/[A-Z]/, {
+      message: "Password must contain at least one uppercase letter.",
+    })
+    .regex(/[a-z]/, {
+      message: "Password must contain at least one lowercase letter.",
+    })
+    .regex(/\d/, { message: "Password must contain at least one number." })
+    .regex(/[\W_]/, {
+      message: "Password must contain at least one special character.",
+    }),
+});
 
 function ModeratorLoginScreen() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const [login] = useModeratorLoginMutation();
-
   const { userInfo } = useSelector((state) => state.auth);
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const { handleSubmit, control } = form;
+  const [passwordVisible, setPasswordVisible] = useState(false); // State for password visibility
+  const [isSheetOpen, setSheetOpen] = useState(false); // State to control the Sheet
 
   useEffect(() => {
     if (userInfo) {
@@ -22,75 +63,164 @@ function ModeratorLoginScreen() {
     }
   }, [navigate, userInfo]);
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     try {
-      const res = await login({ email, password }).unwrap();
+      const res = await login(data).unwrap();
       dispatch(setCredentials({ ...res }));
       navigate("/moderator/dashboard");
+      toast.success("Login successful!"); // Success notification with Sonner
     } catch (err) {
-      toast.error(err?.data?.message || err.error);
+      toast.error(err?.data?.message || err.error); // Error notification with Sonner
     }
   };
 
+  const handleLogoClick = () => {
+    navigate("/");
+  };
+
+  const handleContactClick = () => {
+    navigate("/contact-us");
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="bg-gray-100 p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 className="text-3xl font-bold mb-6 text-center text-gray-900">
-          Moderator Login
-        </h1>
+    <div>
+      <div className="fixed top-0 right-0 p-4 flex items-center justify-between z-50 w-full">
+        <div className="w-[6rem] mt-1 cursor-pointer" onClick={handleLogoClick}>
+          <img src="/infrasee_white.png" alt="Infrasee Logomark" />
+        </div>
+        {/* Mobile sheet trigger */}
+        <div className="md:hidden">
+          <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" color="white" />{" "}
+                {/* Lucide Menu Icon */}
+                <span className="sr-only">Open Menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="top">
+              <nav className="grid gap-4 py-1">
+                <Button onClick={handleContactClick} variant="ghost">
+                  Contact Us
+                </Button>
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
 
-        <form onSubmit={submitHandler}>
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="moderator-email"
-            >
-              Email Address
-            </label>
-            <input
-              className="bg-white text-gray-900 shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 leading-tight focus:outline-none focus:ring-2 focus:ring-[#0e0d0e]"
-              id="moderator-email"
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-
-          <div className="mb-6">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="moderator-password"
-            >
-              Password
-            </label>
-            <input
-              className="bg-white text-gray-900 shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-[#0e0d0e]"
-              id="moderator-password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <button
-              className="bg-[#0e0d0e] hover:bg-gray-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-[#0e0d0e]"
-              type="submit"
-            >
-              Sign In
-            </button>
-            <a
-              className="inline-block align-baseline font-bold text-sm text-[#0e0d0e] hover:text-gray-900"
-              href="#"
-            >
-              Forgot Password?
-            </a>
-          </div>
-        </form>
+        {/* Desktop navigation */}
+        <nav className="hidden md:flex">
+          <Button onClick={handleContactClick} variant="ghost">
+            Contact Us
+          </Button>
+        </nav>
       </div>
+
+      <main className="">
+        {" "}
+        {/* Padding top to avoid overlap with fixed header */}
+        <div className="flex flex-col md:flex-row h-screen">
+          {/* Left Side */}
+          <div className="w-full h-screen md:w-1/2 bg-[url('/bg_dark.png')] bg-no-repeat bg-cover bg-center text-white flex items-center justify-center">
+            {/* <p className="text-center text-lg">Welcome to our platform</p> */}
+          </div>
+
+          {/* Right Side */}
+          <div className="w-full md:w-1/2 flex items-center justify-center">
+            <div className="p-8 rounded-lg w-full max-w-md">
+              <div className="mb-5">
+                <h1 className="text-2xl font-bold mb-1 text-gray-900">Login</h1>
+                <p className="text-sm text-gray-500">
+                  Enter your account details below to login.
+                </p>
+              </div>
+
+              <Form {...form}>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+                  <FormField
+                    control={control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-bold">
+                          Email Address
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="Enter your email"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-bold">Password</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              type={passwordVisible ? "text" : "password"} // Toggle between text and password
+                              placeholder="Enter your password"
+                              {...field}
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setPasswordVisible(!passwordVisible)
+                              } // Toggle password visibility
+                              className="absolute inset-y-0 right-3 flex items-center text-sm"
+                            >
+                              {passwordVisible ? (
+                                <EyeOff size={18} /> // Lucide "EyeOff" icon for hiding
+                              ) : (
+                                <Eye size={18} /> // Lucide "Eye" icon for showing
+                              )}
+                            </button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="w-full flex items-center justify-end text-right">
+                    <Button
+                      variant="ghost"
+                      className="flex items-center justify-end text-right"
+                    >
+                      <span className="flex items-center space-x-2">
+                        <Lock size={16} className="text-gray-500" />{" "}
+                        <span className="text-gray-500">Reset Password</span>
+                      </span>
+                    </Button>
+                  </div>
+
+                  <Button type="submit" className="w-full">
+                    Sign In
+                  </Button>
+                </form>
+              </Form>
+              <div className="mt-3 text-sm text-gray-500 text-center flex flex-col items-center lg:flex-row md:items-center md:justify-center md:space-x-1">
+                <span className="md:mt-2">
+                  By clicking sign in, you agree to our
+                </span>
+                <a
+                  href="/terms-and-conditions"
+                  className="underline hover:text-gray-900 md:mt-2"
+                >
+                  Terms and Conditions
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
