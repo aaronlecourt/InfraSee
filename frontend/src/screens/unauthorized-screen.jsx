@@ -12,7 +12,7 @@ const UnauthorizedPage = () => {
           You do not have permission to access this page. If you believe this is an error, please contact support.
         </p>
         <button
-          onClick={() => navigate(-1)}  // This navigates the user back to the previous page
+          onClick={() => navigate(-1)}
           className="inline-block px-6 py-3 bg-white text-[#0e0d0e] font-semibold rounded-lg shadow-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0e0d0e] transition duration-150 ease-in-out"
         >
           Go Back
