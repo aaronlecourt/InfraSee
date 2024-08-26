@@ -1,11 +1,10 @@
 import { Outlet } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { Toaster } from "@/components/ui/sonner"; // Import Toaster from Sonner
 
 const App = () => {
   return (
     <>
-      <ToastContainer />
+      <Toaster /> {/* Replacing ToastContainer with Toaster */}
       <Outlet />
     </>
   );
