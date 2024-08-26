@@ -23,9 +23,12 @@ import { Menu } from "lucide-react"; // Use Lucide's Menu icon
 
 // Validation schema
 const formSchema = z.object({
-  email: z.string().email({ message: "Invalid email address." }),
+  email: z.string()
+  .min(1, "Email is required.")
+  .email({ message: "Invalid email address." }),
   password: z
     .string()
+    .min(1, "Password is required.")
     .min(8, { message: "Password must be at least 8 characters long." })
     .regex(/[A-Z]/, {
       message: "Password must contain at least one uppercase letter.",
@@ -117,7 +120,7 @@ function ModeratorLoginScreen() {
       </div>
 
       <main className="">
-        {" "}
+        {/* {" "} */}
         {/* Padding top to avoid overlap with fixed header */}
         <div className="flex flex-col md:flex-row h-screen">
           {/* Left Side */}

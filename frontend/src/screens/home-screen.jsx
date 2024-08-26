@@ -60,7 +60,7 @@ function HomeScreen() {
         </div>
       </header>
 
-      <main className="px-12 py-5 flex-col lg:w-2/5">
+      <main className="px-10 py-5 flex-col lg:w-2/5 md:px-8">
         <small className="flex items-center">
           <p>Introducing Infrasee</p>
           <ArrowRight size={15} />

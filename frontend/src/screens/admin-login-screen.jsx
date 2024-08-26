@@ -21,10 +21,12 @@ import { Input } from "@/components/ui/input";
 
 // Validation schema
 const formSchema = z.object({
-  email: z.string().email({ message: "Invalid email address." }),
-  password: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters long." })
+  email: z.string()
+    .min(1, "Email is required.") // Ensure email is not empty
+    .email({ message: "Invalid email address." }), // Validate email format
+  password: z.string()
+    .min(1, "Password is required.") // Ensure password is not empty
+    .min(8, { message: "Password must be at least 8 characters long." }) // Minimum length
     .regex(/[A-Z]/, {
       message: "Password must contain at least one uppercase letter.",
     })
