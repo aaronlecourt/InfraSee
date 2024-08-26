@@ -1,62 +1,94 @@
-import React from 'react';
+import React, { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuShortcut,
+} from "@/components/ui/dropdown-menu";
+import { Settings, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useSelector } from "react-redux";
 
 const ModeratorDashboardScreen = () => {
+  const navigate = useNavigate();
+  const { userInfo } = useSelector((state) => state.auth); // Access user info from Redux store
+
+  // Handle the keyboard shortcut for logout
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "l") {
+        event.preventDefault(); // Prevent the default action
+        handleLogout(); // Trigger logout
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  const handleLogoClick = () => {
+    navigate("/");
+  };
+
+  const handleLogout = () => {
+    // Implement your logout logic here
+    navigate("/moderator/login");
+  };
+
   return (
-    <div className="flex h-screen bg-gray-900">
-      {/* Sidebar */}
-      <div className="w-64 bg-gray-800 text-gray-100 flex flex-col">
-        <div className="flex-shrink-0 p-6 text-2xl font-bold">
-          Moderator Dashboard
+    <div>
+      <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400">
+        <div className="w-[6rem] mt-1 cursor-pointer" onClick={handleLogoClick}>
+          <img src="/infrasee_black.png" alt="Infrasee Logomark" />
         </div>
-        <nav className="flex-1 px-2 py-4">
-          <ul>
-            <li className="mb-2">
-              <a href="#" className="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded">
-                Overview
-              </a>
-            </li>
-            <li className="mb-2">
-              <a href="#" className="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded">
-                Reports
-              </a>
-            </li>
-            <li className="mb-2">
-              <a href="#" className="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded">
-                Moderation Queue
-              </a>
-            </li>
-            <li className="mb-2">
-              <a href="#" className="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded">
-                Settings
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-      
-      {/* Main Content */}
-      <div className="flex-1 p-6">
-        <h1 className="text-3xl font-bold mb-6 text-gray-100">Welcome to the Moderator Dashboard</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Card 1 */}
-          <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
-            <h2 className="text-xl font-semibold mb-2 text-gray-100">Recent Reports</h2>
-            <p className="text-gray-300">Review and manage recent reports submitted by users.</p>
-          </div>
-          {/* Card 2 */}
-          <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
-            <h2 className="text-xl font-semibold mb-2 text-gray-100">Moderation Queue</h2>
-            <p className="text-gray-300">Check and act on items in the moderation queue.</p>
-          </div>
-          {/* Card 3 */}
-          <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
-            <h2 className="text-xl font-semibold mb-2 text-gray-100">User Feedback</h2>
-            <p className="text-gray-300">View and manage feedback from users.</p>
-          </div>
+        <div className="relative">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Avatar className="hover:ring-4 ring-slate-300 cursor-pointer">
+                {/* <AvatarImage src="/mod_icon.jpg" /> */}
+                <AvatarFallback className="text-white bg-slate-950">
+                  M
+                </AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 mr-3">
+              {userInfo && (
+                <DropdownMenuLabel>
+                  <p>{userInfo.name}</p>
+                  <small className="text-gray-500 font-normal">
+                    {userInfo.email}
+                  </small>
+                </DropdownMenuLabel> // Display user's name
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem onClick={() => navigate("/settings")}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Logout</span>
+                  <DropdownMenuShortcut>⌘+L</DropdownMenuShortcut>{" "}
+                  {/* Shortcut key for logout */}
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      </div>
+      </header>
     </div>
   );
-}
+};
 
 export default ModeratorDashboardScreen;
