@@ -207,16 +207,16 @@ function ModeratorLoginScreen() {
                 </form>
               </Form>
               <div className="mt-3 text-sm text-gray-500 text-center flex flex-col items-center lg:flex-row md:items-center md:justify-center md:space-x-1">
-  <span className="md:mt-2">By clicking sign in, you agree to our</span>
-  <a
-    href="/terms-and-conditions"
-    className="underline hover:text-gray-900 md:mt-2"
-  >
-    Terms and Conditions
-  </a>
-</div>
-
-
+                <span className="md:mt-2">
+                  By clicking sign in, you agree to our
+                </span>
+                <a
+                  href="/terms-and-conditions"
+                  className="underline hover:text-gray-900 md:mt-2"
+                >
+                  Terms and Conditions
+                </a>
+              </div>
             </div>
           </div>
         </div>
