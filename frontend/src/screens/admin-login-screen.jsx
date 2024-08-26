@@ -1,20 +1,58 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useAdminLoginMutation } from "../slices/users-api-slice";
 import { setCredentials } from "../slices/auth-slice";
-import { toast } from "react-toastify";
+import { toast } from "sonner"; // Import Sonner toast for consistency
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Eye, EyeOff, Lock } from "lucide-react"; // Import Lucide icons
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+
+// Validation schema
+const formSchema = z.object({
+  email: z.string().email({ message: "Invalid email address." }),
+  password: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters long." })
+    .regex(/[A-Z]/, {
+      message: "Password must contain at least one uppercase letter.",
+    })
+    .regex(/[a-z]/, {
+      message: "Password must contain at least one lowercase letter.",
+    })
+    .regex(/\d/, { message: "Password must contain at least one number." })
+    .regex(/[\W_]/, {
+      message: "Password must contain at least one special character.",
+    }),
+});
 
 function AdminLoginScreen() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const [login] = useAdminLoginMutation();
-
   const { userInfo } = useSelector((state) => state.auth);
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const { handleSubmit, control } = form;
+  const [passwordVisible, setPasswordVisible] = useState(false); // State for password visibility
 
   useEffect(() => {
     if (userInfo) {
@@ -22,75 +60,97 @@ function AdminLoginScreen() {
     }
   }, [navigate, userInfo]);
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     try {
-      const res = await login({ email, password }).unwrap();
+      const res = await login(data).unwrap();
       dispatch(setCredentials({ ...res }));
       navigate("/admin/dashboard");
+      toast.success("Login successful!"); // Success notification with Sonner
     } catch (err) {
-      toast.error(err?.data?.message || err.error);
+      toast.error(err?.data?.message || err.error); // Error notification with Sonner
     }
   };
 
+  const handleLogoClick = () => {
+    navigate("/");
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="bg-gray-100 p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 className="text-3xl font-bold mb-6 text-center text-gray-900">
-          Admin Login
-        </h1>
+    <div>
+      <header className="fixed top-0 right-0 p-4 flex items-center justify-between z-50 w-full ">
+        <div className="w-[6rem] mt-1 cursor-pointer" onClick={handleLogoClick}>
+          <img src="/infrasee_black.png" alt="Infrasee Logomark" />
+        </div>
+      </header>
 
-        <form onSubmit={submitHandler}>
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="admin-email"
-            >
-              Email Address
-            </label>
-            <input
-              className="bg-white text-gray-900 shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 leading-tight focus:outline-none focus:ring-2 focus:ring-[#0e0d0e]"
-              id="admin-email"
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
+      <main className="flex items-center justify-center min-h-screen bg-[url('/bg.jpg')] bg-cover bg-no-repeat bg-top">
+        <div className="bg-white/70 p-8 rounded-lg w-full max-w-md">
+          <h1 className="text-3xl font-bold mb-6 text-center text-gray-900">
+            Admin Login
+          </h1>
 
-          <div className="mb-6">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="admin-password"
-            >
-              Password
-            </label>
-            <input
-              className="bg-white text-gray-900 shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-[#0e0d0e]"
-              id="admin-password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+          <Form {...form}>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-bold">Email Address</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="Enter your email"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <div className="flex items-center justify-between">
-            <button
-              className="bg-[#0e0d0e] hover:bg-gray-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-[#0e0d0e]"
-              type="submit"
-            >
-              Sign In
-            </button>
-            <a
-              className="inline-block align-baseline font-bold text-sm text-[#0e0d0e] hover:text-gray-900"
-              href="#"
-            >
-              Forgot Password?
-            </a>
-          </div>
-        </form>
-      </div>
+              <FormField
+                control={control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-bold">Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={passwordVisible ? "text" : "password"}
+                          placeholder="Enter your password"
+                          {...field}
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setPasswordVisible(!passwordVisible)
+                          }
+                          className="absolute inset-y-0 right-3 flex items-center text-sm"
+                        >
+                          {passwordVisible ? (
+                            <EyeOff size={18} />
+                          ) : (
+                            <Eye size={18} />
+                          )}
+                        </button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex items-center justify-between">
+                <Button type="submit" className="w-full">
+                  Sign In
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </div>
+      </main>
     </div>
   );
 }
