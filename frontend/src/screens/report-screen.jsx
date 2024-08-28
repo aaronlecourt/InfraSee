@@ -80,19 +80,19 @@ function ReportScreen() {
               <small className="text-xs font-normal">All reports made</small>
             </div>
             <div className="border rounded-md p-3">
-              <p className="text-sm">Total Reports</p>
+              <p className="text-sm">In Progress Reports</p>
               <h1 className="text-3xl">0</h1>
-              <small className="text-xs font-normal">All reports made</small>
+              <small className="text-xs font-normal">Reports already being worked on</small>
             </div>
             <div className="border rounded-md p-3">
-              <p className="text-sm">Total Reports</p>
+              <p className="text-sm">Resolved Reports</p>
               <h1 className="text-3xl">0</h1>
-              <small className="text-xs font-normal">All reports made</small>
+              <small className="text-xs font-normal">Finished or solved reports</small>
             </div>
             <div className="border rounded-md p-3">
-              <p className="text-sm">Total Reports</p>
+              <p className="text-sm">Dismissed Reports</p>
               <h1 className="text-3xl">0</h1>
-              <small className="text-xs font-normal">All reports made</small>
+              <small className="text-xs font-normal">False or unreliable reports</small>
             </div>
           </div>
         </div>
