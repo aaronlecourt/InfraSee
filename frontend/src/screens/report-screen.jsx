@@ -19,7 +19,7 @@ function ReportScreen() {
   };
 
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400">
         <div className="w-[6rem] mt-1 cursor-pointer" onClick={handleLogoClick}>
           <img src="/infrasee_black.png" alt="Infrasee Logomark" />
@@ -50,10 +50,52 @@ function ReportScreen() {
         </div>
       </header>
 
-      <main>
-        {/* Main content goes here */}
-        combobox
-        <ComboBoxResponsive/>
+      <main className="flex flex-col flex-1 p-4">
+        {/* Container for the two inner divs */}
+        <div className="flex flex-col flex-1 mb-3 sm:flex-row sm:space-x-4 sm:space-y-0">
+          {/* Inner 1 div */}
+          <div className="sm:flex-none sm:w-1/4">
+            <div className="rounded-md flex flex-col items-start justify-start p-3 gap-3">
+              <div className="">
+                <h1 className="text-lg mb-2">Who is your report for?</h1>
+                <p className="text-sm text-gray-500">Select an appropriate moderator based on the type of infrastructure.</p>
+              </div>
+              <ComboBoxResponsive />
+              <Button className="w-full">File a Report</Button>
+            </div>
+          </div>
+
+          {/* Inner 2 div */}
+          <div className="border rounded-md flex-1 sm:h-80vh">
+            <div className="h-full flex items-center justify-center">map here</div>
+          </div>
+        </div>
+
+        {/* Second div */}
+        <div className="flex-none">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="border rounded-md p-3">
+              <p className="text-sm">Total Reports</p>
+              <h1 className="text-3xl">0</h1>
+              <small className="text-xs font-normal">All reports made</small>
+            </div>
+            <div className="border rounded-md p-3">
+              <p className="text-sm">Total Reports</p>
+              <h1 className="text-3xl">0</h1>
+              <small className="text-xs font-normal">All reports made</small>
+            </div>
+            <div className="border rounded-md p-3">
+              <p className="text-sm">Total Reports</p>
+              <h1 className="text-3xl">0</h1>
+              <small className="text-xs font-normal">All reports made</small>
+            </div>
+            <div className="border rounded-md p-3">
+              <p className="text-sm">Total Reports</p>
+              <h1 className="text-3xl">0</h1>
+              <small className="text-xs font-normal">All reports made</small>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   );

@@ -16,7 +16,7 @@ import {
   DrawerTitle,
   DrawerTrigger
 } from "@/components/ui/drawer";
-
+import { ChevronDown } from "lucide-react";
 // Sample data for infrastructure types and moderators
 const infraTypes = [
   { value: "power_energy", label: "Power and Energy" },
@@ -75,6 +75,7 @@ export function ComboBoxResponsive() {
           <DrawerTrigger asChild>
             <Button variant="outline" onClick={() => setIsOpen(true)}>
               {triggerButtonText}
+              <ChevronDown size={15} className="ml-2"></ChevronDown>
             </Button>
           </DrawerTrigger>
           <DrawerContent>
@@ -119,10 +120,11 @@ export function ComboBoxResponsive() {
         <div className="hidden sm:block">
           <Button
             variant="outline"
-            className="w-full sm:w-[200px] justify-start"
+            className="justify-start"
             onClick={() => setIsOpen(!isOpen)}
           >
             {triggerButtonText}
+            <ChevronDown size={15} className="ml-2"></ChevronDown>
           </Button>
 
           {isOpen && (
