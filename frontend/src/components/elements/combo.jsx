@@ -120,7 +120,7 @@ export function ComboBoxResponsive() {
         <div className="hidden sm:block">
           <Button
             variant="outline"
-            className="justify-start"
+            className="justify-between w-full"
             onClick={() => setIsOpen(!isOpen)}
           >
             {triggerButtonText}

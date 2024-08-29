@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"; // Import the Sheet components
 import { Menu } from "lucide-react"; // Use Lucide's Menu icon
 import { useNavigate } from "react-router-dom";
-
+import { ReportCounter } from "@/components/elements/report-counter";
 import { ComboBoxResponsive } from "@/components/elements/combo";
 
 function ReportScreen() {
@@ -55,13 +55,15 @@ function ReportScreen() {
         <div className="flex flex-col flex-1 mb-3 sm:flex-row sm:space-x-4 sm:space-y-0">
           {/* Inner 1 div */}
           <div className="sm:flex-none sm:w-1/4">
-            <div className="rounded-md flex flex-col items-start justify-start p-3 gap-3">
+            <div className="rounded-md flex flex-col items-start justify-start gap-3">
               <div className="">
-                <h1 className="text-lg mb-2">Who is your report for?</h1>
+                <h1 className="text-lg font-bold mb-2">Who is your report for?</h1>
                 <p className="text-sm text-gray-500">Select an appropriate moderator based on the type of infrastructure.</p>
               </div>
+              <div className="flex gap-2 w-full flex-row sm:flex-col">
               <ComboBoxResponsive />
-              <Button className="w-full">File a Report</Button>
+              <Button className="w-full mb-2">File a Report</Button>
+              </div>
             </div>
           </div>
 
@@ -73,28 +75,7 @@ function ReportScreen() {
 
         {/* Second div */}
         <div className="flex-none">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="border rounded-md p-3">
-              <p className="text-sm">Total Reports</p>
-              <h1 className="text-3xl">0</h1>
-              <small className="text-xs font-normal">All reports made</small>
-            </div>
-            <div className="border rounded-md p-3">
-              <p className="text-sm">In Progress Reports</p>
-              <h1 className="text-3xl">0</h1>
-              <small className="text-xs font-normal">Reports already being worked on</small>
-            </div>
-            <div className="border rounded-md p-3">
-              <p className="text-sm">Resolved Reports</p>
-              <h1 className="text-3xl">0</h1>
-              <small className="text-xs font-normal">Finished or solved reports</small>
-            </div>
-            <div className="border rounded-md p-3">
-              <p className="text-sm">Dismissed Reports</p>
-              <h1 className="text-3xl">0</h1>
-              <small className="text-xs font-normal">False or unreliable reports</small>
-            </div>
-          </div>
+          <ReportCounter total_reps={0} inprog_reps={0} resolved_reps={0} dismissed_reps={0}></ReportCounter>
         </div>
       </main>
     </div>
