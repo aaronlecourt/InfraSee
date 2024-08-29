@@ -68,7 +68,7 @@ function ReportScreen() {
           </div>
 
           {/* Inner 2 div */}
-          <div className="border rounded-md flex-1 sm:h-80vh">
+          <div className="border rounded-md flex-1 sm:h-80vh mt-1">
             <div className="h-full flex items-center justify-center">map here</div>
           </div>
         </div>
