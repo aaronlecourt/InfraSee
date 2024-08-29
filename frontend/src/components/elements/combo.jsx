@@ -6,7 +6,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
-  CommandList
+  CommandList,
 } from "@/components/ui/command";
 import {
   Drawer,
@@ -14,7 +14,7 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger
+  DrawerTrigger,
 } from "@/components/ui/drawer";
 import { ChevronDown } from "lucide-react";
 // Sample data for infrastructure types and moderators
@@ -48,14 +48,14 @@ export function ComboBoxResponsive() {
   // Handle screen size change
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 640);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Group moderators by their infrastructure type
-  const groupedModerators = infraTypes.map(type => ({
+  const groupedModerators = infraTypes.map((type) => ({
     ...type,
-    moderators: moderators.filter(mod => mod.infra_type === type.value),
+    moderators: moderators.filter((mod) => mod.infra_type === type.value),
   }));
 
   const handleSelectModerator = (value) => {
@@ -64,7 +64,7 @@ export function ComboBoxResponsive() {
   };
 
   const triggerButtonText = selectedModerator
-    ? moderators.find(mod => mod.value === selectedModerator)?.label
+    ? moderators.find((mod) => mod.value === selectedModerator)?.label
     : "Select Moderator";
 
   return (
@@ -88,11 +88,11 @@ export function ComboBoxResponsive() {
               <CommandList>
                 <CommandEmpty>No results found.</CommandEmpty>
                 <CommandGroup>
-                  {groupedModerators.map(type => (
+                  {groupedModerators.map((type) => (
                     <div key={type.value} className="py-2 px-4">
                       <h3 className="font-bold text-xs mb-2">{type.label}</h3>
                       {type.moderators.length > 0 ? (
-                        type.moderators.map(mod => (
+                        type.moderators.map((mod) => (
                           <CommandItem
                             key={mod.value}
                             value={mod.value}
@@ -134,11 +134,11 @@ export function ComboBoxResponsive() {
                 <CommandList>
                   <CommandEmpty>No results found.</CommandEmpty>
                   <CommandGroup>
-                    {groupedModerators.map(type => (
+                    {groupedModerators.map((type) => (
                       <div key={type.value} className="py-2 px-4">
                         <h3 className="font-bold text-xs mb-2">{type.label}</h3>
                         {type.moderators.length > 0 ? (
-                          type.moderators.map(mod => (
+                          type.moderators.map((mod) => (
                             <CommandItem
                               key={mod.value}
                               value={mod.value}
