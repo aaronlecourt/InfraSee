@@ -1,4 +1,3 @@
-// components/Overview.js
 import React from "react";
 import { ReportCounter } from "./report-counter";
 import { ChevronDown } from "lucide-react";
@@ -13,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export function Overview() {
+export function Overview({ goToReportsTab }) {
   return (
     <>
       <ReportCounter
@@ -21,7 +20,7 @@ export function Overview() {
         inprog_reps={0}
         resolved_reps={0}
         dismissed_reps={0}
-      ></ReportCounter>
+      />
       <div className="mt-3 grid grid-cols-3 gap-3 h-auto">
         <div className="border rounded-md col-span-2">map here</div>
         <div className="col-span-1">
@@ -41,13 +40,13 @@ export function Overview() {
               </ScrollArea>
             </CardContent>
             <CardFooter>
-            {/* link to reports tab */}
               <Button
                 variant="link"
                 className="w-full text-gray-500 flex gap-1"
+                onClick={goToReportsTab} // Trigger tab change
               >
-                <p className="text-xs font-medium">See all reports</p> 
-                <ChevronDown size={15}></ChevronDown>
+                <p className="text-xs font-medium">See all reports</p>
+                <ChevronDown size={15} />
               </Button>
             </CardFooter>
           </Card>
