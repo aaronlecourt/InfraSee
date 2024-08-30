@@ -27,7 +27,7 @@ function HomeScreen() {
   };
 
   return (
-    <div className="bg-[url('../public/bg.jpg')] bg-cover bg-no-repeat bg-bottom min-h-screen flex flex-col overflow-hidden">
+    <div className="bg-[url('../bg.jpg')] bg-cover bg-no-repeat bg-bottom min-h-screen flex flex-col overflow-hidden">
       <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400">
         <div className="w-[6rem] mt-1 cursor-pointer" onClick={handleLogoClick}>
           <img src="/infrasee_black.png" alt="Infrasee Logomark" />
