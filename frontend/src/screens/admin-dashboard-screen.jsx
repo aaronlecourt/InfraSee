@@ -15,7 +15,7 @@ const AdminDashboardScreen = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    document.title = "Admin Dashboard | InfraSee";
+    document.title = "Admin Dashboard | Infrasee";
   });
 
 

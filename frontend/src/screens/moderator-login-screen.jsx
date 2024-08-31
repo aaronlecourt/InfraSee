@@ -23,9 +23,10 @@ import { Menu } from "lucide-react"; // Use Lucide's Menu icon
 
 // Validation schema
 const formSchema = z.object({
-  email: z.string()
-  .min(1, "Email is required.")
-  .email({ message: "Invalid email address." }),
+  email: z
+    .string()
+    .min(1, "Email is required.")
+    .email({ message: "Invalid email address." }),
   password: z
     .string()
     .min(1, "Password is required.")
@@ -65,7 +66,7 @@ function ModeratorLoginScreen() {
   });
 
   useEffect(() => {
-    if (userInfo) {
+    if (userInfo && userInfo?.isModerator) {
       navigate("/moderator/dashboard");
     }
   }, [navigate, userInfo]);

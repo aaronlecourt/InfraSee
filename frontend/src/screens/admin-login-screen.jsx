@@ -61,7 +61,7 @@ function AdminLoginScreen() {
   });
 
   useEffect(() => {
-    if (userInfo) {
+    if (userInfo && userInfo?.isAdmin) {
       navigate("/admin/dashboard");
     }
   }, [navigate, userInfo]);
