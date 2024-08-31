@@ -1,19 +1,32 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuShortcut } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuShortcut,
+} from "@/components/ui/dropdown-menu";
 import { Settings, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Overview } from "@/components/elements/overview";
 import { Archives } from "@/components/elements/archives";
 import { Reports } from "@/components/elements/reports";
+import { useLogoutMutation } from "@/slices/users-api-slice";
+import { logout } from "@/slices/auth-slice";
 
 const ModeratorDashboardScreen = () => {
   const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.auth);
   const [activeTab, setActiveTab] = useState("overview"); // Manage active tab state
+  const [logoutApiCall] = useLogoutMutation();
+  const dispatch = useDispatch();
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -34,9 +47,19 @@ const ModeratorDashboardScreen = () => {
     navigate("/");
   };
 
-  const handleLogout = () => {
-    navigate("/moderator/login");
+  const handleLogout = async () => {
+    try {
+      console.log("Logging out...");
+      await logoutApiCall().unwrap(); // Ensure API call completes
+      dispatch(logout()); // Clear state
+      console.log("Navigating to home page...");
+      navigate("/", { replace: true }); // Redirect to home
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
   };
+  
+
 
   // Function to change the tab
   const goToReportsTab = () => {
@@ -94,7 +117,8 @@ const ModeratorDashboardScreen = () => {
             <TabsTrigger value="archives">Archives</TabsTrigger>
           </TabsList>
           <TabsContent value="overview">
-            <Overview goToReportsTab={goToReportsTab} /> {/* Pass function as prop */}
+            <Overview goToReportsTab={goToReportsTab} />{" "}
+            {/* Pass function as prop */}
           </TabsContent>
           <TabsContent value="reports">
             <Reports />

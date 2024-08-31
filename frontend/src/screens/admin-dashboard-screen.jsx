@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { User, LogOut, FileStack } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLogoutMutation } from "@/slices/users-api-slice";
+import { logout } from "@/slices/auth-slice";
 
 const AdminDashboardScreen = () => {
   const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.auth);
   const [activeButton, setActiveButton] = useState("accounts");
+  const [logoutApiCall] = useLogoutMutation();
+  const dispatch = useDispatch();
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -25,8 +29,18 @@ const AdminDashboardScreen = () => {
     };
   }, []);
 
-  const handleButtonClick = (buttonName) => {
+  const handleButtonClick = (logout) => {
     setActiveButton(buttonName);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logoutApiCall().unwrap();
+      dispatch(logout());
+      navigate("/");
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -84,7 +98,7 @@ const AdminDashboardScreen = () => {
             className={`text-sm w-full flex justify-between ${
               activeButton === "logout" ? "bg-black text-white" : ""
             }`}
-            onClick={() => handleButtonClick("logout")}
+            onClick={handleLogout}
           >
             <div className="flex items-center">
               <LogOut className="mr-2 h-5 w-5" />

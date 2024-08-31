@@ -27,24 +27,28 @@ import NotFoundPage from "./screens/not-found-screen.jsx";
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
-      <Route index={true} path="/" element={<HomeScreen />} />
+      <Route index element={<HomeScreen />} />
       <Route path="/admin/login" element={<AdminLoginScreen />} />
       <Route path="/moderator/login" element={<ModeratorLoginScreen />} />
       <Route path="/report" element={<ReportScreen />} />
-      <Route path="" element={<PrivateRoute />}>
-        <Route path="" element={<ModeratorRoute />}>
-          <Route path="/settings" element={<SettingsScreen />} />
-        </Route>
+
+      {/* Private routes */}
+      <Route element={<PrivateRoute />}>
+        {/* Moderator routes */}
+        <Route path="/settings" element={<SettingsScreen />} />
       </Route>
-      <Route path="" element={<AdminRoute />}>
-        <Route path="/admin/dashboard" element={<AdminDashboardScreen />} />
-      </Route>
-      <Route path="" element={<ModeratorRoute />}>
+      <Route element={<PrivateRoute />}>
         <Route
           path="/moderator/dashboard"
           element={<ModeratorDashboardScreen />}
         />
       </Route>
+
+      {/* Admin routes */}
+      <Route element={<PrivateRoute />}>
+        <Route path="/admin/dashboard" element={<AdminDashboardScreen />} />
+      </Route>
+
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Route>
