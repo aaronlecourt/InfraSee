@@ -28,6 +28,11 @@ const ModeratorDashboardScreen = () => {
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
 
+  useEffect(() => {
+    document.title = "Moderator Dashboard | InfraSee";
+  });
+
+
   // Handle the keyboard shortcut for logout
   useEffect(() => {
     const handleKeyDown = (event) => {

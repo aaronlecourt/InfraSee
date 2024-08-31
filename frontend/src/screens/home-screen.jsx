@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button"; // Adjust the import path as needed
 import { useNavigate } from "react-router-dom";
 import {
@@ -13,6 +13,10 @@ import { ArrowRight } from "lucide-react";
 function HomeScreen() {
   const navigate = useNavigate();
   const [isSheetOpen, setSheetOpen] = useState(false);
+
+  useEffect(() => {
+    document.title = "Home | InfraSee";
+  });
 
   const handleLogoClick = () => {
     navigate("/");
@@ -69,7 +73,8 @@ function HomeScreen() {
           A one-stop tool for reporting infrastructure damage.
         </h1>
         <p className="text-base text-slate-500 mt-3">
-          We provide an easy way to report infrastructure issues, ensuring quick action and transparency.
+          We provide an easy way to report infrastructure issues, ensuring quick
+          action and transparency.
         </p>
 
         <section className="mt-4 bg-white/30 rounded-md p-4">
@@ -77,25 +82,31 @@ function HomeScreen() {
             <AccordionItem value="item-1">
               <AccordionTrigger>How do I make a report?</AccordionTrigger>
               <AccordionContent>
-                Click on the 'Make a Report' button, select the infrastructure type, choose a moderator, and complete the form.
+                Click on the 'Make a Report' button, select the infrastructure
+                type, choose a moderator, and complete the form.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-2">
               <AccordionTrigger>Who sees my reports?</AccordionTrigger>
               <AccordionContent>
-                Your reports are sent to moderators representing infrastructure companies like BAWADI or BENECO.
+                Your reports are sent to moderators representing infrastructure
+                companies like BAWADI or BENECO.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-3">
               <AccordionTrigger>Can I receive feedback?</AccordionTrigger>
               <AccordionContent>
-                Yes, feedback is provided through status reports, which can be viewed on the report map markers.
+                Yes, feedback is provided through status reports, which can be
+                viewed on the report map markers.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-4">
-              <AccordionTrigger>How do I apply as a moderator?</AccordionTrigger>
+              <AccordionTrigger>
+                How do I apply as a moderator?
+              </AccordionTrigger>
               <AccordionContent>
-                Send an email to admin@a.infrasee.com with verification from your company. Accepted applicants will receive login details.
+                Send an email to admin@a.infrasee.com with verification from
+                your company. Accepted applicants will receive login details.
               </AccordionContent>
             </AccordionItem>
           </Accordion>

@@ -57,6 +57,10 @@ function AdminLoginScreen() {
   const [passwordVisible, setPasswordVisible] = useState(false); // State for password visibility
 
   useEffect(() => {
+    document.title = "Admin Login | InfraSee";
+  });
+
+  useEffect(() => {
     if (userInfo) {
       navigate("/admin/dashboard");
     }

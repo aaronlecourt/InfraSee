@@ -3,8 +3,14 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Home, Unlink } from 'lucide-react'; // Import icons
 import { Button } from '@/components/ui/button';
+import { useEffect } from 'react';
+
 const NotFoundPage = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = "InfraSee - Error";
+  });
 
   const handleGoBack = () => {
     // Determine if we should go back or navigate to the home page

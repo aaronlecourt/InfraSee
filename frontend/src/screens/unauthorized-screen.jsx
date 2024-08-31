@@ -1,9 +1,15 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Unlink } from "lucide-react";
+import { useEffect } from "react";
 
 const UnauthorizedPage = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = "InfraSee - Error";
+  });
+
 
   return (
     <div className="min-h-screen w-screen flex items-center justify-center bg-[url('/bg.jpg')] bg-cover bg-no-repeat">

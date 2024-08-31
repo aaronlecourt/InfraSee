@@ -1,6 +1,13 @@
 import React from "react";
+import { useEffect } from "react";
 
 function SettingsScreen() {
+
+  useEffect(() => {
+    document.title = "Settings | InfraSee";
+  });
+
+
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-6">
       <div className="bg-gray-100 p-8 rounded-lg shadow-lg w-full max-w-md">

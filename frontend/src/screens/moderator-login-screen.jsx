@@ -61,6 +61,10 @@ function ModeratorLoginScreen() {
   const [isSheetOpen, setSheetOpen] = useState(false); // State to control the Sheet
 
   useEffect(() => {
+    document.title = "Moderator Login | InfraSee";
+  });
+
+  useEffect(() => {
     if (userInfo) {
       navigate("/moderator/dashboard");
     }

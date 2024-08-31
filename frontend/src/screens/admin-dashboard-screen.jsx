@@ -14,6 +14,11 @@ const AdminDashboardScreen = () => {
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
 
+  useEffect(() => {
+    document.title = "Admin Dashboard | InfraSee";
+  });
+
+
   // Handle the keyboard shortcut for logout
   useEffect(() => {
     const handleKeyDown = (event) => {

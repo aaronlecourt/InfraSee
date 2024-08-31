@@ -5,10 +5,15 @@ import { Menu } from "lucide-react"; // Use Lucide's Menu icon
 import { useNavigate } from "react-router-dom";
 import { ReportCounter } from "@/components/elements/report-counter";
 import { ComboBoxResponsive } from "@/components/elements/combo";
+import { useEffect } from "react";
 
 function ReportScreen() {
   const navigate = useNavigate();
   const [isSheetOpen, setSheetOpen] = useState(false); // State to control the Sheet
+
+  useEffect(() => {
+    document.title = "Make a Report | InfraSee";
+  });
 
   const handleLogoClick = () => {
     navigate("/");
