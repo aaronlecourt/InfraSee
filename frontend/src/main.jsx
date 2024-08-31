@@ -37,7 +37,7 @@ const router = createBrowserRouter(
         {/* Moderator routes */}
         <Route path="/settings" element={<SettingsScreen />} />
       </Route>
-      <Route element={<PrivateRoute />}>
+      <Route element={<ModeratorRoute />}>
         <Route
           path="/moderator/dashboard"
           element={<ModeratorDashboardScreen />}
@@ -45,11 +45,11 @@ const router = createBrowserRouter(
       </Route>
 
       {/* Admin routes */}
-      <Route element={<PrivateRoute />}>
+      <Route element={<AdminRoute />}>
         <Route path="/admin/dashboard" element={<AdminDashboardScreen />} />
       </Route>
 
-      <Route path="/unauthorized" element={<UnauthorizedPage />} />
+      {/* <Route path="/unauthorized" element={<UnauthorizedPage />} /> */}
       <Route path="*" element={<NotFoundPage />} />
     </Route>
   )

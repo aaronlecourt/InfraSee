@@ -54,17 +54,13 @@ const ModeratorDashboardScreen = () => {
 
   const handleLogout = async () => {
     try {
-      console.log("Logging out...");
-      await logoutApiCall().unwrap(); // Ensure API call completes
-      dispatch(logout()); // Clear state
-      console.log("Navigating to home page...");
-      navigate("/", { replace: true }); // Redirect to home
+      await logoutApiCall().unwrap();
+      dispatch(logout());
+      navigate("/moderator/login");
     } catch (err) {
-      console.error("Logout error:", err);
+      console.log(err);
     }
   };
-  
-
 
   // Function to change the tab
   const goToReportsTab = () => {

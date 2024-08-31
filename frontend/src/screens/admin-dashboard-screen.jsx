@@ -42,7 +42,7 @@ const AdminDashboardScreen = () => {
     try {
       await logoutApiCall().unwrap();
       dispatch(logout());
-      navigate("/");
+      navigate("/admin/login");
     } catch (err) {
       console.log(err);
     }
