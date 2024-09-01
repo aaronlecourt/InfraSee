@@ -3,14 +3,11 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Home, Unlink } from 'lucide-react'; // Import icons
 import { Button } from '@/components/ui/button';
-import { useEffect } from 'react';
+import { Helmet } from 'react-helmet';
 
 const NotFoundPage = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    document.title = "InfraSee - Error";
-  });
 
   const handleGoBack = () => {
     // Determine if we should go back or navigate to the home page
@@ -23,6 +20,10 @@ const NotFoundPage = () => {
 
   return (
     <div className="min-h-screen w-screen flex items-center justify-center bg-[url('/bg.jpg')] bg-cover bg-no-repeat">
+      <Helmet>
+        <title>{'InfraSee - Not Found'}</title>
+      </Helmet>
+
       <div className=" p-8 rounded-lg text-center max-w-md w-full">
         <div className="flex items-center justify-center mb-4">
           <Unlink strokeWidth={3} className="mr-2" />

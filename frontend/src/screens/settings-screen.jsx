@@ -1,20 +1,22 @@
 import React from "react";
-import { useEffect } from "react";
+import { Helmet } from "react-helmet";
 
 function SettingsScreen() {
-
-  useEffect(() => {
-    document.title = "Settings | InfraSee";
-  });
-
-
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-6">
+      <Helmet>
+        <title>{"Settings | InfraSee"}</title>
+      </Helmet>
       <div className="bg-gray-100 p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 className="text-3xl font-bold mb-6 text-center text-gray-900">Profile Settings</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center text-gray-900">
+          Profile Settings
+        </h1>
         <form className="space-y-6">
           <div>
-            <label htmlFor="name" className="block text-gray-700 text-sm font-semibold mb-2">
+            <label
+              htmlFor="name"
+              className="block text-gray-700 text-sm font-semibold mb-2"
+            >
               Full Name
             </label>
             <input
@@ -26,7 +28,10 @@ function SettingsScreen() {
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-gray-700 text-sm font-semibold mb-2">
+            <label
+              htmlFor="email"
+              className="block text-gray-700 text-sm font-semibold mb-2"
+            >
               Email Address
             </label>
             <input
@@ -38,7 +43,10 @@ function SettingsScreen() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-gray-700 text-sm font-semibold mb-2">
+            <label
+              htmlFor="password"
+              className="block text-gray-700 text-sm font-semibold mb-2"
+            >
               Password
             </label>
             <input

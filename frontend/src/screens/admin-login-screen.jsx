@@ -18,13 +18,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Helmet } from "react-helmet";
 
 // Validation schema
 const formSchema = z.object({
-  email: z.string()
+  email: z
+    .string()
     .min(1, "Email is required.") // Ensure email is not empty
     .email({ message: "Invalid email address." }), // Validate email format
-  password: z.string()
+  password: z
+    .string()
     .min(1, "Password is required.") // Ensure password is not empty
     .min(8, { message: "Password must be at least 8 characters long." }) // Minimum length
     .regex(/[A-Z]/, {
@@ -56,9 +59,6 @@ function AdminLoginScreen() {
   const { handleSubmit, control } = form;
   const [passwordVisible, setPasswordVisible] = useState(false); // State for password visibility
 
-  useEffect(() => {
-    document.title = "Admin Login | InfraSee";
-  });
 
   useEffect(() => {
     if (userInfo && userInfo?.isAdmin) {
@@ -83,6 +83,9 @@ function AdminLoginScreen() {
 
   return (
     <div>
+      <Helmet>
+        <title>{"Admin Login | InfraSee"}</title>
+      </Helmet>
       <header className="fixed top-0 right-0 p-4 flex items-center justify-between z-50 w-full ">
         <div className="w-[6rem] mt-1 cursor-pointer" onClick={handleLogoClick}>
           <img src="/infrasee_black.png" alt="Infrasee Logomark" />
@@ -130,9 +133,7 @@ function AdminLoginScreen() {
                         />
                         <button
                           type="button"
-                          onClick={() =>
-                            setPasswordVisible(!passwordVisible)
-                          }
+                          onClick={() => setPasswordVisible(!passwordVisible)}
                           className="absolute inset-y-0 right-3 flex items-center text-sm"
                         >
                           {passwordVisible ? (

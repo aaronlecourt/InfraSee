@@ -1,15 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Unlink } from "lucide-react";
-import { useEffect } from "react";
 
 const UnauthorizedPage = () => {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    document.title = "InfraSee - Error";
-  });
-
 
   return (
     <div className="min-h-screen w-screen flex items-center justify-center bg-[url('/bg.jpg')] bg-cover bg-no-repeat">
@@ -23,15 +17,14 @@ const UnauthorizedPage = () => {
           an error, please contact support.
         </p>
         <div className="flex items-center justify-end">
-        <ArrowLeft size={16} className="mr-2"/>
-        <button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="text-base font-semibold hover:underline"
-        >
-          
-          Go Back
-        </button>
+          <ArrowLeft size={16} className="mr-2" />
+          <button
+            variant="ghost"
+            onClick={() => navigate(-1)}
+            className="text-base font-semibold hover:underline"
+          >
+            Go Back
+          </button>
         </div>
       </div>
     </div>

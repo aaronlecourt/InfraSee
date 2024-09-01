@@ -5,15 +5,11 @@ import { Menu } from "lucide-react"; // Use Lucide's Menu icon
 import { useNavigate } from "react-router-dom";
 import { ReportCounter } from "@/components/elements/report-counter";
 import { ComboBoxResponsive } from "@/components/elements/combo";
-import { useEffect } from "react";
+import { Helmet } from "react-helmet";
 
 function ReportScreen() {
   const navigate = useNavigate();
   const [isSheetOpen, setSheetOpen] = useState(false); // State to control the Sheet
-
-  useEffect(() => {
-    document.title = "Make a Report | InfraSee";
-  });
 
   const handleLogoClick = () => {
     navigate("/");
@@ -25,6 +21,9 @@ function ReportScreen() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <Helmet>
+        <title>{'Make a Report | InfraSee'}</title>
+      </Helmet>
       <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400">
         <div className="w-[6rem] mt-1 cursor-pointer" onClick={handleLogoClick}>
           <img src="/infrasee_black.png" alt="Infrasee Logomark" />

@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"; // Import Sheet components
 import { Menu } from "lucide-react"; // Use Lucide's Menu icon
+import { Helmet } from "react-helmet";
 
 // Validation schema
 const formSchema = z.object({
@@ -62,10 +63,6 @@ function ModeratorLoginScreen() {
   const [isSheetOpen, setSheetOpen] = useState(false); // State to control the Sheet
 
   useEffect(() => {
-    document.title = "Moderator Login | InfraSee";
-  });
-
-  useEffect(() => {
     if (userInfo && userInfo?.isModerator) {
       navigate("/moderator/dashboard");
     }
@@ -92,6 +89,9 @@ function ModeratorLoginScreen() {
 
   return (
     <div>
+      <Helmet>
+        <title>{'Moderator Login | InfraSee'}</title>
+      </Helmet>
       <div className="fixed top-0 right-0 p-4 flex items-center justify-between z-50 w-full">
         <div className="w-[6rem] mt-1 cursor-pointer" onClick={handleLogoClick}>
           <img src="/infrasee_white.png" alt="Infrasee Logomark" />

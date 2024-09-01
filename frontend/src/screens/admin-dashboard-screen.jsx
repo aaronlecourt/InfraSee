@@ -6,6 +6,7 @@ import { User, LogOut, FileStack } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
+import { Helmet } from "react-helmet";
 
 const AdminDashboardScreen = () => {
   const navigate = useNavigate();
@@ -13,11 +14,6 @@ const AdminDashboardScreen = () => {
   const [activeButton, setActiveButton] = useState("accounts");
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    document.title = "Admin Dashboard | Infrasee";
-  });
-
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -50,6 +46,9 @@ const AdminDashboardScreen = () => {
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-5">
+      <Helmet>
+        <title>{'Admin Dashboard | InfraSee'}</title>
+      </Helmet>
       {/* desktop header */}
       <header className="h-screen border-r p-3 xl:block hidden">
         <div className="border rounded-lg p-2 flex gap-2 items-center justify-start">

@@ -20,6 +20,7 @@ import { Archives } from "@/components/elements/archives";
 import { Reports } from "@/components/elements/reports";
 import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
+import { Helmet } from "react-helmet";
 
 const ModeratorDashboardScreen = () => {
   const navigate = useNavigate();
@@ -27,11 +28,6 @@ const ModeratorDashboardScreen = () => {
   const [activeTab, setActiveTab] = useState("overview"); // Manage active tab state
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    document.title = "Moderator Dashboard | InfraSee";
-  });
-
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -69,6 +65,9 @@ const ModeratorDashboardScreen = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>{'Moderator Dashboard | InfraSee'}</title>
+      </Helmet>
       <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400">
         <div className="w-[6rem] mt-1 cursor-pointer" onClick={handleLogoClick}>
           <img src="/infrasee_black.png" alt="Infrasee Logomark" />
