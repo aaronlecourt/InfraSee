@@ -30,7 +30,7 @@ const AdminDashboardScreen = () => {
     };
   }, []);
 
-  const handleButtonClick = (logout) => {
+  const handleButtonClick = (buttonName) => {
     setActiveButton(buttonName);
   };
 
@@ -47,7 +47,7 @@ const AdminDashboardScreen = () => {
   return (
     <div className="grid grid-cols-1 xl:grid-cols-5">
       <Helmet>
-        <title>{'Admin Dashboard | InfraSee'}</title>
+        <title>{"Admin Dashboard | InfraSee"}</title>
       </Helmet>
       {/* desktop header */}
       <header className="h-screen border-r p-3 xl:block hidden">
@@ -98,10 +98,8 @@ const AdminDashboardScreen = () => {
           </Button>
 
           <Button
-            variant={activeButton === "logout" ? "default" : "ghost"}
-            className={`text-sm w-full flex justify-between ${
-              activeButton === "logout" ? "bg-black text-white" : ""
-            }`}
+            variant="ghost"
+            className="text-sm w-full flex justify-between"
             onClick={handleLogout}
           >
             <div className="flex items-center">
@@ -165,11 +163,9 @@ const AdminDashboardScreen = () => {
 
           <div>
             <Button
-              variant={activeButton === "logout" ? "default" : "ghost"}
-              className={`text-sm w-full gap-2 flex justify-between ${
-                activeButton === "logout" ? "bg-black text-white" : ""
-              }`}
-              onClick={() => handleButtonClick("logout")}
+              variant="ghost"
+              className="text-sm w-full flex gap-3 justify-between"
+              onClick={handleLogout}
             >
               <div className="flex items-center">
                 <LogOut className="mr-2 h-5 w-5" />
