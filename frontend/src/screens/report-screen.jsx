@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"; // Import the Sheet components
+import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"; // Import the Sheet components
 import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer"; // Import Drawer components
 import { Menu } from "lucide-react"; // Use Lucide's Menu icon
 import { useNavigate } from "react-router-dom";
@@ -123,7 +123,7 @@ function ReportScreen() {
               <DrawerTitle>Report Form</DrawerTitle>
               <DrawerClose onClick={() => setReportSheetOpen(false)} />
             </DrawerHeader>
-            <div className="p-1">
+            <div className="p-4">
               {/* API call to get value to pass to selectedAccount prop */}
               {/* Display account-specific form using a component, accept selectedAccount as prop */}
               <ReportForm />
@@ -132,10 +132,17 @@ function ReportScreen() {
         </Drawer>
       ) : (
         <Sheet open={isReportSheetOpen} onOpenChange={setReportSheetOpen} className="hidden sm:block">
+          
           <SheetTrigger asChild>
             <Button className="hidden">Open Report Sheet</Button>
           </SheetTrigger>
           <SheetContent side="right">
+          <SheetHeader>
+          <SheetTitle>Selected Moderator name here</SheetTitle>
+          <SheetDescription>
+            Fill up the form below. Click submit when you're done.
+          </SheetDescription>
+        </SheetHeader>
             <div className="p-1">
               {/* API call to get value to pass to selectedAccount prop */}
               {/* Display account-specific form using a component, accept selectedAccount as prop */}
