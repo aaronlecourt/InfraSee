@@ -1,15 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"; // Import the Sheet components
+import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer"; // Import Drawer components
 import { Menu } from "lucide-react"; // Use Lucide's Menu icon
 import { useNavigate } from "react-router-dom";
 import { ReportCounter } from "@/components/elements/report-counter";
 import { ComboBoxResponsive } from "@/components/elements/combo";
 import { Helmet } from "react-helmet";
-
+import ReportForm from "@/components/report-form";
 function ReportScreen() {
   const navigate = useNavigate();
-  const [isSheetOpen, setSheetOpen] = useState(false); // State to control the Sheet
+  const [isNavbarSheetOpen, setNavbarSheetOpen] = useState(false); // State to control the Navbar Sheet
+  const [isReportSheetOpen, setReportSheetOpen] = useState(false); // State to control the Report Sheet
+  const [accountSelected, setAccountSelected] = useState(false); // State for account selection
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640); // Track screen size
+
+  // Track screen size
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleLogoClick = () => {
     navigate("/");
@@ -18,6 +29,18 @@ function ReportScreen() {
   const handleContactClick = () => {
     navigate("/contact-us");
   };
+
+  const handleFileReportClick = () => {
+    if (accountSelected) {
+      setReportSheetOpen(true);
+    }
+  };
+
+  // Use callback to ensure up-to-date state
+  const handleAccountSelect = useCallback(() => {
+    console.log("Account selected");
+    setAccountSelected(true);
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -34,11 +57,11 @@ function ReportScreen() {
           </Button>
         </nav>
 
-        {/* Mobile sheet trigger */}
+        {/* Mobile navbar sheet trigger */}
         <div className="sm:hidden">
-          <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
+          <Sheet open={isNavbarSheetOpen} onOpenChange={setNavbarSheetOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon">
+              <Button variant="outline" size="icon" onClick={() => setNavbarSheetOpen(true)}>
                 <Menu className="h-6 w-6" /> {/* Lucide Menu Icon */}
                 <span className="sr-only">Open Menu</span>
               </Button>
@@ -65,8 +88,14 @@ function ReportScreen() {
                 <p className="text-sm text-gray-500">Select an appropriate moderator based on the type of infrastructure.</p>
               </div>
               <div className="flex gap-2 w-full flex-row sm:flex-col">
-              <ComboBoxResponsive />
-              <Button className="w-full mb-2">File a Report</Button>
+                <ComboBoxResponsive onSelect={handleAccountSelect} />
+                <Button
+                  className="w-full mb-2"
+                  disabled={!accountSelected}
+                  onClick={handleFileReportClick}
+                >
+                  File a Report
+                </Button>
               </div>
             </div>
           </div>
@@ -82,8 +111,44 @@ function ReportScreen() {
           <ReportCounter total_reps={0} inprog_reps={0} resolved_reps={0} dismissed_reps={0}></ReportCounter>
         </div>
       </main>
+
+      {/* Reporting Drawer */}
+      {isMobile ? (
+        <Drawer open={isReportSheetOpen} onOpenChange={setReportSheetOpen}>
+          <DrawerTrigger asChild>
+            <Button className="hidden">Open Report Drawer</Button>
+          </DrawerTrigger>
+          <DrawerContent side="bottom">
+            <DrawerHeader>
+              <DrawerTitle>Report Form</DrawerTitle>
+              <DrawerClose onClick={() => setReportSheetOpen(false)} />
+            </DrawerHeader>
+            <div className="p-1">
+              {/* API call to get value to pass to selectedAccount prop */}
+              {/* Display account-specific form using a component, accept selectedAccount as prop */}
+              <ReportForm />
+            </div>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Sheet open={isReportSheetOpen} onOpenChange={setReportSheetOpen} className="hidden sm:block">
+          <SheetTrigger asChild>
+            <Button className="hidden">Open Report Sheet</Button>
+          </SheetTrigger>
+          <SheetContent side="right">
+            <div className="p-1">
+              {/* API call to get value to pass to selectedAccount prop */}
+              {/* Display account-specific form using a component, accept selectedAccount as prop */}
+              <ReportForm />
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }
 
 export default ReportScreen;
+
+
+

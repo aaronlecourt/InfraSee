@@ -17,7 +17,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { ChevronDown } from "lucide-react";
-// Sample data for infrastructure types and moderators
+
 const infraTypes = [
   { value: "power_energy", label: "Power and Energy" },
   { value: "water_waste", label: "Water and Waste" },
@@ -40,7 +40,7 @@ const moderators = [
   { value: "account 11", label: "Account 11", infra_type: "commercial" },
 ];
 
-export function ComboBoxResponsive() {
+export function ComboBoxResponsive({ onSelect }) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedModerator, setSelectedModerator] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
@@ -59,7 +59,10 @@ export function ComboBoxResponsive() {
   }));
 
   const handleSelectModerator = (value) => {
-    setSelectedModerator(value === selectedModerator ? null : value);
+    setSelectedModerator(value);
+    if (onSelect) {
+      onSelect(value); // Notify parent component
+    }
     setIsOpen(false); // Close both drawer and dropdown
   };
 
@@ -75,7 +78,7 @@ export function ComboBoxResponsive() {
           <DrawerTrigger asChild>
             <Button variant="outline" onClick={() => setIsOpen(true)}>
               {triggerButtonText}
-              <ChevronDown size={15} className="ml-2"></ChevronDown>
+              <ChevronDown size={15} className="ml-2" />
             </Button>
           </DrawerTrigger>
           <DrawerContent>
@@ -96,10 +99,7 @@ export function ComboBoxResponsive() {
                           <CommandItem
                             key={mod.value}
                             value={mod.value}
-                            onSelect={() => {
-                              handleSelectModerator(mod.value);
-                              setIsOpen(false); // Close drawer on selection
-                            }}
+                            onSelect={() => handleSelectModerator(mod.value)}
                             className="cursor-pointer p-2 hover:bg-gray-200 rounded gap-3"
                           >
                             {mod.label}
@@ -124,7 +124,7 @@ export function ComboBoxResponsive() {
             onClick={() => setIsOpen(!isOpen)}
           >
             {triggerButtonText}
-            <ChevronDown size={15} className="ml-2"></ChevronDown>
+            <ChevronDown size={15} className="ml-2" />
           </Button>
 
           {isOpen && (
