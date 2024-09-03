@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
 import InfrastructureType from "./infrastructureType-model.js";
+import SecurityQuestion from "./securityQuestion-model.js";
 const userSchema = mongoose.Schema(
   {
     name: {
@@ -30,7 +31,8 @@ const userSchema = mongoose.Schema(
       default: false,
     },
     slct_quest: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'SecurityQuestion',
     },
     quest_ans: {
       type: String,
