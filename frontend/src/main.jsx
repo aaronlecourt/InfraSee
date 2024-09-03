@@ -23,6 +23,7 @@ import AdminRoute from "./components/admin-route.jsx";
 import ModeratorRoute from "./components/moderator-route.jsx";
 import UnauthorizedPage from "./screens/unauthorized-screen.jsx";
 import NotFoundPage from "./screens/not-found-screen.jsx";
+import AdminReportsScreen from "./screens/admin-reports.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -47,7 +48,10 @@ const router = createBrowserRouter(
       {/* Admin routes */}
       <Route element={<AdminRoute />}>
         <Route path="/admin/dashboard" element={<AdminDashboardScreen />} />
+        <Route path="/admin/reports" element={<AdminReportsScreen />} />
       </Route>
+
+
 
       {/* <Route path="/unauthorized" element={<UnauthorizedPage />} /> */}
       <Route path="*" element={<NotFoundPage />} />

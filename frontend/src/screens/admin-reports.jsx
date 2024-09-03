@@ -8,10 +8,10 @@ import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
 import { Helmet } from "react-helmet";
 
-const AdminDashboardScreen = () => {
+const AdminReportsScreen = () => {
   const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.auth);
-  const [activeButton, setActiveButton] = useState("accounts");
+  const [activeButton, setActiveButton] = useState("reports");
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
 
@@ -193,4 +193,4 @@ const AdminDashboardScreen = () => {
   );
 };
 
-export default AdminDashboardScreen;
+export default AdminReportsScreen;
