@@ -6,21 +6,51 @@ const userSchema = mongoose.Schema(
     name: {
       type: String,
       required: true,
+      maxlength: 50,
     },
-    email: {
+    email_add: {
       type: String,
       required: true,
+      maxlength: 25,
       unique: true,
     },
     password: {
       type: String,
       required: true,
+      maxlength: 15,
     },
-    isAdmin:{
+    infra_type: {
+      type: String,
+      required: true,
+    },
+    hasSetQuest: {
       type: Boolean,
       default: false,
     },
-    isModerator:{
+    slct_quest: {
+      type: String,
+    },
+    quest_ans: {
+      type: String,
+      maxlength: 25,
+    },
+    email_toggled: {
+      type: Boolean,
+      default: true,
+    },
+    image_toggled: {
+      type: Boolean,
+      default: true,
+    },
+    accntnum_toggled: {
+      type: Boolean,
+      default: true,
+    },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
+    isModerator: {
       type: Boolean,
       default: false,
     },
@@ -29,6 +59,7 @@ const userSchema = mongoose.Schema(
     timestamps: true,
   }
 );
+
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
