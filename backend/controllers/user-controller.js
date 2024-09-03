@@ -92,7 +92,7 @@ const moderatorUser = asyncHandler(async (req, res) => {
 // @route   POST /api/users
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password, isAdmin = false, isModerator = false } = req.body;
+  const { name, email, password, isAdmin = false, isModerator, infra_type } = req.body;
 
   const userExists = await User.findOne({ email });
 
@@ -107,6 +107,7 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     isAdmin,
     isModerator,
+    infra_type,
   });
 
   if (user) {
@@ -118,6 +119,7 @@ const registerUser = asyncHandler(async (req, res) => {
       email: user.email,
       isAdmin: user.isAdmin,
       isModerator: user.isModerator,
+      infra_type: user.infra_type,
     });
   } else {
     res.status(400);
