@@ -90,10 +90,12 @@ export function RegisterForm() {
       }).unwrap();
   
       toast.success("Moderator account added successfully!");
+      form.reset()
       navigate("/admin/dashboard");
     } catch (err) {
       console.log(err);
-      toast.error("An error occurred during registration.");
+      const errorMessage = err.data?.message || "An error occurred during registration.";
+      toast.error(errorMessage);
     }
   };
   

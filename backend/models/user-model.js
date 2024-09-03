@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
+import InfrastructureType from "./infrastructureType-model.js";
 const userSchema = mongoose.Schema(
   {
     name: {
@@ -20,7 +21,8 @@ const userSchema = mongoose.Schema(
       maxlength: 15,
     },
     infra_type: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'InfrastructureType',
       required: true,
     },
     hasSetQuest: {
