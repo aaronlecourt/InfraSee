@@ -20,7 +20,7 @@ import { Archives } from "@/components/elements/archives";
 import { Reports } from "@/components/elements/reports";
 import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
-import { Helmet } from "react-helmet";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 
 const ModeratorDashboardScreen = () => {
   const navigate = useNavigate();
@@ -64,71 +64,76 @@ const ModeratorDashboardScreen = () => {
   };
 
   return (
-    <div>
-      <Helmet>
-        <title>{'Moderator Dashboard | InfraSee'}</title>
-      </Helmet>
-      <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400">
-        <div className="w-[6rem] mt-1 cursor-pointer" onClick={handleLogoClick}>
-          <img src="/infrasee_black.png" alt="Infrasee Logomark" />
-        </div>
-        <div className="relative">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Avatar className="h-8 w-8 hover:ring-4 ring-slate-300 cursor-pointer">
-                <AvatarFallback className="text-white bg-slate-950">
-                  M
-                </AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 mr-3">
-              {userInfo && (
-                <DropdownMenuLabel>
-                  <p>{userInfo.name}</p>
-                  <small className="text-gray-500 font-normal">
-                    {userInfo.email}
-                  </small>
-                </DropdownMenuLabel>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => navigate("/settings")}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
+    <HelmetProvider>
+      <div>
+        <Helmet>
+          <title>{"Moderator Dashboard | InfraSee"}</title>
+        </Helmet>
+        <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400">
+          <div
+            className="w-[6rem] mt-1 cursor-pointer"
+            onClick={handleLogoClick}
+          >
+            <img src="/infrasee_black.png" alt="Infrasee Logomark" />
+          </div>
+          <div className="relative">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar className="h-8 w-8 hover:ring-4 ring-slate-300 cursor-pointer">
+                  <AvatarFallback className="text-white bg-slate-950">
+                    M
+                  </AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 mr-3">
+                {userInfo && (
+                  <DropdownMenuLabel>
+                    <p>{userInfo.name}</p>
+                    <small className="text-gray-500 font-normal">
+                      {userInfo.email}
+                    </small>
+                  </DropdownMenuLabel>
+                )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Logout</span>
-                  <DropdownMenuShortcut>⌘+L</DropdownMenuShortcut>
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </header>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onClick={() => navigate("/settings")}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                    <DropdownMenuShortcut>⌘+L</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </header>
 
-      <main className="p-4">
-        <h1 className="text-3xl mb-1">Dashboard</h1>
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="flex items-center justify-center flex-wrap gap-2 h-auto max-w-64">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="reports">Reports</TabsTrigger>
-            <TabsTrigger value="archives">Archives</TabsTrigger>
-          </TabsList>
-          <TabsContent value="overview">
-            <Overview goToReportsTab={goToReportsTab} />{" "}
-            {/* Pass function as prop */}
-          </TabsContent>
-          <TabsContent value="reports">
-            <Reports />
-          </TabsContent>
-          <TabsContent value="archives">
-            <Archives />
-          </TabsContent>
-        </Tabs>
-      </main>
-    </div>
+        <main className="p-4">
+          <h1 className="text-3xl mb-1">Dashboard</h1>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="flex items-center justify-center flex-wrap gap-2 h-auto max-w-64">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="reports">Reports</TabsTrigger>
+              <TabsTrigger value="archives">Archives</TabsTrigger>
+            </TabsList>
+            <TabsContent value="overview">
+              <Overview goToReportsTab={goToReportsTab} />{" "}
+              {/* Pass function as prop */}
+            </TabsContent>
+            <TabsContent value="reports">
+              <Reports />
+            </TabsContent>
+            <TabsContent value="archives">
+              <Archives />
+            </TabsContent>
+          </Tabs>
+        </main>
+      </div>
+    </HelmetProvider>
   );
 };
 

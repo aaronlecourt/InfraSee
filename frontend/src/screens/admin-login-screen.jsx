@@ -18,7 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Helmet } from "react-helmet";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 
 // Validation schema
 const formSchema = z.object({
@@ -59,7 +59,6 @@ function AdminLoginScreen() {
   const { handleSubmit, control } = form;
   const [passwordVisible, setPasswordVisible] = useState(false); // State for password visibility
 
-
   useEffect(() => {
     if (userInfo && userInfo?.isAdmin) {
       navigate("/admin/dashboard");
@@ -82,83 +81,88 @@ function AdminLoginScreen() {
   };
 
   return (
-    <div>
-      <Helmet>
-        <title>{"Admin Login | InfraSee"}</title>
-      </Helmet>
-      <header className="fixed top-0 right-0 p-4 flex items-center justify-between z-50 w-full ">
-        <div className="w-[6rem] mt-1 cursor-pointer" onClick={handleLogoClick}>
-          <img src="/infrasee_black.png" alt="Infrasee Logomark" />
-        </div>
-      </header>
+    <HelmetProvider>
+      <div>
+        <Helmet>
+          <title>{"Admin Login | InfraSee"}</title>
+        </Helmet>
+        <header className="fixed top-0 right-0 p-4 flex items-center justify-between z-50 w-full ">
+          <div
+            className="w-[6rem] mt-1 cursor-pointer"
+            onClick={handleLogoClick}
+          >
+            <img src="/infrasee_black.png" alt="Infrasee Logomark" />
+          </div>
+        </header>
 
-      <main className="flex items-center justify-center min-h-screen bg-[url('/bg.jpg')] bg-cover bg-no-repeat bg-top">
-        <div className="bg-white/70 p-8 rounded-lg w-full max-w-md">
-          <h1 className="text-3xl font-bold mb-6 text-center text-gray-900">
-            Admin Login
-          </h1>
+        <main className="flex items-center justify-center min-h-screen bg-[url('/bg.jpg')] bg-cover bg-no-repeat bg-top">
+          <div className="bg-white/70 p-8 rounded-lg w-full max-w-md">
+            <h1 className="text-3xl font-bold mb-6 text-center text-gray-900">
+              Admin Login
+            </h1>
 
-          <Form {...form}>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="font-bold">Email Address</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="Enter your email"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="font-bold">Password</FormLabel>
-                    <FormControl>
-                      <div className="relative">
+            <Form {...form}>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-bold">Email Address</FormLabel>
+                      <FormControl>
                         <Input
-                          type={passwordVisible ? "text" : "password"}
-                          placeholder="Enter your password"
+                          type="email"
+                          placeholder="Enter your email"
                           {...field}
                         />
-                        <button
-                          type="button"
-                          onClick={() => setPasswordVisible(!passwordVisible)}
-                          className="absolute inset-y-0 right-3 flex items-center text-sm"
-                        >
-                          {passwordVisible ? (
-                            <EyeOff size={18} />
-                          ) : (
-                            <Eye size={18} />
-                          )}
-                        </button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <div className="flex items-center justify-between">
-                <Button type="submit" className="w-full">
-                  Sign In
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </div>
-      </main>
-    </div>
+                <FormField
+                  control={control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-bold">Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={passwordVisible ? "text" : "password"}
+                            placeholder="Enter your password"
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setPasswordVisible(!passwordVisible)}
+                            className="absolute inset-y-0 right-3 flex items-center text-sm"
+                          >
+                            {passwordVisible ? (
+                              <EyeOff size={18} />
+                            ) : (
+                              <Eye size={18} />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex items-center justify-between">
+                  <Button type="submit" className="w-full">
+                    Sign In
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </div>
+        </main>
+      </div>
+    </HelmetProvider>
   );
 }
 

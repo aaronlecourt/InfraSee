@@ -6,8 +6,15 @@ import { User, LogOut, FileStack, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
-import { Helmet } from "react-helmet";
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { Helmet, HelmetProvider } from "react-helmet-async";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { RegisterForm } from "@/components/elements/register-form";
 
 const AdminDashboardScreen = () => {
@@ -16,7 +23,7 @@ const AdminDashboardScreen = () => {
   const [activeButton, setActiveButton] = useState("accounts");
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
-  
+
   // Dialog state
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -55,177 +62,180 @@ const AdminDashboardScreen = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-5">
-      <Helmet>
-        <title>{"Admin Dashboard | InfraSee"}</title>
-      </Helmet>
-      {/* desktop header */}
-      <header className="h-screen border-r p-3 xl:block hidden">
-        <div className="border rounded-lg p-2 flex gap-2 items-center justify-start">
-          <div>
-            <Avatar className="h-8 w-8 hover:ring-4 ring-slate-300 cursor-pointer">
-              <AvatarFallback className="text-white bg-slate-950">
-                A
-              </AvatarFallback>
-            </Avatar>
+    <HelmetProvider>
+      <div className="grid grid-cols-1 xl:grid-cols-5">
+        <Helmet>
+          <title>{"Admin Dashboard | InfraSee"}</title>
+        </Helmet>
+        {/* desktop header */}
+        <header className="h-screen border-r p-3 xl:block hidden">
+          <div className="border rounded-lg p-2 flex gap-2 items-center justify-start">
+            <div>
+              <Avatar className="h-8 w-8 hover:ring-4 ring-slate-300 cursor-pointer">
+                <AvatarFallback className="text-white bg-slate-950">
+                  A
+                </AvatarFallback>
+              </Avatar>
+            </div>
+            {userInfo && (
+              <div className="flex flex-col">
+                <p className="font-bold leading-none">{userInfo.name}</p>
+                <p className="text-gray-500 font-normal text-sm leading-none">
+                  {userInfo.email}
+                </p>
+              </div>
+            )}
           </div>
-          {userInfo && (
-            <div className="flex flex-col">
-              <p className="font-bold leading-none">{userInfo.name}</p>
-              <p className="text-gray-500 font-normal text-sm leading-none">
-                {userInfo.email}
-              </p>
-            </div>
-          )}
-        </div>
-        <div className="flex flex-col gap-2 mt-2">
-          <Button
-            variant={activeButton === "accounts" ? "default" : "ghost"}
-            className={`text-sm w-full flex justify-between ${
-              activeButton === "accounts" ? "bg-black text-white" : ""
-            }`}
-            onClick={() => handleButtonClick("accounts")}
-          >
-            <div className="flex items-center">
-              <User className="mr-2 h-5 w-5" />
-              <span>Accounts</span>
-            </div>
-            <div>0</div>
-          </Button>
-
-          <Button
-            variant={activeButton === "reports" ? "default" : "ghost"}
-            className={`text-sm w-full flex justify-between ${
-              activeButton === "reports" ? "bg-black text-white" : ""
-            }`}
-            onClick={() => handleButtonClick("reports")}
-          >
-            <div className="flex items-center">
-              <FileStack className="mr-2 h-5 w-5" />
-              <span>Reports</span>
-            </div>
-            <div>0</div>
-          </Button>
-
-          <Button
-            variant="ghost"
-            className="text-sm w-full flex justify-between"
-            onClick={handleLogout}
-          >
-            <div className="flex items-center">
-              <LogOut className="mr-2 h-5 w-5" />
-              <span>Log out</span>
-            </div>
-            <div className="text-xs font-normal opacity-60">⌘+L</div>
-          </Button>
-        </div>
-      </header>
-
-      {/* mobile header */}
-      <header className="border-b p-3 xl:hidden block">
-        <div className="border rounded-lg p-2 flex gap-2 items-center justify-start">
-          <div>
-            <Avatar className="h-8 w-8 hover:ring-4 ring-slate-300 cursor-pointer">
-              <AvatarFallback className="text-white bg-slate-950">
-                A
-              </AvatarFallback>
-            </Avatar>
-          </div>
-          {userInfo && (
-            <div className="flex flex-col">
-              <p className="font-bold leading-none">{userInfo.name}</p>
-              <p className="text-gray-500 font-normal text-sm leading-none">
-                {userInfo.email}
-              </p>
-            </div>
-          )}
-        </div>
-        <div className="flex justify-between gap-2 mt-2">
-          <div className="flex">
+          <div className="flex flex-col gap-2 mt-2">
             <Button
               variant={activeButton === "accounts" ? "default" : "ghost"}
-              className={`text-sm w-full gap-2 flex justify-between ${
+              className={`text-sm w-full flex justify-between ${
                 activeButton === "accounts" ? "bg-black text-white" : ""
               }`}
               onClick={() => handleButtonClick("accounts")}
             >
               <div className="flex items-center">
                 <User className="mr-2 h-5 w-5" />
-                <span className="hidden sm:block">Accounts</span>
+                <span>Accounts</span>
               </div>
               <div>0</div>
             </Button>
 
             <Button
               variant={activeButton === "reports" ? "default" : "ghost"}
-              className={`text-sm w-full gap-2 flex justify-between ${
+              className={`text-sm w-full flex justify-between ${
                 activeButton === "reports" ? "bg-black text-white" : ""
               }`}
               onClick={() => handleButtonClick("reports")}
             >
               <div className="flex items-center">
                 <FileStack className="mr-2 h-5 w-5" />
-                <span className="hidden sm:block">Reports</span>
+                <span>Reports</span>
               </div>
               <div>0</div>
             </Button>
-          </div>
 
-          <div>
             <Button
               variant="ghost"
-              className="text-sm w-full flex gap-3 justify-between"
+              className="text-sm w-full flex justify-between"
               onClick={handleLogout}
             >
               <div className="flex items-center">
                 <LogOut className="mr-2 h-5 w-5" />
-                <span className="hidden sm:block">Log out</span>
+                <span>Log out</span>
               </div>
-              <div className="text-xs font-normal opacity-60 hidden sm:block">
-                ⌘+L
-              </div>
+              <div className="text-xs font-normal opacity-60">⌘+L</div>
             </Button>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Main content */}
-      <main className="xl:col-span-4 p-4">
-        <div className="mb-5">
-          <h1 className="text-2xl font-bold mb-1 text-gray-900">Accounts</h1>
-          <p className="text-sm text-gray-500">
-            Manage the moderator accounts here.
-          </p>
-        </div>
-        <div className="flex justify-between">
-          <p>filters here</p>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger>
+        {/* mobile header */}
+        <header className="border-b p-3 xl:hidden block">
+          <div className="border rounded-lg p-2 flex gap-2 items-center justify-start">
+            <div>
+              <Avatar className="h-8 w-8 hover:ring-4 ring-slate-300 cursor-pointer">
+                <AvatarFallback className="text-white bg-slate-950">
+                  A
+                </AvatarFallback>
+              </Avatar>
+            </div>
+            {userInfo && (
+              <div className="flex flex-col">
+                <p className="font-bold leading-none">{userInfo.name}</p>
+                <p className="text-gray-500 font-normal text-sm leading-none">
+                  {userInfo.email}
+                </p>
+              </div>
+            )}
+          </div>
+          <div className="flex justify-between gap-2 mt-2">
+            <div className="flex">
               <Button
-                variant="filter1"
-                size="filter"
-                className="flex items-center gap-2"
+                variant={activeButton === "accounts" ? "default" : "ghost"}
+                className={`text-sm w-full gap-2 flex justify-between ${
+                  activeButton === "accounts" ? "bg-black text-white" : ""
+                }`}
+                onClick={() => handleButtonClick("accounts")}
               >
-                <Plus size={15} />
-                <p>New Account</p>
+                <div className="flex items-center">
+                  <User className="mr-2 h-5 w-5" />
+                  <span className="hidden sm:block">Accounts</span>
+                </div>
+                <div>0</div>
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Account</DialogTitle>
-                <small className="text-gray-500">Add a new moderator account by filling up the form below. Click add when you're done.</small>
-                <DialogClose onClick={() => setIsDialogOpen(false)} />
-              </DialogHeader>
-              {/* register form component here */}
-              <RegisterForm/>
-            </DialogContent>
-          </Dialog>
-        </div>
-        <div>
-          table here
-        </div>
-      </main>
-    </div>
+
+              <Button
+                variant={activeButton === "reports" ? "default" : "ghost"}
+                className={`text-sm w-full gap-2 flex justify-between ${
+                  activeButton === "reports" ? "bg-black text-white" : ""
+                }`}
+                onClick={() => handleButtonClick("reports")}
+              >
+                <div className="flex items-center">
+                  <FileStack className="mr-2 h-5 w-5" />
+                  <span className="hidden sm:block">Reports</span>
+                </div>
+                <div>0</div>
+              </Button>
+            </div>
+
+            <div>
+              <Button
+                variant="ghost"
+                className="text-sm w-full flex gap-3 justify-between"
+                onClick={handleLogout}
+              >
+                <div className="flex items-center">
+                  <LogOut className="mr-2 h-5 w-5" />
+                  <span className="hidden sm:block">Log out</span>
+                </div>
+                <div className="text-xs font-normal opacity-60 hidden sm:block">
+                  ⌘+L
+                </div>
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        {/* Main content */}
+        <main className="xl:col-span-4 p-4">
+          <div className="mb-5">
+            <h1 className="text-2xl font-bold mb-1 text-gray-900">Accounts</h1>
+            <p className="text-sm text-gray-500">
+              Manage the moderator accounts here.
+            </p>
+          </div>
+          <div className="flex justify-between">
+            <p>filters here</p>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger>
+                <Button
+                  variant="filter1"
+                  size="filter"
+                  className="flex items-center gap-2"
+                >
+                  <Plus size={15} />
+                  <p>New Account</p>
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New Account</DialogTitle>
+                  <small className="text-gray-500">
+                    Add a new moderator account by filling up the form below.
+                    Click add when you're done.
+                  </small>
+                  <DialogClose onClick={() => setIsDialogOpen(false)} />
+                </DialogHeader>
+                {/* register form component here */}
+                <RegisterForm />
+              </DialogContent>
+            </Dialog>
+          </div>
+          <div>table here</div>
+        </main>
+      </div>
+    </HelmetProvider>
   );
 };
 
