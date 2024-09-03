@@ -5,7 +5,7 @@ dotenv.config();
 import connectDB from './config/db.js';
 import cookieParser from 'cookie-parser';
 import { notFound, errorHandler } from './middleware/error-middleware.js';
-import userRoutes from './routes/user-routes.js';
+import userRoutes from './routes/userRoutes.js';
 import infrastructureRoutes from './routes/infrastructureRoutes.js'; // Import infrastructure routes
 
 const port = process.env.PORT || 5000;
