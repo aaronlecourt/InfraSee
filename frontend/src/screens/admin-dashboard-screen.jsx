@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { User, LogOut, FileStack } from "lucide-react";
+import { User, LogOut, FileStack, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
 import { Helmet } from "react-helmet";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { RegisterForm } from "@/components/elements/register-form";
 
 const AdminDashboardScreen = () => {
   const navigate = useNavigate();
@@ -14,6 +16,9 @@ const AdminDashboardScreen = () => {
   const [activeButton, setActiveButton] = useState("accounts");
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
+  
+  // Dialog state
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -33,12 +38,11 @@ const AdminDashboardScreen = () => {
   const handleButtonClick = (buttonName) => {
     setActiveButton(buttonName);
     if (buttonName === "accounts") {
-      navigate('/admin/dashboard');
+      navigate("/admin/dashboard");
     } else if (buttonName === "reports") {
-      navigate('/admin/reports');
+      navigate("/admin/reports");
     }
   };
-  
 
   const handleLogout = async () => {
     try {
@@ -187,7 +191,39 @@ const AdminDashboardScreen = () => {
 
       {/* Main content */}
       <main className="xl:col-span-4 p-4">
-        {/* Your main content goes here */}
+        <div className="mb-5">
+          <h1 className="text-2xl font-bold mb-1 text-gray-900">Accounts</h1>
+          <p className="text-sm text-gray-500">
+            Manage the moderator accounts here.
+          </p>
+        </div>
+        <div className="flex justify-between">
+          <p>filters here</p>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger>
+              <Button
+                variant="filter1"
+                size="filter"
+                className="flex items-center gap-2"
+              >
+                <Plus size={15} />
+                <p>New Account</p>
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Account</DialogTitle>
+                <small className="text-gray-500">Add a new moderator account by filling up the form below. Click add when you're done.</small>
+                <DialogClose onClick={() => setIsDialogOpen(false)} />
+              </DialogHeader>
+              {/* register form component here */}
+              <RegisterForm/>
+            </DialogContent>
+          </Dialog>
+        </div>
+        <div>
+          table here
+        </div>
       </main>
     </div>
   );
