@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
+  DialogDescription
 } from "@/components/ui/dialog";
 import { RegisterForm } from "@/components/elements/register-form";
 
@@ -221,10 +222,9 @@ const AdminDashboardScreen = () => {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Create New Account</DialogTitle>
-                  <small className="text-gray-500">
-                    Add a new moderator account by filling up the form below.
-                    Click add when you're done.
-                  </small>
+                  <DialogDescription>Add a new moderator account by filling up the form below.
+                  Click add when you're done.</DialogDescription>
+                    
                   <DialogClose onClick={() => setIsDialogOpen(false)} />
                 </DialogHeader>
                 {/* register form component here */}

@@ -102,7 +102,7 @@ export default function ReportForm() {
                       className="absolute inset-0 opacity-0 cursor-pointer"
                     />
                   </FormControl>
-                  <Button
+                  <Button asChild
                     type="button"
                     variant="secondary"
                     className="z-10 px-4 rounded"
