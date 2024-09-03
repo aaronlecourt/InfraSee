@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,6 +16,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Helmet } from "react-helmet";
 import { Eye, EyeOff } from "lucide-react";
+import axios from "axios";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Validation schema
 const formSchema = z.object({
@@ -23,7 +31,8 @@ const formSchema = z.object({
   email: z
     .string()
     .min(1, "Email is required.")
-    .email("Invalid email address."),
+    .email("Invalid email address.")
+    .regex(/@m\.infrasee\.com$/, "Email must be from the domain @m.infrasee.com"),
   password: z
     .string()
     .min(1, "Password is required.")
@@ -47,8 +56,23 @@ export function RegisterForm() {
     },
   });
 
-  const { handleSubmit, control } = form;
+  const { handleSubmit, control, setValue } = form;
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [infrastructureTypes, setInfrastructureTypes] = useState([]);
+
+  // Fetch infrastructure types from the API
+  useEffect(() => {
+    const fetchInfrastructureTypes = async () => {
+      try {
+        const response = await axios.get("/api/infrastructure-types");
+        setInfrastructureTypes(response.data);
+      } catch (error) {
+        toast.error("Failed to load infrastructure types.");
+      }
+    };
+
+    fetchInfrastructureTypes();
+  }, []);
 
   const onSubmit = async (data) => {
     try {
@@ -72,7 +96,7 @@ export function RegisterForm() {
               <FormItem>
                 <div className="flex justify-between items-center">
                   <FormLabel>Name</FormLabel>
-                  <FormMessage />
+                  <FormMessage className="text-right"/>
                 </div>
                 <FormControl>
                   <Input placeholder="John Doe" {...field} />
@@ -88,12 +112,12 @@ export function RegisterForm() {
               <FormItem>
                 <div className="flex justify-between items-center">
                   <FormLabel>Email</FormLabel>
-                  <FormMessage />
+                  <FormMessage className="text-right"/>
                 </div>
                 <FormControl>
                   <Input
                     type="email"
-                    placeholder="sample@m.infrasee.com"
+                    placeholder="user@m.infrasee.com"
                     {...field}
                   />
                 </FormControl>
@@ -108,13 +132,13 @@ export function RegisterForm() {
               <FormItem>
                 <div className="flex justify-between items-center">
                   <FormLabel>Password</FormLabel>
-                  <FormMessage />
+                  <FormMessage className="text-right"/>
                 </div>
                 <FormControl>
                   <div className="relative">
                     <Input
                       type={passwordVisible ? "text" : "password"}
-                      placeholder="********"
+                      placeholder="••••••••"
                       {...field}
                     />
                     <button
@@ -141,15 +165,39 @@ export function RegisterForm() {
               <FormItem>
                 <div className="flex justify-between items-center">
                   <FormLabel>Infrastructure Type</FormLabel>
-                  <FormMessage />
+                  <FormMessage className="text-right"/>
                 </div>
                 <FormControl>
-                  <Input {...field} placeholder="Select infrastructure type" />
+                  <Select
+                    value={field.value}
+                    onValueChange={(value) =>
+                      setValue("infrastructureType", value)
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select infrastructure type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {infrastructureTypes.length === 0 ? (
+                        <SelectItem value="notypes" disabled>
+                          No types available
+                        </SelectItem>
+                      ) : (
+                        <>
+                          {infrastructureTypes.map((type) => (
+                            <SelectItem key={type._id} value={type._id}>
+                              {type.infra_name}
+                            </SelectItem>
+                          ))}
+                        </>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </FormControl>
               </FormItem>
             )}
           />
-
+          
           <Button type="submit" className="w-full mt-4">
             Register
           </Button>
