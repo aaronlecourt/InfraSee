@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Unlink } from "lucide-react";
 import { Outlet } from "react-router-dom";
-import { Helmet } from "react-helmet";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 
 const AdminRoute = () => {
   const { userInfo } = useSelector((state) => state.auth);
