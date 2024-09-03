@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useRegisterMutation } from "@/slices/users-api-slice";
 
 // Validation schema
 const formSchema = z.object({
@@ -31,7 +32,10 @@ const formSchema = z.object({
     .string()
     .min(1, "Email is required.")
     .email("Invalid email address.")
-    .regex(/@m\.infrasee\.com$/, "Email must be from the domain @m.infrasee.com"),
+    .regex(
+      /@m\.infrasee\.com$/,
+      "Email must be from the domain @m.infrasee.com"
+    ),
   password: z
     .string()
     .min(1, "Password is required.")
@@ -45,6 +49,7 @@ const formSchema = z.object({
 
 export function RegisterForm() {
   const navigate = useNavigate();
+  const [register] = useRegisterMutation();
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -74,15 +79,24 @@ export function RegisterForm() {
   }, []);
 
   const onSubmit = async (data) => {
+    const { name, email, password, infrastructureType } = data;
+  
     try {
-      console.log("Form data:", data);
-      // Handle form submission logic here
+      const res = await register({
+        name,
+        email,
+        password,
+        infra_type: infrastructureType,
+      }).unwrap();
+  
       toast.success("Moderator account added successfully!");
       navigate("/admin/dashboard");
     } catch (err) {
+      console.log(err);
       toast.error("An error occurred during registration.");
     }
   };
+  
 
   return (
     <div>
@@ -95,7 +109,7 @@ export function RegisterForm() {
               <FormItem>
                 <div className="flex justify-between items-center">
                   <FormLabel>Name</FormLabel>
-                  <FormMessage className="text-right"/>
+                  <FormMessage className="text-right" />
                 </div>
                 <FormControl>
                   <Input placeholder="John Doe" {...field} />
@@ -111,7 +125,7 @@ export function RegisterForm() {
               <FormItem>
                 <div className="flex justify-between items-center">
                   <FormLabel>Email</FormLabel>
-                  <FormMessage className="text-right"/>
+                  <FormMessage className="text-right" />
                 </div>
                 <FormControl>
                   <Input
@@ -131,7 +145,7 @@ export function RegisterForm() {
               <FormItem>
                 <div className="flex justify-between items-center">
                   <FormLabel>Password</FormLabel>
-                  <FormMessage className="text-right"/>
+                  <FormMessage className="text-right" />
                 </div>
                 <FormControl>
                   <div className="relative">
@@ -164,7 +178,7 @@ export function RegisterForm() {
               <FormItem>
                 <div className="flex justify-between items-center">
                   <FormLabel>Infrastructure Type</FormLabel>
-                  <FormMessage className="text-right"/>
+                  <FormMessage className="text-right" />
                 </div>
                 <FormControl>
                   <Select
@@ -196,7 +210,7 @@ export function RegisterForm() {
               </FormItem>
             )}
           />
-          
+
           <Button type="submit" className="w-full mt-4">
             Register
           </Button>

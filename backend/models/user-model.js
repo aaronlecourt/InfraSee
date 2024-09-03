@@ -8,7 +8,7 @@ const userSchema = mongoose.Schema(
       required: true,
       maxlength: 50,
     },
-    email_add: {
+    email: {
       type: String,
       required: true,
       maxlength: 25,
@@ -52,7 +52,7 @@ const userSchema = mongoose.Schema(
     },
     isModerator: {
       type: Boolean,
-      default: false,
+      default: true,
     },
   },
   {
