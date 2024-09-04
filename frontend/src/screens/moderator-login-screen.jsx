@@ -18,9 +18,24 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"; // Import Sheet components
+import {
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet"; // Import Sheet components
 import { Menu } from "lucide-react"; // Use Lucide's Menu icon
 import { Helmet, HelmetProvider } from "react-helmet-async";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from "@/components/ui/dialog"; // Import Dialog components
 
 // Validation schema
 const formSchema = z.object({
@@ -61,6 +76,9 @@ function ModeratorLoginScreen() {
   const { handleSubmit, control } = form;
   const [passwordVisible, setPasswordVisible] = useState(false); // State for password visibility
   const [isSheetOpen, setSheetOpen] = useState(false); // State to control the Sheet
+  const [isResetPasswordDialogOpen, setResetPasswordDialogOpen] =
+    useState(false); // State for Reset Password Dialog
+  const [isTermsDialogOpen, setTermsDialogOpen] = useState(false); // State for Terms and Conditions Dialog
 
   useEffect(() => {
     if (userInfo && userInfo?.isModerator) {
@@ -111,6 +129,10 @@ function ModeratorLoginScreen() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="top">
+                <SheetHeader className="hidden">
+                  <SheetTitle></SheetTitle>
+                  <SheetDescription></SheetDescription>
+                </SheetHeader>
                 <nav className="grid gap-4 py-1">
                   <Button onClick={handleContactClick} variant="ghost">
                     Contact Us
@@ -129,7 +151,6 @@ function ModeratorLoginScreen() {
         </div>
 
         <main className="">
-          {/* {" "} */}
           {/* Padding top to avoid overlap with fixed header */}
           <div className="flex flex-col md:flex-row h-screen">
             {/* Left Side */}
@@ -163,6 +184,7 @@ function ModeratorLoginScreen() {
                             <Input
                               type="email"
                               placeholder="Enter your email"
+                              autoComplete="email"
                               {...field}
                             />
                           </FormControl>
@@ -182,6 +204,7 @@ function ModeratorLoginScreen() {
                               <Input
                                 type={passwordVisible ? "text" : "password"} // Toggle between text and password
                                 placeholder="Enter your password"
+                                autoComplete="current-password"
                                 {...field}
                               />
                               <button
@@ -204,15 +227,48 @@ function ModeratorLoginScreen() {
                       )}
                     />
                     <div className="w-full flex items-center justify-end text-right">
-                      <Button
-                        variant="ghost"
-                        className="flex items-center justify-end text-right"
+                      <Dialog
+                        open={isResetPasswordDialogOpen}
+                        onOpenChange={setResetPasswordDialogOpen}
                       >
-                        <span className="flex items-center space-x-2">
-                          <Lock size={16} className="text-gray-500" />{" "}
-                          <span className="text-gray-500">Reset Password</span>
-                        </span>
-                      </Button>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="link"
+                            className="flex items-center justify-end text-right"
+                          >
+                            <span className="flex items-center space-x-2">
+                              <Lock size={16} className="text-gray-500" />{" "}
+                              <span className="text-gray-500">
+                                Reset Password
+                              </span>
+                            </span>
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogTitle>Reset Password</DialogTitle>
+                          <DialogDescription>
+                            Enter your email to receive password reset
+                            instructions.
+                          </DialogDescription>
+                          {/* <div className="mt-4">
+                            <Input
+                              type="email"
+                              placeholder="Enter your email"
+                              className="w-full"
+                            />
+                            <Button
+                              className="mt-4"
+                              onClick={() => {
+                                // Add your password reset logic here
+                                setResetPasswordDialogOpen(false);
+                                toast.success("Reset instructions sent!"); // Notify user
+                              }}
+                            >
+                              Send Instructions
+                            </Button>
+                          </div> */}
+                        </DialogContent>
+                      </Dialog>
                     </div>
 
                     <Button type="submit" className="w-full">
@@ -224,12 +280,23 @@ function ModeratorLoginScreen() {
                   <span className="md:mt-2">
                     By clicking sign in, you agree to our
                   </span>
-                  <a
-                    href="/terms-and-conditions"
-                    className="underline hover:text-gray-900 md:mt-2"
+                  <Dialog
+                    open={isTermsDialogOpen}
+                    onOpenChange={setTermsDialogOpen}
                   >
-                    Terms and Conditions
-                  </a>
+                    <DialogTrigger asChild>
+                      <a
+                        href="#"
+                        className="underline hover:text-gray-900 md:mt-2"
+                      >
+                        Terms and Conditions
+                      </a>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogTitle>Terms and Conditions</DialogTitle>
+                      <DialogDescription>hello</DialogDescription>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
             </div>
