@@ -23,6 +23,7 @@ app.use(cookieParser());
 app.use('/api/users', userRoutes);
 app.use('/api/infrastructure-types', infrastructureRoutes); // Use infrastructure routes
 
+
 if (process.env.NODE_ENV === 'production') {
   const __dirname = path.resolve();
   app.use(express.static(path.join(__dirname, '/frontend/dist')));

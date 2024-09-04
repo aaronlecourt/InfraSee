@@ -189,6 +189,20 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   }
 });
 
+
+// @desc    Get moderators by infrastructure type
+// @route   GET /api/moderators
+// @access  Public or Private based on your requirement
+const getModerators = asyncHandler(async (req, res) => {
+  const { infra_type } = req.query; // Extract infrastructure type from query parameters
+
+  // Fetch moderators based on the infrastructure type ObjectId
+  const moderators = await User.find({ isModerator: true, infrastructureType: infra_type });
+
+  res.json(moderators);
+});
+
+
 export {
   authUser,
   adminUser,
@@ -197,4 +211,5 @@ export {
   logoutUser,
   getUserProfile,
   updateUserProfile,
+  getModerators
 };
