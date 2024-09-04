@@ -114,10 +114,10 @@ function ReportScreen() {
                     infrastructure.
                   </p>
                 </div>
-                <div className="flex gap-2 w-full flex-row sm:flex-col">
+                <div className="flex gap-2 w-full flex-row sm:flex-col mb-2">
                   <ComboBoxResponsive onSelect={handleAccountSelect} />
                   <Button
-                    className="w-full mb-2"
+                    className="w-full h-auto"
                     disabled={!accountSelected}
                     onClick={handleFileReportClick}
                   >
