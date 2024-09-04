@@ -209,7 +209,7 @@ const AdminDashboardScreen = () => {
           <div className="flex justify-between">
             <p>filters here</p>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger>
+              <DialogTrigger asChild>
                 <Button
                   variant="filter1"
                   size="filter"
