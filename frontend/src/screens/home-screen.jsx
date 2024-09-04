@@ -31,7 +31,7 @@ function HomeScreen() {
     <HelmetProvider>
       <div className="bg-[url('../bg.jpg')] bg-cover bg-no-repeat bg-bottom min-h-screen flex flex-col overflow-hidden">
         <Helmet>
-          <title>{"Home | InfraSee"}</title>
+          <title>{"InfraSee | Home"}</title>
         </Helmet>
         <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400">
           <div

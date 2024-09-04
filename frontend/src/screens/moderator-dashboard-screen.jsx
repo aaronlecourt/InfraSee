@@ -67,7 +67,7 @@ const ModeratorDashboardScreen = () => {
     <HelmetProvider>
       <div>
         <Helmet>
-          <title>{"Moderator Dashboard | InfraSee"}</title>
+          <title>{"InfraSee | Moderator Dashboard"}</title>
         </Helmet>
         <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400">
           <div

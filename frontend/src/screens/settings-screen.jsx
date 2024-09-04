@@ -6,7 +6,7 @@ function SettingsScreen() {
     <HelmetProvider>
       <div className="min-h-screen bg-white flex items-center justify-center p-6">
         <Helmet>
-          <title>{"Settings | InfraSee"}</title>
+          <title>{"InfraSee | Settings"}</title>
         </Helmet>
         <div className="bg-gray-100 p-8 rounded-lg shadow-lg w-full max-w-md">
           <h1 className="text-3xl font-bold mb-6 text-center text-gray-900">

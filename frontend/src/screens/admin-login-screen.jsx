@@ -84,7 +84,7 @@ function AdminLoginScreen() {
     <HelmetProvider>
       <div>
         <Helmet>
-          <title>{"Admin Login | InfraSee"}</title>
+          <title>{"InfraSee | Admin Login"}</title>
         </Helmet>
         <header className="fixed top-0 right-0 p-4 flex items-center justify-between z-50 w-full ">
           <div

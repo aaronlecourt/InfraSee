@@ -60,7 +60,7 @@ function ReportScreen() {
     <HelmetProvider>
       <div className="flex flex-col min-h-screen">
         <Helmet>
-          <title>{"Make a Report | InfraSee"}</title>
+          <title>{"InfraSee | Make a Report"}</title>
         </Helmet>
         <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400">
           <div

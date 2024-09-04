@@ -66,7 +66,7 @@ const AdminDashboardScreen = () => {
     <HelmetProvider>
       <div className="grid grid-cols-1 xl:grid-cols-5">
         <Helmet>
-          <title>{"Admin Dashboard | InfraSee"}</title>
+          <title>{"InfraSee | Admin Dashboard"}</title>
         </Helmet>
         {/* desktop header */}
         <header className="h-screen border-r p-3 xl:block hidden">

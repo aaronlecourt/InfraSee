@@ -21,7 +21,7 @@ const NotFoundPage = () => {
     <HelmetProvider>
       <div className="min-h-screen w-screen flex items-center justify-center bg-[url('/bg.jpg')] bg-cover bg-no-repeat">
         <Helmet>
-          <title>{"InfraSee - Not Found"}</title>
+          <title>{"InfraSee | Not Found"}</title>
         </Helmet>
 
         <div className=" p-8 rounded-lg text-center max-w-md w-full">

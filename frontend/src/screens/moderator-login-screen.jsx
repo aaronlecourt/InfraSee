@@ -91,7 +91,7 @@ function ModeratorLoginScreen() {
     <HelmetProvider>
       <div>
         <Helmet>
-          <title>{"Moderator Login | InfraSee"}</title>
+          <title>{"InfraSee | Moderator Login"}</title>
         </Helmet>
         <div className="fixed top-0 right-0 p-4 flex items-center justify-between z-50 w-full">
           <div
