@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuShortcut,
 } from "@/components/ui/dropdown-menu";
-import { Settings, LogOut } from "lucide-react";
+import { Settings, LogOut, LucideLayoutDashboard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useDispatch, useSelector } from "react-redux";
@@ -52,7 +52,7 @@ function SettingsScreen() {
       console.log(err);
     }
   };
-  
+
   return (
     <HelmetProvider>
       <div className="">
@@ -86,10 +86,13 @@ function SettingsScreen() {
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <DropdownMenuItem onClick={() => navigate("/settings")}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
+                  <DropdownMenuItem
+                    onClick={() => navigate("/moderator/dashboard")}
+                  >
+                    <LucideLayoutDashboard className="mr-2 h-4 w-4" />
+                    <span>Go to Dashboard</span>
                   </DropdownMenuItem>
+
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
