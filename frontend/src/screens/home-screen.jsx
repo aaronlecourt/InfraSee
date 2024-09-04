@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button"; // Adjust the import path as needed
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import {
   Accordion,
@@ -7,7 +7,15 @@ import {
   AccordionContent,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"; // Import the Sheet components
+import {
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetClose
+} from "@/components/ui/sheet";
 import { ArrowRight } from "lucide-react";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 
@@ -57,12 +65,17 @@ function HomeScreen() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="top">
-                <nav className="grid gap-4 py-1">
+                <SheetHeader>
+                  <SheetTitle className="hidden">Menu</SheetTitle>
+                  <SheetDescription className="hidden">Select an option below:</SheetDescription>
+                </SheetHeader>
+                <nav className="grid gap-4">
                   <Button onClick={handleContactClick} variant="ghost">
                     Contact Us
                   </Button>
                   <Button onClick={handleReportClick}>Make a Report</Button>
                 </nav>
+                <SheetClose />
               </SheetContent>
             </Sheet>
           </div>

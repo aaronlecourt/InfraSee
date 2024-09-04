@@ -113,6 +113,7 @@ function AdminLoginScreen() {
                         <Input
                           type="email"
                           placeholder="Enter your email"
+                          autoComplete="email"
                           {...field}
                         />
                       </FormControl>
@@ -132,6 +133,7 @@ function AdminLoginScreen() {
                           <Input
                             type={passwordVisible ? "text" : "password"}
                             placeholder="Enter your password"
+                            autoComplete="current-password"
                             {...field}
                           />
                           <button

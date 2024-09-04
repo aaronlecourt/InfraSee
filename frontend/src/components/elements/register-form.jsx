@@ -114,7 +114,7 @@ export function RegisterForm() {
                   <FormMessage className="text-right" />
                 </div>
                 <FormControl>
-                  <Input placeholder="John Doe" {...field} />
+                  <Input placeholder="Sample Moderator (SM)" autoComplete="username" {...field} />
                 </FormControl>
               </FormItem>
             )}
@@ -133,6 +133,7 @@ export function RegisterForm() {
                   <Input
                     type="email"
                     placeholder="user@m.infrasee.com"
+                    autoComplete="email"
                     {...field}
                   />
                 </FormControl>
@@ -154,6 +155,7 @@ export function RegisterForm() {
                     <Input
                       type={passwordVisible ? "text" : "password"}
                       placeholder="••••••••"
+                      autoComplete="new-password"
                       {...field}
                     />
                     <button

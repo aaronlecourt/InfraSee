@@ -222,13 +222,14 @@ const AdminDashboardScreen = () => {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Create New Account</DialogTitle>
-                  <DialogDescription>Add a new moderator account by filling up the form below.
-                  Click add when you're done.</DialogDescription>
-                    
-                  <DialogClose onClick={() => setIsDialogOpen(false)} />
+                  <DialogDescription>
+                    Add a new moderator account by filling up the form below.
+                    Click add when you're done.
+                  </DialogDescription>
                 </DialogHeader>
                 {/* register form component here */}
                 <RegisterForm />
+                <DialogClose onClick={() => setIsDialogOpen(false)} />
               </DialogContent>
             </Dialog>
           </div>
