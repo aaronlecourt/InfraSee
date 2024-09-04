@@ -21,9 +21,9 @@ export function Overview({ goToReportsTab }) {
         resolved_reps={0}
         dismissed_reps={0}
       />
-      <div className="mt-3 grid grid-cols-3 gap-3 h-auto">
-        <div className="border rounded-md col-span-2">map here</div>
-        <div className="col-span-1">
+      <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 h-auto">
+        <div className="border rounded-md col-span-1 sm:col-span-2 min-h-[20rem]">map here</div>
+        <div className="col-span-1 sm:col-span-1">
           <Card>
             <CardHeader>
               <CardTitle className="text-base font-bold leading-none">

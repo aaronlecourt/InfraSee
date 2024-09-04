@@ -1,79 +1,106 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuShortcut,
+} from "@/components/ui/dropdown-menu";
+import { Settings, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useDispatch, useSelector } from "react-redux";
+import { useLogoutMutation } from "@/slices/users-api-slice";
+import { logout } from "@/slices/auth-slice";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 
 function SettingsScreen() {
+  const navigate = useNavigate();
+  const { userInfo } = useSelector((state) => state.auth);
+  const [logoutApiCall] = useLogoutMutation();
+  const dispatch = useDispatch();
+
+  // Handle the keyboard shortcut for logout
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "l") {
+        event.preventDefault();
+        handleLogout();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  const handleLogoClick = () => {
+    navigate("/");
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logoutApiCall().unwrap();
+      dispatch(logout());
+      navigate("/moderator/login");
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  
   return (
     <HelmetProvider>
-      <div className="min-h-screen bg-white flex items-center justify-center p-6">
+      <div className="">
         <Helmet>
           <title>{"InfraSee | Settings"}</title>
         </Helmet>
-        <div className="bg-gray-100 p-8 rounded-lg shadow-lg w-full max-w-md">
-          <h1 className="text-3xl font-bold mb-6 text-center text-gray-900">
-            Profile Settings
-          </h1>
-          <form className="space-y-6">
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-gray-700 text-sm font-semibold mb-2"
-              >
-                Full Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                placeholder="Enter your full name"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-gray-700 text-sm font-semibold mb-2"
-              >
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-gray-700 text-sm font-semibold mb-2"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                placeholder="Enter a new password"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <button
-                type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Save Changes
-              </button>
-              <button
-                type="button"
-                className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
+        <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400">
+          <div
+            className="w-[6rem] mt-1 cursor-pointer"
+            onClick={handleLogoClick}
+          >
+            <img src="/infrasee_black.png" alt="Infrasee Logomark" />
+          </div>
+          <div className="relative">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar className="h-8 w-8 hover:ring-4 ring-slate-300 cursor-pointer">
+                  <AvatarFallback className="text-white bg-slate-950">
+                    M
+                  </AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 mr-3">
+                {userInfo && (
+                  <DropdownMenuLabel>
+                    <p>{userInfo.name}</p>
+                    <small className="text-gray-500 font-normal">
+                      {userInfo.email}
+                    </small>
+                  </DropdownMenuLabel>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onClick={() => navigate("/settings")}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                    <DropdownMenuShortcut>⌘+L</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </header>
       </div>
     </HelmetProvider>
   );
