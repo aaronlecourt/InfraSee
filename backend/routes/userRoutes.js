@@ -7,7 +7,9 @@ import {
   logoutUser,
   getUserProfile,
   updateUserProfile,
-  getModerators
+  getModerators,
+  checkEmailExists,
+  getSecurityQuestionByEmail
 } from '../controllers/user-controller.js';
 import { protect } from '../middleware/auth-middleware.js';
 
@@ -21,6 +23,8 @@ router.post('/logout', logoutUser);
 router.route('/profile')
   .get(protect, getUserProfile)
   .put(protect, updateUserProfile);
-router.get('/moderators', getModerators); // New route for fetching moderators
+router.get('/moderators', getModerators);
+router.get("/check-email/:email", checkEmailExists);
+router.get("/security-question/:email", getSecurityQuestionByEmail);
 
 export default router;
