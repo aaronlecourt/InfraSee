@@ -13,6 +13,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
+const MAX_FILE_SIZE = 500000;
+const ACCEPTED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+];
+
 // Define the schema for the report form with file validation
 const formSchema = z.object({
   fullName: z.string().min(1, "Full Name is required."),
@@ -20,17 +28,15 @@ const formSchema = z.object({
   description: z.string().min(1, "Description is required."),
   email: z.string().email("Invalid email address.").optional(),
   file: z
-    .instanceof(FileList)
-    .optional()
-    .refine((files) => files.length > 0, "File is required.")
+    .any()
+    .refine((files) => files?.length == 1, "Image is required.")
     .refine(
-      (files) => files[0] && files[0].size <= 5 * 1024 * 1024,
-      "File size should be less than 5MB."
+      (files) => files?.[0]?.size <= MAX_FILE_SIZE,
+      `Max file size is 5MB.`
     )
     .refine(
-      (files) =>
-        files[0] && ["image/jpeg", "image/png"].includes(files[0].type),
-      "Only JPEG and PNG formats are allowed."
+      (files) => ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
+      ".jpg, .jpeg, .png and .webp files are accepted."
     ),
   accountNumber: z.string().min(1, "Account Number is required.").optional(),
 });
@@ -84,7 +90,7 @@ export default function ReportForm() {
         {/* File Upload Field */}
         <FormItem>
           <div className="flex items-center justify-between">
-            <FormLabel>Image Upload</FormLabel>
+            <FormLabel className={errors.file?.message ? 'text-red-500':''}>Image Upload</FormLabel>
             <FormMessage>{errors.file?.message}</FormMessage>
           </div>
           <div className="relative flex items-center justify-center min-h-[80px] border border-dashed border-gray-300 rounded-md">
@@ -102,9 +108,10 @@ export default function ReportForm() {
                       className="absolute inset-0 opacity-0 cursor-pointer"
                     />
                   </FormControl>
-                  <Button asChild
+                  <Button
                     type="button"
-                    variant="secondary"
+                    variant="outline"
+                    size="sm"
                     className="z-10 px-4 rounded"
                     onClick={() =>
                       document.querySelector('input[type="file"]').click()
