@@ -1,13 +1,14 @@
+// ModeratorLoginScreen.js
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useModeratorLoginMutation } from "../slices/users-api-slice";
 import { setCredentials } from "../slices/auth-slice";
-import { toast } from "sonner"; // Import Sonner toast
+import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Eye, EyeOff, Lock } from "lucide-react"; // Import Lucide icons
+import { Eye, EyeOff, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -25,8 +26,8 @@ import {
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from "@/components/ui/sheet"; // Import Sheet components
-import { Menu } from "lucide-react"; // Use Lucide's Menu icon
+} from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import {
   Dialog,
@@ -34,10 +35,9 @@ import {
   DialogContent,
   DialogTitle,
   DialogDescription,
-  DialogClose,
-} from "@/components/ui/dialog"; // Import Dialog components
+} from "@/components/ui/dialog";
+import ResetPassword from "@/components/elements/resetpassword";
 
-// Validation schema
 const formSchema = z.object({
   email: z
     .string()
@@ -74,11 +74,10 @@ function ModeratorLoginScreen() {
   });
 
   const { handleSubmit, control } = form;
-  const [passwordVisible, setPasswordVisible] = useState(false); // State for password visibility
-  const [isSheetOpen, setSheetOpen] = useState(false); // State to control the Sheet
-  const [isResetPasswordDialogOpen, setResetPasswordDialogOpen] =
-    useState(false); // State for Reset Password Dialog
-  const [isTermsDialogOpen, setTermsDialogOpen] = useState(false); // State for Terms and Conditions Dialog
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [isSheetOpen, setSheetOpen] = useState(false);
+  const [isResetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
+  const [isTermsDialogOpen, setTermsDialogOpen] = useState(false);
 
   useEffect(() => {
     if (userInfo && userInfo?.isModerator) {
@@ -91,9 +90,9 @@ function ModeratorLoginScreen() {
       const res = await login(data).unwrap();
       dispatch(setCredentials({ ...res }));
       navigate("/moderator/dashboard");
-      toast.success("Login successful!"); // Success notification with Sonner
+      toast.success("Login successful!");
     } catch (err) {
-      toast.error(err?.data?.message || err.error); // Error notification with Sonner
+      toast.error(err?.data?.message || err.error);
     }
   };
 
@@ -123,8 +122,7 @@ function ModeratorLoginScreen() {
             <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" color="white" />{" "}
-                  {/* Lucide Menu Icon */}
+                  <Menu className="h-6 w-6" color="white" />
                   <span className="sr-only">Open Menu</span>
                 </Button>
               </SheetTrigger>
@@ -151,11 +149,9 @@ function ModeratorLoginScreen() {
         </div>
 
         <main className="">
-          {/* Padding top to avoid overlap with fixed header */}
           <div className="flex flex-col md:flex-row h-screen">
             {/* Left Side */}
             <div className="w-full h-screen md:w-1/2 bg-[url('/bg_dark.png')] bg-no-repeat bg-cover bg-center text-white flex items-center justify-center">
-              {/* <p className="text-center text-lg">Welcome to our platform</p> */}
             </div>
 
             {/* Right Side */}
@@ -171,15 +167,13 @@ function ModeratorLoginScreen() {
                 </div>
 
                 <Form {...form}>
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-3" >
                     <FormField
                       control={control}
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="font-bold">
-                            Email Address
-                          </FormLabel>
+                          <FormLabel className="font-bold">Email Address</FormLabel>
                           <FormControl>
                             <Input
                               type="email"
@@ -202,7 +196,7 @@ function ModeratorLoginScreen() {
                           <FormControl>
                             <div className="relative">
                               <Input
-                                type={passwordVisible ? "text" : "password"} // Toggle between text and password
+                                type={passwordVisible ? "text" : "password"}
                                 placeholder="Enter your password"
                                 autoComplete="current-password"
                                 {...field}
@@ -211,13 +205,13 @@ function ModeratorLoginScreen() {
                                 type="button"
                                 onClick={() =>
                                   setPasswordVisible(!passwordVisible)
-                                } // Toggle password visibility
+                                }
                                 className="absolute inset-y-0 right-3 flex items-center text-sm"
                               >
                                 {passwordVisible ? (
-                                  <EyeOff size={18} /> // Lucide "EyeOff" icon for hiding
+                                  <EyeOff size={18} />
                                 ) : (
-                                  <Eye size={18} /> // Lucide "Eye" icon for showing
+                                  <Eye size={18} />
                                 )}
                               </button>
                             </div>
@@ -237,37 +231,12 @@ function ModeratorLoginScreen() {
                             className="flex items-center justify-end text-right"
                           >
                             <span className="flex items-center space-x-2">
-                              <Lock size={16} className="text-gray-500" />{" "}
-                              <span className="text-gray-500">
-                                Reset Password
-                              </span>
+                              <Lock size={16} className="text-gray-500" />
+                              <span className="text-gray-500">Reset Password</span>
                             </span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent>
-                          <DialogTitle>Reset Password</DialogTitle>
-                          <DialogDescription>
-                            Enter your email to receive password reset
-                            instructions.
-                          </DialogDescription>
-                          {/* <div className="mt-4">
-                            <Input
-                              type="email"
-                              placeholder="Enter your email"
-                              className="w-full"
-                            />
-                            <Button
-                              className="mt-4"
-                              onClick={() => {
-                                // Add your password reset logic here
-                                setResetPasswordDialogOpen(false);
-                                toast.success("Reset instructions sent!"); // Notify user
-                              }}
-                            >
-                              Send Instructions
-                            </Button>
-                          </div> */}
-                        </DialogContent>
+                        <ResetPassword/>
                       </Dialog>
                     </div>
 
