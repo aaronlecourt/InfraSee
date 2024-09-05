@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
@@ -7,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandInput, CommandList, CommandItem, CommandEmpty, CommandGroup } from "@/components/ui/command";
 import { ChevronsUpDownIcon, CheckIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"; // Assuming you have a Drawer component
+import { Drawer, DrawerContent, DrawerTrigger, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
 export function ComboBoxResponsive({ onSelect }) {
   const [infrastructureTypes, setInfrastructureTypes] = useState([]);
@@ -60,10 +58,10 @@ export function ComboBoxResponsive({ onSelect }) {
     };
   }, []);
 
-  const handleModeratorSelect = (moderatorId) => {
-    setSelectedModerator(moderatorId);
+  const handleModeratorSelect = (moderator) => {
+    setSelectedModerator(moderator._id);
     if (onSelect) {
-      onSelect(moderatorId); // Notify parent component
+      onSelect(moderator); // Pass the whole moderator object
     }
     setOpen(false);
   };
@@ -104,7 +102,7 @@ export function ComboBoxResponsive({ onSelect }) {
                 {moderators.map((mod) => (
                   <CommandItem
                     key={mod._id}
-                    onSelect={() => handleModeratorSelect(mod._id)}
+                    onSelect={() => handleModeratorSelect(mod)}
                     className={cn(
                       "cursor-pointer",
                       selectedModerator === mod._id ? 'bg-primary text-white' : ''
@@ -157,6 +155,10 @@ export function ComboBoxResponsive({ onSelect }) {
         </Button>
       </DrawerTrigger>
       <DrawerContent>
+        <DrawerHeader className="hidden">
+        <DrawerTitle>Report form</DrawerTitle>
+        <DrawerDescription>Fill up the form</DrawerDescription>
+        </DrawerHeader>
         <div className="mt-4 border-t">
           {renderContent()}
         </div>

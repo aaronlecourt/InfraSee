@@ -7,7 +7,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from "@/components/ui/sheet"; // Import the Sheet components
+} from "@/components/ui/sheet";
 import {
   Drawer,
   DrawerTrigger,
@@ -15,19 +15,22 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerClose,
-} from "@/components/ui/drawer"; // Import Drawer components
-import { Menu } from "lucide-react"; // Use Lucide's Menu icon
+  DrawerDescription
+} from "@/components/ui/drawer";
+import { Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ReportCounter } from "@/components/elements/report-counter";
 import { ComboBoxResponsive } from "@/components/elements/combo";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import ReportForm from "@/components/report-form";
+
 function ReportScreen() {
   const navigate = useNavigate();
-  const [isNavbarSheetOpen, setNavbarSheetOpen] = useState(false); // State to control the Navbar Sheet
-  const [isReportSheetOpen, setReportSheetOpen] = useState(false); // State to control the Report Sheet
-  const [accountSelected, setAccountSelected] = useState(false); // State for account selection
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 640); // Track screen size
+  const [isNavbarSheetOpen, setNavbarSheetOpen] = useState(false);
+  const [isReportSheetOpen, setReportSheetOpen] = useState(false);
+  const [accountSelected, setAccountSelected] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
 
   // Track screen size
   useEffect(() => {
@@ -50,11 +53,14 @@ function ReportScreen() {
     }
   };
 
-  // Use callback to ensure up-to-date state
-  const handleAccountSelect = useCallback(() => {
-    console.log("Account selected");
+  const handleAccountSelect = useCallback((account) => {
+    setSelectedAccount(account);
     setAccountSelected(true);
   }, []);
+
+  const handleCloseReportForm = () => {
+    setReportSheetOpen(false);
+  };
 
   return (
     <HelmetProvider>
@@ -84,7 +90,7 @@ function ReportScreen() {
                   size="icon"
                   onClick={() => setNavbarSheetOpen(true)}
                 >
-                  <Menu className="h-6 w-6" /> {/* Lucide Menu Icon */}
+                  <Menu className="h-6 w-6" />
                   <span className="sr-only">Open Menu</span>
                 </Button>
               </SheetTrigger>
@@ -100,9 +106,7 @@ function ReportScreen() {
         </header>
 
         <main className="flex flex-col flex-1 p-4">
-          {/* Container for the two inner divs */}
           <div className="flex flex-col flex-1 mb-3 sm:flex-row sm:space-x-4 sm:space-y-0">
-            {/* Inner 1 div */}
             <div className="sm:flex-none sm:w-1/4">
               <div className="rounded-md flex flex-col items-start justify-start gap-3">
                 <div className="">
@@ -127,7 +131,6 @@ function ReportScreen() {
               </div>
             </div>
 
-            {/* Inner 2 div */}
             <div className="border rounded-md flex-1 sm:h-80vh mt-1">
               <div className="h-full flex items-center justify-center">
                 map here
@@ -135,58 +138,65 @@ function ReportScreen() {
             </div>
           </div>
 
-          {/* Second div */}
           <div className="flex-none">
             <ReportCounter
               total_reps={0}
               inprog_reps={0}
               resolved_reps={0}
               dismissed_reps={0}
-            ></ReportCounter>
+            />
           </div>
         </main>
 
-        {/* Reporting Drawer */}
-        {isMobile ? (
-          <Drawer open={isReportSheetOpen} onOpenChange={setReportSheetOpen}>
-            <DrawerTrigger asChild>
-              <Button className="hidden">Open Report Drawer</Button>
-            </DrawerTrigger>
-            <DrawerContent side="bottom">
-              <DrawerHeader>
-                <DrawerTitle>Report Form</DrawerTitle>
-                <DrawerClose onClick={() => setReportSheetOpen(false)} />
-              </DrawerHeader>
-              <div className="p-4">
-                {/* API call to get value to pass to selectedAccount prop */}
-                {/* Display account-specific form using a component, accept selectedAccount as prop */}
-                <ReportForm />
-              </div>
-            </DrawerContent>
-          </Drawer>
-        ) : (
-          <Sheet
-            open={isReportSheetOpen}
-            onOpenChange={setReportSheetOpen}
-            className="hidden sm:block"
-          >
-            <SheetTrigger asChild>
-              <Button className="hidden">Open Report Sheet</Button>
-            </SheetTrigger>
-            <SheetContent side="right">
-              <SheetHeader>
-                <SheetTitle>Selected Moderator name here</SheetTitle>
-                <SheetDescription>
-                  Fill up the form below. Click submit when you're done.
-                </SheetDescription>
-              </SheetHeader>
-              <div className="p-1">
-                {/* API call to get value to pass to selectedAccount prop */}
-                {/* Display account-specific form using a component, accept selectedAccount as prop */}
-                <ReportForm />
-              </div>
-            </SheetContent>
-          </Sheet>
+        {/* Single instance of ReportForm */}
+        {isReportSheetOpen && (
+          <>
+            {isMobile ? (
+              <Drawer open={isReportSheetOpen} onOpenChange={handleCloseReportForm}>
+                <DrawerTrigger asChild>
+                  <Button className="hidden">Open Report Drawer</Button>
+                </DrawerTrigger>
+                <DrawerContent side="bottom">
+                  <DrawerHeader>
+                  <DrawerClose onClick={handleCloseReportForm} />
+                    <DrawerTitle className="text-md font-bold leading-0">
+                      {selectedAccount ? selectedAccount.name : "Select a Moderator"}
+                    </DrawerTitle>
+                    <DrawerDescription className="text-xs font-normal">
+                      Fill up the form below. Click submit when you're done.
+                    </DrawerDescription>
+                    
+                  </DrawerHeader>
+                  <div className="p-4 pt-0">
+                    <ReportForm selectedAccount={selectedAccount} />
+                  </div>
+                </DrawerContent>
+              </Drawer>
+            ) : (
+              <Sheet
+                open={isReportSheetOpen}
+                onOpenChange={handleCloseReportForm}
+                className="hidden sm:block"
+              >
+                <SheetTrigger asChild>
+                  <Button className="hidden">Open Report Sheet</Button>
+                </SheetTrigger>
+                <SheetContent side="right">
+                  <SheetHeader>
+                    <SheetTitle className="text-md font-bold leading-0">
+                      {selectedAccount ? selectedAccount.name : "Select a Moderator"}
+                    </SheetTitle>
+                    <SheetDescription className="text-xs font-normal">
+                      Fill up the form below. Click submit when you're done.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="p-1">
+                    <ReportForm selectedAccount={selectedAccount} />
+                  </div>
+                </SheetContent>
+              </Sheet>
+            )}
+          </>
         )}
       </div>
     </HelmetProvider>

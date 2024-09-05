@@ -13,7 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-const MAX_FILE_SIZE = 500000;
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = [
   "image/jpeg",
   "image/jpg",
@@ -36,12 +36,12 @@ const formSchema = z.object({
     )
     .refine(
       (files) => ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
-      ".jpg, .jpeg, .png and .webp files are accepted."
+      "Only .jpg .png files are accepted."
     ),
   accountNumber: z.string().min(1, "Account Number is required.").optional(),
 });
 
-export default function ReportForm() {
+export default function ReportForm({ selectedAccount }) {
   const [preview, setPreview] = useState(null);
 
   const form = useForm({
@@ -84,53 +84,60 @@ export default function ReportForm() {
     }
   };
 
+  // Check which fields should be visible based on selectedAccount
+  const showField = (field) => selectedAccount[field + '_toggled'];
+
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* File Upload Field */}
-        <FormItem>
-          <div className="flex items-center justify-between">
-            <FormLabel className={errors.file?.message ? 'text-red-500':''}>Image Upload</FormLabel>
-            <FormMessage>{errors.file?.message}</FormMessage>
-          </div>
-          <div className="relative flex items-center justify-center min-h-[80px] border border-dashed border-gray-300 rounded-md">
-            <FormField
-              control={form.control}
-              name="file"
-              render={({ field }) => (
-                <FormItem className="absolute inset-0 flex flex-col items-center justify-center">
-                  <FormControl>
-                    <Input
-                      type="file"
-                      multiple
-                      onChange={handleFileChange}
-                      ref={field.ref}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                    />
-                  </FormControl>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="z-10 px-4 rounded"
-                    onClick={() =>
-                      document.querySelector('input[type="file"]').click()
-                    }
-                  >
-                    {preview ? "Change File" : "Choose File"}
-                  </Button>
-                </FormItem>
-              )}
-            />
-            {/* Preview Image */}
-            {preview && (
-              <div
-                className="absolute inset-0 bg-cover bg-center rounded-md"
-                style={{ backgroundImage: `url(${preview})` }}
+        {showField("image") && (
+          <FormItem>
+            <div className="flex items-center justify-between">
+              <FormLabel className={errors.file?.message ? 'text-red-500' : ''}>
+                Image Upload
+              </FormLabel>
+              <FormMessage>{errors.file?.message}</FormMessage>
+            </div>
+            <div className="relative flex items-center justify-center min-h-[80px] border border-dashed border-gray-300 rounded-md">
+              <FormField
+                control={form.control}
+                name="file"
+                render={({ field }) => (
+                  <FormItem className="absolute inset-0 flex flex-col items-center justify-center">
+                    <FormControl>
+                      <Input
+                        type="file"
+                        multiple
+                        onChange={handleFileChange}
+                        ref={field.ref}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                    </FormControl>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="z-10 px-4 rounded"
+                      onClick={() =>
+                        document.querySelector('input[type="file"]').click()
+                      }
+                    >
+                      {preview ? "Change File" : "Choose File"}
+                    </Button>
+                  </FormItem>
+                )}
               />
-            )}
-          </div>
-        </FormItem>
+              {/* Preview Image */}
+              {preview && (
+                <div
+                  className="absolute inset-0 bg-cover bg-center rounded-md"
+                  style={{ backgroundImage: `url(${preview})` }}
+                />
+              )}
+            </div>
+          </FormItem>
+        )}
 
         {/* Full Name Field */}
         <FormField
@@ -142,7 +149,6 @@ export default function ReportForm() {
                 <FormLabel>Full Name</FormLabel>
                 <FormMessage>{errors.fullName?.message}</FormMessage>
               </div>
-
               <FormControl>
                 <Input placeholder="Enter your full name" {...field} />
               </FormControl>
@@ -160,7 +166,6 @@ export default function ReportForm() {
                 <FormLabel>Contact Number</FormLabel>
                 <FormMessage>{errors.contactNumber?.message}</FormMessage>
               </div>
-
               <FormControl>
                 <Input placeholder="Enter your contact number" {...field} />
               </FormControl>
@@ -178,7 +183,6 @@ export default function ReportForm() {
                 <FormLabel>Description</FormLabel>
                 <FormMessage>{errors.description?.message}</FormMessage>
               </div>
-
               <FormControl>
                 <textarea
                   placeholder="Enter a description"
@@ -191,44 +195,46 @@ export default function ReportForm() {
         />
 
         {/* Email Address Field */}
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center justify-between">
-                <FormLabel>Email Address</FormLabel>
-                <FormMessage>{errors.email?.message}</FormMessage>
-              </div>
-
-              <FormControl>
-                <Input
-                  type="email"
-                  placeholder="Enter your email address"
-                  {...field}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+        {showField("email") && (
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center justify-between">
+                  <FormLabel>Email Address</FormLabel>
+                  <FormMessage>{errors.email?.message}</FormMessage>
+                </div>
+                <FormControl>
+                  <Input
+                    type="email"
+                    placeholder="Enter your email address"
+                    {...field}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        )}
 
         {/* Account Number Field */}
-        <FormField
-          control={form.control}
-          name="accountNumber"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center justify-between">
-                <FormLabel>Account Number</FormLabel>
-                <FormMessage>{errors.accountNumber?.message}</FormMessage>
-              </div>
-
-              <FormControl>
-                <Input placeholder="Enter your account number" {...field} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+        {showField("accntnum") && (
+          <FormField
+            control={form.control}
+            name="accountNumber"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center justify-between">
+                  <FormLabel>Account Number</FormLabel>
+                  <FormMessage>{errors.accountNumber?.message}</FormMessage>
+                </div>
+                <FormControl>
+                  <Input placeholder="Enter your account number" {...field} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        )}
 
         <Button type="submit" className="w-full mt-4">
           Submit
