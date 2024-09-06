@@ -87,6 +87,7 @@ function ModeratorLoginScreen() {
 
   const onSubmit = async (data) => {
     try {
+      e.preventDefault();
       const res = await login(data).unwrap();
       dispatch(setCredentials({ ...res }));
       navigate("/moderator/dashboard");
@@ -223,7 +224,7 @@ function ModeratorLoginScreen() {
                     <div className="w-full flex items-center justify-end text-right">
                       <Dialog
                         open={isResetPasswordDialogOpen}
-                        onOpenChange={setResetPasswordDialogOpen}
+                        onOpenChange={(open) => setResetPasswordDialogOpen(open)}
                       >
                         <DialogTrigger asChild>
                           <Button
@@ -236,7 +237,7 @@ function ModeratorLoginScreen() {
                             </span>
                           </Button>
                         </DialogTrigger>
-                        <ResetPassword/>
+                        <ResetPassword onClose={() => setResetPasswordDialogOpen(false)} />
                       </Dialog>
                     </div>
 
@@ -251,7 +252,7 @@ function ModeratorLoginScreen() {
                   </span>
                   <Dialog
                     open={isTermsDialogOpen}
-                    onOpenChange={setTermsDialogOpen}
+                    onOpenChange={(open) => setTermsDialogOpen(open)}
                   >
                     <DialogTrigger asChild>
                       <a

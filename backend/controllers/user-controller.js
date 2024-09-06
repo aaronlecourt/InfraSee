@@ -241,24 +241,34 @@ const checkEmailExists = asyncHandler(async (req, res) => {
 // @route   GET /api/users/security-question/:email
 // @access  Public
 const getSecurityQuestionByEmail = asyncHandler(async (req, res) => {
-  const { email, slct_quest } = req.params;
+  const { email } = req.params;
 
-  // Find the user by email
-  const user = await User.findOne({ email });
+  try {
+    // Find the user by email
+    const user = await User.findOne({ email });
 
-  if (user && user.slct_quest) {
-    // Find the security question by its ID
-    const securityQuestion = await SecurityQuestion.findById(user.slct_quest);
+    if (user && user.slct_quest) {
+      // Find the security question by its ID
+      const securityQuestion = await SecurityQuestion.findById(user.slct_quest);
 
-    if (securityQuestion) {
-      res.json({ question: securityQuestion.qst_name });
+      if (securityQuestion) {
+        // Return both the question and the stored answer
+        res.json({
+          question: securityQuestion.qst_name,
+          answer: user.quest_ans, // Include the answer here
+        });
+      } else {
+        res.status(404).json({ message: "Security question not found." });
+      }
     } else {
-      res.status(404).json({ message: "Security question not found." });
+      res.status(404).json({ message: "No security question set for this email." });
     }
-  } else {
-    res.status(404).json({ message: "No security question set for this email." });
+  } catch (error) {
+    console.error('Error in getSecurityQuestionByEmail:', error);
+    res.status(500).json({ message: "Server error" });
   }
 });
+
 
 export {
   authUser,
