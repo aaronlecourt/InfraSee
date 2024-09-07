@@ -169,9 +169,9 @@ export default function ResetPassword({ onClose }) {
 
         {emailExists && securityQuestion && (
           <>
-            <p className="font-bold">{securityQuestion}</p>
+            <p className="font-bold my-3">{securityQuestion}</p>
             {securityQuestion !== "This account has not set any security questions." && (
-              <FormItem className="flex flex-col">
+              <FormItem>
                 <div className="flex items-center justify-between">
                   <FormLabel className="font-bold">Your Answer</FormLabel>
                   <FormMessage>{errors.answer?.message}</FormMessage>
@@ -182,18 +182,17 @@ export default function ResetPassword({ onClose }) {
                     name="answer"
                     control={control}
                     render={({ field }) => (
-                      <textarea
+                      <Input
                         placeholder="Enter your answer"
-                        className="flex h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                         {...field}
                         disabled={!accountEmail}
                       />
                     )}
                   />
                 </FormControl>
-                <div className="flex gap-2 text-muted-foreground items-start">
-                  <InfoIcon size={18} />
-                  <FormDescription>
+                <div className="flex gap-2 text-muted-foreground items-center">
+                  <InfoIcon size={12} />
+                  <FormDescription className="text-xs mt-1">
                     Please ensure that the answer you provide matches the security question you set up earlier.
                   </FormDescription>
                 </div>
@@ -204,7 +203,7 @@ export default function ResetPassword({ onClose }) {
 
         <Button
           type="submit"
-          className="w-full flex gap-2 items-center"
+          className="w-full flex gap-2 items-center mt-3"
           disabled={isButtonDisabled}
         >
           Reset my Password

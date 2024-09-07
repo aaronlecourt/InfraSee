@@ -264,7 +264,20 @@ function ModeratorLoginScreen() {
                     </DialogTrigger>
                     <DialogContent>
                       <DialogTitle>Terms and Conditions</DialogTitle>
-                      <DialogDescription>hello</DialogDescription>
+                      <DialogDescription>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Repudiandae, nobis? Aspernatur a voluptates ut obcaecati repellat, mollitia totam praesentium nesciunt fugiat debitis saepe magnam nostrum quae earum sunt nulla expedita.
+                        Dignissimos quae ullam tenetur blanditiis vero qui, neque nesciunt voluptatem. Illo eaque laboriosam saepe fugit. Harum ad in laboriosam nisi tenetur. Reprehenderit recusandae voluptas id aliquam sint, illum odit excepturi.
+                        Aspernatur, doloremque odit nostrum expedita deleniti praesentium? Dolores ipsa reprehenderit sed facilis. Corporis ipsa, delectus a aliquam id facere accusamus sit. Praesentium quos ex temporibus dolorum beatae ducimus dolor alias.
+                        Dolore in nulla ipsa aperiam deleniti quibusdam? Est impedit ipsam obcaecati officiis debitis, delectus odit, magni, iusto numquam esse explicabo minima provident? Aliquid sapiente quos nobis ipsa incidunt omnis obcaecati.
+                        Tempore ullam magni tenetur, sint esse dolore ipsam ut enim numquam dicta vel, aperiam quisquam dolores nulla, quasi suscipit harum molestiae inventore voluptatibus perspiciatis? Neque quaerat illum inventore quas voluptatem.
+                        Dignissimos vitae fuga voluptatem error nesciunt ducimus aliquam temporibus est facilis nostrum nobis saepe qui excepturi ipsum, vero omnis sint! Sunt labore exercitationem deserunt numquam quos impedit alias architecto fugit.
+                        Temporibus dicta, possimus vero, at vel inventore repudiandae, blanditiis expedita ullam sed a voluptates beatae deserunt dignissimos doloribus doloremque exercitationem reprehenderit nemo nobis nesciunt odio. Labore quos in corrupti! Quaerat.
+                        Ut modi et earum natus fugit architecto eius expedita tempore officia quibusdam! Nemo doloribus, consequuntur suscipit quis tenetur et voluptas perferendis eius natus dolorem quo, praesentium debitis officiis porro inventore.
+                        Similique excepturi facilis eos dolorem dolor rem sequi odit! Quia ut eligendi beatae repudiandae libero dicta velit saepe iusto quas porro incidunt vero expedita nisi sit quam, id, aliquid officiis?
+                        Molestiae est dolore voluptates. Expedita culpa necessitatibus cumque explicabo, numquam quos laborum quo quas aliquid voluptatum, optio in amet sunt! Dolorem assumenda praesentium voluptatibus rerum fugit! Alias id suscipit aperiam.
+                        Saepe recusandae ab iste voluptate qui corrupti et natus corporis. Incidunt porro iure vel id recusandae consectetur, vitae eum sed illo repellendus repudiandae amet, repellat tempore, delectus maxime non quod?
+                        Molestiae, sunt, earum saepe debitis dignissimos est pariatur ab rem recusandae dolorem, consequatur veritatis nihil sint esse! Animi ipsam autem facilis repudiandae nesciunt! Porro reprehenderit iure repellendus, provident exercitationem optio.
+                      </DialogDescription>
                     </DialogContent>
                   </Dialog>
                 </div>
