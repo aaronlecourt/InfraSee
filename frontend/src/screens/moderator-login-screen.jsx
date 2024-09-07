@@ -87,7 +87,6 @@ function ModeratorLoginScreen() {
 
   const onSubmit = async (data) => {
     try {
-      e.preventDefault();
       const res = await login(data).unwrap();
       dispatch(setCredentials({ ...res }));
       navigate("/moderator/dashboard");
