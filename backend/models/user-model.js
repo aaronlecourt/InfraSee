@@ -1,8 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-import InfrastructureType from "./infrastructureType-model.js";
-import SecurityQuestion from "./securityQuestion-model.js";
 const userSchema = mongoose.Schema(
   {
     name: {
@@ -19,24 +17,11 @@ const userSchema = mongoose.Schema(
     password: {
       type: String,
       required: true,
-      maxlength: 15,
     },
     infra_type: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'InfrastructureType',
+      ref: "InfrastructureType",
       required: true,
-    },
-    hasSetQuest: {
-      type: Boolean,
-      default: false,
-    },
-    slct_quest: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'SecurityQuestion',
-    },
-    quest_ans: {
-      type: String,
-      maxlength: 25,
     },
     email_toggled: {
       type: Boolean,
@@ -58,12 +43,19 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 );
-
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
