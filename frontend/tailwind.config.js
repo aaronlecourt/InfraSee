@@ -16,7 +16,8 @@ module.exports = {
     fontSize: {
       xs: ['0.7rem', { lineHeight: '1rem', letterSpacing: '-0.01em', fontWeight: '700' }],
       sm: ['0.8rem', { lineHeight: '1rem', letterSpacing: '-0.01em', fontWeight: '500' }],
-      base: ['1rem', { lineHeight: '1.6rem', letterSpacing: '-0.02em', fontWeight: '500' }],
+      base: ['0.9rem', { lineHeight: '1.6rem', letterSpacing: '-0.02em', fontWeight: '500' }],
+      md: ['1rem', { lineHeight: '1.6rem', letterSpacing: '-0.02em', fontWeight: '600' }],
       xl: ['1.5rem', { lineHeight: '1.2rem', letterSpacing: '-0.01em', fontWeight: '800' }],
       lg: ['1.205rem', { lineHeight: '1.25rem', letterSpacing: '-0.02em', fontWeight: '600' }],
       '2xl': ['1.8rem', { lineHeight: '2rem', letterSpacing: '-0.02em', fontWeight: '700' }],
@@ -74,6 +75,10 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
+        "caret-blink": {
+          "0%,70%,100%": { opacity: "1" },
+          "20%,50%": { opacity: "0" },
+        },
         "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
@@ -84,6 +89,7 @@ module.exports = {
         },
       },
       animation: {
+        "caret-blink": "caret-blink 1.25s ease-out infinite",
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },

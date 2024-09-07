@@ -4,52 +4,30 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-  FormDescription
-} from "@/components/ui/form";
-import {
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { ArrowRight, InfoIcon } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import axios from "axios";
+import OTPForm from "./otp-form";
 
 // Define the schema for validation
 const resetPasswordSchema = z.object({
   accountEmail: z.string().min(1, "Account email is required.").email("Invalid email address."),
-  answer: z.string().min(1, "Answer is required."),
 });
 
 export default function ResetPassword({ onClose }) {
-  const [securityQuestion, setSecurityQuestion] = useState("");
-  const [questionAns, setQuestionAns] = useState(""); // State to store the answer
-  const [loading, setLoading] = useState(false);
   const [emailExists, setEmailExists] = useState(false);
   const [emailExistenceMessage, setEmailExistenceMessage] = useState("");
-  const [answerMatchError, setAnswerMatchError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const {
-    control,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors }
-  } = useForm({
+  // Extract `reset` from useForm
+  const { control, handleSubmit, watch, reset, formState: { errors } } = useForm({
     resolver: zodResolver(resetPasswordSchema),
-    defaultValues: {
-      accountEmail: "",
-      answer: "",
-    },
+    defaultValues: { accountEmail: "" },
   });
 
   const accountEmail = watch("accountEmail");
-  const answer = watch("answer");
 
   useEffect(() => {
     if (accountEmail) {
@@ -62,14 +40,6 @@ export default function ResetPassword({ onClose }) {
           setEmailExistenceMessage(
             exists ? "" : "An account with that email address does not exist."
           );
-
-          if (exists) {
-            // Fetch security question only if email exists
-            fetchSecurityQuestion();
-          } else {
-            setSecurityQuestion("");
-            setQuestionAns(""); // Clear the answer
-          }
         } catch (error) {
           toast.error("Failed to check if email exists.");
         } finally {
@@ -77,40 +47,12 @@ export default function ResetPassword({ onClose }) {
         }
       };
 
-      const fetchSecurityQuestion = async () => {
-        try {
-          const response = await axios.get(`/api/users/security-question/${accountEmail}`);
-          if (response.data.question) {
-            setSecurityQuestion(response.data.question);
-            setQuestionAns(response.data.answer); // Store the answer for comparison
-          } else {
-            setSecurityQuestion("This account has not set any security questions.");
-            setQuestionAns(""); // Clear the answer
-          }
-        } catch (error) {
-          setSecurityQuestion("This account has not set any security questions.");
-          setQuestionAns(""); // Clear the answer
-        }
-      };
-
       checkEmailExists();
     } else {
-      // Reset states if email is empty
       setEmailExists(false);
       setEmailExistenceMessage("");
-      setSecurityQuestion("");
-      setQuestionAns(""); // Clear the answer
-      setAnswerMatchError("");
     }
   }, [accountEmail]);
-
-  useEffect(() => {
-    if (answer && questionAns && answer !== questionAns) {
-      setAnswerMatchError("Your answer does not match the one you previously set.");
-    } else {
-      setAnswerMatchError("");
-    }
-  }, [answer, questionAns]);
 
   const onSubmit = async (data) => {
     console.log("Submit Data:", data); // Debugging: Log the form data
@@ -119,32 +61,25 @@ export default function ResetPassword({ onClose }) {
       return;
     }
 
-    if (answer !== questionAns) {
-      setAnswerMatchError("Your answer does not match the one you previously set.");
-      return;
-    }
-
     try {
-      console.log("Simulating password reset..."); // Debugging: Indicate start of simulation
       // Simulate success
-      toast.success("Reset instructions sent!");
-      onClose(); // Close dialog after action
+      toast.success("OTP link sent to your email!");
+      reset(); // Reset the form fields
+      onClose(); // Close the dialog or take another action
     } catch (error) {
-      console.error("Error during password reset:", error); // Debugging: Log errors
-      toast.error("Failed to send reset instructions.");
+      console.error("Error during OTP link sending:", error); // Debugging: Log errors
+      toast.error("Failed to send OTP link.");
     }
   };
 
-  const isButtonDisabled = !emailExists || !answer || answerMatchError;
+  const isButtonDisabled = !emailExists || loading;
 
   return (
     <DialogContent>
       <DialogTitle>Forgot your Password?</DialogTitle>
       <DialogDescription>
-        Provide your account email, then answer your set security question to
-        receive a password reset link.
+        Provide your account email to receive an OTP link for password reset.
       </DialogDescription>
-
       <form onSubmit={handleSubmit(onSubmit)}>
         <FormItem>
           <FormLabel className="font-bold">Account Email</FormLabel>
@@ -167,46 +102,12 @@ export default function ResetPassword({ onClose }) {
           )}
         </FormItem>
 
-        {emailExists && securityQuestion && (
-          <>
-            <p className="font-bold my-3">{securityQuestion}</p>
-            {securityQuestion !== "This account has not set any security questions." && (
-              <FormItem>
-                <div className="flex items-center justify-between">
-                  <FormLabel className="font-bold">Your Answer</FormLabel>
-                  <FormMessage>{errors.answer?.message}</FormMessage>
-                  {answerMatchError && <FormMessage>{answerMatchError}</FormMessage>}
-                </div>
-                <FormControl>
-                  <Controller
-                    name="answer"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        placeholder="Enter your answer"
-                        {...field}
-                        disabled={!accountEmail}
-                      />
-                    )}
-                  />
-                </FormControl>
-                <div className="flex gap-2 text-muted-foreground items-center">
-                  <InfoIcon size={12} />
-                  <FormDescription className="text-xs mt-1">
-                    Please ensure that the answer you provide matches the security question you set up earlier.
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
-          </>
-        )}
-
         <Button
           type="submit"
           className="w-full flex gap-2 items-center mt-3"
           disabled={isButtonDisabled}
         >
-          Reset my Password
+          Send OTP Link
           <ArrowRight size={16} />
         </Button>
       </form>
