@@ -17,12 +17,42 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
 import { Helmet, HelmetProvider } from "react-helmet-async";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/components/ui/vertical_tabs";
+import { ModSecurity } from "@/components/elements/mod-security";
+import { ModReport } from "@/components/elements/mod-report";
+import { ModAccount } from "@/components/elements/mod-account";
+import axios from "axios";
 
 function SettingsScreen() {
   const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.auth);
+  const [activeTab, setActiveTab] = useState("account"); // Manage active tab state
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
+  const [moderator, setModerator] = useState(null);
+  
+  // Fetch moderators and filter the one matching userInfo.id
+  useEffect(() => {
+    const fetchModerator = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/users/moderators");
+        const moderators = response.data;
+        const foundModerator = moderators.find((mod) => mod._id === userInfo._id);
+        setModerator(foundModerator);
+      } catch (error) {
+        console.error("Failed to fetch moderators", error);
+      }
+    };
+
+    if (userInfo?._id) {
+      fetchModerator();
+    }
+  }, [userInfo]);
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -52,7 +82,7 @@ function SettingsScreen() {
       console.log(err);
     }
   };
-
+  console.log()
   return (
     <HelmetProvider>
       <div className="">
@@ -105,6 +135,38 @@ function SettingsScreen() {
           </div>
         </header>
       </div>
+      <main className="p-4">
+        <h1 className="text-3xl mb-1">Settings</h1>
+        <p className="text-gray-500 text-sm mb-4">
+          Manage your account settings and other preferences.
+        </p>
+        <hr />
+
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="mt-2 grid grid-cols-1 sm:grid-cols-8"
+        >
+          <div className="col-span-1 sm:col-span-1 sm:p-2">
+            <TabsList className="flex flex-row sm:flex-col h-full gap-y-2">
+              <TabsTrigger value="account">Account</TabsTrigger>
+              <TabsTrigger value="report_form">Report Form</TabsTrigger>
+              <TabsTrigger value="security">Security</TabsTrigger>
+            </TabsList>
+          </div>
+          <div className="col-span-1 sm:col-span-7 py-2 px-4">
+            <TabsContent value="account">
+              <ModAccount user={moderator} />
+            </TabsContent>
+            <TabsContent value="report_form">
+              <ModReport user={userInfo} />
+            </TabsContent>
+            <TabsContent value="security">
+              <ModSecurity user={userInfo} />
+            </TabsContent>
+          </div>
+        </Tabs>
+      </main>
     </HelmetProvider>
   );
 }
