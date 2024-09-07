@@ -145,24 +145,24 @@ function SettingsScreen() {
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
-          className="mt-2 grid grid-cols-1 sm:grid-cols-8"
+          className="mt-2 grid grid-cols-1 lg:grid-cols-8"
         >
-          <div className="col-span-1 sm:col-span-1 sm:p-2">
-            <TabsList className="flex flex-row sm:flex-col h-full gap-y-2">
+          <div className="col-span-1 lg:col-span-1 lg:p-2">
+            <TabsList className="flex flex-row lg:flex-col h-full gap-y-2">
               <TabsTrigger value="account">Account</TabsTrigger>
               <TabsTrigger value="report_form">Report Form</TabsTrigger>
               <TabsTrigger value="security">Security</TabsTrigger>
             </TabsList>
           </div>
-          <div className="col-span-1 sm:col-span-7 py-2 px-4">
+          <div className="col-span-1 lg:col-span-7 py-2 px-4">
             <TabsContent value="account">
               <ModAccount user={moderator} />
             </TabsContent>
             <TabsContent value="report_form">
-              <ModReport user={userInfo} />
+              <ModReport user={moderator} />
             </TabsContent>
             <TabsContent value="security">
-              <ModSecurity user={userInfo} />
+              <ModSecurity user={moderator} />
             </TabsContent>
           </div>
         </Tabs>
