@@ -8,71 +8,46 @@ import { FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/f
 import { DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { ArrowRight } from "lucide-react";
+import { useRequestResetPasswordMutation } from "@/slices/users-api-slice";
 import axios from "axios";
-import OTPForm from "./otp-form";
 
-// Define the schema for validation
 const resetPasswordSchema = z.object({
-  accountEmail: z.string().min(1, "Account email is required.").email("Invalid email address."),
+  email: z.string().min(1, "Account email is required.").email("Invalid email address."),
 });
 
 export default function ResetPassword({ onClose }) {
-  const [emailExists, setEmailExists] = useState(false);
   const [emailExistenceMessage, setEmailExistenceMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [requestResetPassword] = useRequestResetPasswordMutation();
 
-  // Extract `reset` from useForm
-  const { control, handleSubmit, watch, reset, formState: { errors } } = useForm({
+  const { control, handleSubmit, reset, formState: { errors, isValid } } = useForm({
     resolver: zodResolver(resetPasswordSchema),
-    defaultValues: { accountEmail: "" },
+    mode: "onChange", // This enables real-time validation as the user types
+    defaultValues: { email: "" },
   });
 
-  const accountEmail = watch("accountEmail");
-
-  useEffect(() => {
-    if (accountEmail) {
-      setLoading(true);
-      const checkEmailExists = async () => {
-        try {
-          const response = await axios.get(`/api/users/check-email/${accountEmail}`);
-          const exists = response.data.exists;
-          setEmailExists(exists);
-          setEmailExistenceMessage(
-            exists ? "" : "An account with that email address does not exist."
-          );
-        } catch (error) {
-          toast.error("Failed to check if email exists.");
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      checkEmailExists();
-    } else {
-      setEmailExists(false);
-      setEmailExistenceMessage("");
-    }
-  }, [accountEmail]);
-
   const onSubmit = async (data) => {
-    console.log("Submit Data:", data); // Debugging: Log the form data
-    if (!emailExists) {
-      toast.error("An account with that email address does not exist.");
-      return;
-    }
-
     try {
-      // Simulate success
+      const response = await axios.get(`/api/users/check-email/${data.email}`);
+      const emailExists = response.data.exists;
+  
+      if (!emailExists) {
+        toast.error("An account with that email address does not exist.");
+        return;
+      }
+      
+      const res = await requestResetPassword(data).unwrap();
       toast.success("OTP link sent to your email!");
-      reset(); // Reset the form fields
-      onClose(); // Close the dialog or take another action
+      reset();
+      onClose();
+  
     } catch (error) {
-      console.error("Error during OTP link sending:", error); // Debugging: Log errors
+      console.error("Error during OTP link sending:", error);
       toast.error("Failed to send OTP link.");
     }
   };
 
-  const isButtonDisabled = !emailExists || loading;
+  const isButtonDisabled = !isValid || loading;
 
   return (
     <DialogContent>
@@ -85,7 +60,7 @@ export default function ResetPassword({ onClose }) {
           <FormLabel className="font-bold">Account Email</FormLabel>
           <FormControl>
             <Controller
-              name="accountEmail"
+              name="email"
               control={control}
               render={({ field }) => (
                 <Input
@@ -96,7 +71,7 @@ export default function ResetPassword({ onClose }) {
               )}
             />
           </FormControl>
-          <FormMessage>{errors.accountEmail?.message}</FormMessage>
+          <FormMessage>{errors.email?.message}</FormMessage>
           {emailExistenceMessage && (
             <FormMessage>{emailExistenceMessage}</FormMessage>
           )}

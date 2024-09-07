@@ -231,18 +231,18 @@ function ModeratorLoginScreen() {
                       )}
                     />
                     <div className="w-full flex items-center justify-end text-right">
-                      {/* <Dialog
+                      <Dialog
                         open={isResetPasswordDialogOpen}
                         onOpenChange={(open) => setResetPasswordDialogOpen(open)}
-                      > */}
+                      >
                       {/* <Dialog
                         open={isOTPDialogOpen}
                         onOpenChange={(open) => setisOTPDialogOpen(open)}
                       > */}
-                        <Dialog
+                        {/* <Dialog
                         open={isUpdatePassDialogOpen}
                         onOpenChange={(open) => setisUpdatePassDialogOpen(open)}
-                      >
+                      > */}
                         <DialogTrigger asChild>
                           <Button
                             variant="link"
@@ -257,9 +257,9 @@ function ModeratorLoginScreen() {
                           </Button>
                         </DialogTrigger>
 
-                        {/* <ResetPassword onClose={() => setResetPasswordDialogOpen(false)} /> */}
+                        <ResetPassword onClose={() => setResetPasswordDialogOpen(false)} />
                         {/* <OTPForm onClose={() => setisOTPDialogOpen(false)} /> */}
-                        <UpdatePasswordForm onClose={() => setisUpdatePassDialogOpen(false)}/>
+                        {/* <UpdatePasswordForm onClose={() => setisUpdatePassDialogOpen(false)}/> */}
                           
                       </Dialog>
                     </div>

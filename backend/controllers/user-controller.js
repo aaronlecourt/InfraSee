@@ -199,6 +199,27 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Verify OTP
+// @route   POST /api/users/verify-otp
+// @access  Public
+const verifyOtp = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+
+  // Find the user by email and check if OTP matches and is not expired
+  const user = await User.findOne({
+    email,
+    resetPasswordToken: otp,
+    resetPasswordExpires: { $gt: Date.now() }, // Check if OTP is still valid
+  });
+
+  if (user) {
+    res.status(200).json({ message: 'OTP is valid' });
+  } else {
+    res.status(400).json({ message: 'Invalid or expired OTP' });
+  }
+});
+
+
 // @desc    Request password reset
 // @route   POST /api/users/password-reset/request
 // @access  Public
@@ -329,6 +350,7 @@ export {
   logoutUser,
   getUserProfile,
   updateUserProfile,
+  verifyOtp,
   requestPasswordReset,
   resetPassword,
   getModerators,

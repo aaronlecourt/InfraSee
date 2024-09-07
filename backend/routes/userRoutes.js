@@ -7,6 +7,7 @@ import {
   logoutUser,
   getUserProfile,
   updateUserProfile,
+  verifyOtp,
   requestPasswordReset,
   resetPassword,
   getModerators,
@@ -26,6 +27,7 @@ router
   .route("/profile")
   .get(protect, getUserProfile)
   .put(protect, updateUserProfile);
+router.post('/verify-otp', verifyOtp);
 router.post("/password-reset/request", requestPasswordReset);
 router.post("/password-reset", resetPassword);
 router.get("/moderators", getModerators);

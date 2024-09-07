@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useVerifyOtpMutation } from "@/slices/users-api-slice";
 
 const otpSchema = z.object({
   otp: z.string()
