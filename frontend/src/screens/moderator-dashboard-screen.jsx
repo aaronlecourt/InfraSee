@@ -114,7 +114,7 @@ const ModeratorDashboardScreen = () => {
         <main className="p-4">
           <h1 className="text-3xl mb-1">Dashboard</h1>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="flex items-center justify-center flex-wrap gap-2 h-auto max-w-64">
+            <TabsList className="h-auto">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="reports">Reports</TabsTrigger>
               <TabsTrigger value="archives">Archives</TabsTrigger>
