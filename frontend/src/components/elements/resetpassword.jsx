@@ -15,18 +15,18 @@ const resetPasswordSchema = z.object({
   email: z.string().min(1, "Account email is required.").email("Invalid email address."),
 });
 
-export default function ResetPassword({ onClose }) {
+export default function ResetPasswordForm({ onClose }) {
   const [emailExistenceMessage, setEmailExistenceMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [requestResetPassword] = useRequestResetPasswordMutation();
 
   const { control, handleSubmit, reset, formState: { errors, isValid } } = useForm({
     resolver: zodResolver(resetPasswordSchema),
-    mode: "onChange", // This enables real-time validation as the user types
+    mode: "onChange", 
     defaultValues: { email: "" },
   });
 
-  const onSubmit = async (data) => {
+  const onOtpSubmit = async (data) => {
     try {
       const response = await axios.get(`/api/users/check-email/${data.email}`);
       const emailExists = response.data.exists;
@@ -55,7 +55,7 @@ export default function ResetPassword({ onClose }) {
       <DialogDescription>
         Provide your account email to receive an OTP link for password reset.
       </DialogDescription>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onOtpSubmit)}>
         <FormItem>
           <FormLabel className="font-bold">Account Email</FormLabel>
           <FormControl>

@@ -1,6 +1,5 @@
 import asyncHandler from "express-async-handler";
 import User from "../models/user-model.js";
-import SecurityQuestion from "../models/securityQuestion-model.js";
 import generateToken from "../utils/generate-token.js";
 import generateOtp from "../utils/otp-generator.js";
 import sendOtpEmail from "../utils/mail.js";
@@ -309,38 +308,6 @@ const checkEmailExists = asyncHandler(async (req, res) => {
 });
 
 
-// @desc    Get selected security question for email
-// @route   GET /api/users/security-question/:email
-// @access  Public
-const getSecurityQuestionByEmail = asyncHandler(async (req, res) => {
-  const { email } = req.params;
-
-  try {
-    // Find the user by email
-    const user = await User.findOne({ email });
-
-    if (user && user.slct_quest) {
-      // Find the security question by its ID
-      const securityQuestion = await SecurityQuestion.findById(user.slct_quest);
-
-      if (securityQuestion) {
-        // Return both the question and the stored answer
-        res.json({
-          question: securityQuestion.qst_name,
-          answer: user.quest_ans, // Include the answer here
-        });
-      } else {
-        res.status(404).json({ message: "Security question not found." });
-      }
-    } else {
-      res.status(404).json({ message: "No security question set for this email." });
-    }
-  } catch (error) {
-    console.error('Error in getSecurityQuestionByEmail:', error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
 
 export {
   authUser,
@@ -355,5 +322,4 @@ export {
   resetPassword,
   getModerators,
   checkEmailExists,
-  getSecurityQuestionByEmail,
 };

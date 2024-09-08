@@ -12,7 +12,6 @@ import {
   resetPassword,
   getModerators,
   checkEmailExists,
-  getSecurityQuestionByEmail,
 } from "../controllers/user-controller.js";
 import { protect } from "../middleware/auth-middleware.js";
 
@@ -32,6 +31,5 @@ router.post("/password-reset/request", requestPasswordReset);
 router.post("/password-reset", resetPassword);
 router.get("/moderators", getModerators);
 router.get("/check-email/:email", checkEmailExists);
-router.get("/security-question/:email", getSecurityQuestionByEmail);
 
 export default router;

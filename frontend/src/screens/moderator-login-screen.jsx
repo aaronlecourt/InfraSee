@@ -37,7 +37,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-import ResetPassword from "@/components/elements/resetpassword";
+import ResetPasswordForm from "@/components/elements/resetpassword";
 import OTPForm from "@/components/elements/otp-form";
 import UpdatePasswordForm from "@/components/elements/updatePass-form";
 
@@ -80,12 +80,9 @@ function ModeratorLoginScreen() {
   const { handleSubmit, control } = form;
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isSheetOpen, setSheetOpen] = useState(false);
-
-  const [isResetPasswordDialogOpen, setResetPasswordDialogOpen] =
-    useState(false);
+  const [isResetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
   const [isOTPDialogOpen, setisOTPDialogOpen] = useState(false);
   const [isUpdatePassDialogOpen, setisUpdatePassDialogOpen] = useState(false);
-
   const [isTermsDialogOpen, setTermsDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -94,7 +91,7 @@ function ModeratorLoginScreen() {
     }
   }, [navigate, userInfo]);
 
-  const onSubmit = async (data) => {
+  const onLoginSubmit = async (data) => {
     try {
       const res = await login(data).unwrap();
       dispatch(setCredentials({ ...res }));
@@ -175,7 +172,7 @@ function ModeratorLoginScreen() {
                 </div>
 
                 <Form {...form}>
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+                  <form onSubmit={handleSubmit(onLoginSubmit)} className="space-y-3">
                     <FormField
                       control={control}
                       name="email"
@@ -257,7 +254,7 @@ function ModeratorLoginScreen() {
                           </Button>
                         </DialogTrigger>
 
-                        <ResetPassword onClose={() => setResetPasswordDialogOpen(false)} />
+                        <ResetPasswordForm onClose={() => setResetPasswordDialogOpen(false)} />
                         {/* <OTPForm onClose={() => setisOTPDialogOpen(false)} /> */}
                         {/* <UpdatePasswordForm onClose={() => setisUpdatePassDialogOpen(false)}/> */}
                           
