@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useFormContext, useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { useRequestResetPasswordMutation } from '@/slices/users-api-slice';
+import { useCheckEmailMutation } from '@/slices/users-api-slice';
 import axios from 'axios';
 
 const resetPasswordSchema = z.object({
@@ -20,9 +22,10 @@ export default function ResetPasswordForm({ onClose, onOtpSubmitted }) {
     defaultValues: { email: "" },
   });
 
+  const [request] = useRequestResetPasswordMutation();
+  const [check] = useCheckEmailMutation();
   const [emailExistenceMessage, setEmailExistenceMessage] = useState("");
   const [loading, setLoading] = useState(false);
-
   const { control, handleSubmit, reset, formState: { errors, isValid } } = methods;
 
   const onOtpSubmit = async (data) => {
@@ -37,10 +40,10 @@ export default function ResetPasswordForm({ onClose, onOtpSubmitted }) {
         return;
       }
 
-      // Call your API or mutation to send OTP here
+      const res = await request(data).unwrap();
       toast.success("OTP link sent to your email!");
       reset();
-      onOtpSubmitted(); // Notify parent component when OTP is sent
+      onOtpSubmitted(data); // Notify parent component when OTP is sent
     } catch (error) {
       console.error("Error during OTP link sending:", error);
       toast.error("Failed to send OTP link.");

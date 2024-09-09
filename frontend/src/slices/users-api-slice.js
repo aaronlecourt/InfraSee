@@ -44,6 +44,13 @@ export const userApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    checkEmail: builder.mutation({
+      query: (data) => ({
+        url: `${USERS_URL}/check-email/${encodeURIComponent(email)}`,
+        method: 'GET',
+        body: data,
+      }),
+    }),
     verifyOtp: builder.mutation({
       query: (data) => ({
         url: `${USERS_URL}/verify-otp`,
@@ -75,6 +82,7 @@ export const {
   useLogoutMutation,
   useRegisterMutation,
   useUpdateUserMutation,
+  useCheckEmailMutation,
   useVerifyOtpMutation,
   useRequestResetPasswordMutation,
   useResetPasswordMutation,

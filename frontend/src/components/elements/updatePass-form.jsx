@@ -1,36 +1,67 @@
-import React, { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { toast } from 'sonner';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Eye, EyeOff } from 'lucide-react';
+import React, { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Eye, EyeOff } from "lucide-react";
+import { useResetPasswordMutation } from "@/slices/users-api-slice";
 
-const newPasswordSchema = z.object({
-  newPassword: z.string()
-    .min(1, "New password is required.")
-    .min(8, "Password must be at least 8 characters long.")
-    .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter." })
-    .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter." })
-    .regex(/\d/, { message: "Password must contain at least one number." })
-    .regex(/[\W_]/, { message: "Password must contain at least one special character." }),
-  confirmPassword: z.string()
-    .min(1, "Confirm password is required.")
-    .min(8, "Confirmation password must be at least 8 characters long.")
-}).refine(data => data.newPassword === data.confirmPassword, {
-  message: "Passwords do not match.",
-  path: ["confirmPassword"],
-});
+const newPasswordSchema = z
+  .object({
+    newPassword: z
+      .string()
+      .min(1, "New password is required.")
+      .min(8, "Password must be at least 8 characters long.")
+      .regex(/[A-Z]/, {
+        message: "Password must contain at least one uppercase letter.",
+      })
+      .regex(/[a-z]/, {
+        message: "Password must contain at least one lowercase letter.",
+      })
+      .regex(/\d/, { message: "Password must contain at least one number." })
+      .regex(/[\W_]/, {
+        message: "Password must contain at least one special character.",
+      }),
+    confirmPassword: z
+      .string()
+      .min(1, "Confirm password is required.")
+      .min(8, "Confirmation password must be at least 8 characters long."),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  });
 
-export default function UpdatePasswordForm({ onClose, onPasswordUpdated }) {
-  const { control, handleSubmit, reset, formState: { errors } } = useForm({
+export default function UpdatePasswordForm({
+  onClose,
+  onPasswordUpdated,
+  email,
+  otp,
+}) {
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
     resolver: zodResolver(newPasswordSchema),
     defaultValues: { newPassword: "", confirmPassword: "" },
   });
 
+  const [resetPass] = useResetPasswordMutation();
   const [newPasswordVisible, setNewPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
@@ -38,8 +69,8 @@ export default function UpdatePasswordForm({ onClose, onPasswordUpdated }) {
     console.log("Submitted Data:", data);
 
     try {
-      // Call your API or mutation for updating the password here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+      const res = await resetPass({ ...data, email, otp }).unwrap();
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success("Password updated successfully!");
       reset();
       onClose();
@@ -82,7 +113,9 @@ export default function UpdatePasswordForm({ onClose, onPasswordUpdated }) {
               </button>
             </div>
           </FormControl>
-          {errors.newPassword && <FormMessage>{errors.newPassword.message}</FormMessage>}
+          {errors.newPassword && (
+            <FormMessage>{errors.newPassword.message}</FormMessage>
+          )}
         </FormItem>
 
         <FormItem>
@@ -103,20 +136,25 @@ export default function UpdatePasswordForm({ onClose, onPasswordUpdated }) {
               />
               <button
                 type="button"
-                onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
+                onClick={() =>
+                  setConfirmPasswordVisible(!confirmPasswordVisible)
+                }
                 className="absolute inset-y-0 right-3 flex items-center text-sm"
               >
-                {confirmPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+                {confirmPasswordVisible ? (
+                  <EyeOff size={18} />
+                ) : (
+                  <Eye size={18} />
+                )}
               </button>
             </div>
           </FormControl>
-          {errors.confirmPassword && <FormMessage>{errors.confirmPassword.message}</FormMessage>}
+          {errors.confirmPassword && (
+            <FormMessage>{errors.confirmPassword.message}</FormMessage>
+          )}
         </FormItem>
 
-        <Button
-          type="submit"
-          className="w-full mt-3"
-        >
+        <Button type="submit" className="w-full mt-3">
           Update Password
         </Button>
       </form>
