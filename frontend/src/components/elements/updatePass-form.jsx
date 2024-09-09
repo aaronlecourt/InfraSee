@@ -1,31 +1,22 @@
-import React, { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { toast } from "sonner";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Eye, EyeOff } from "lucide-react";
+import React, { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Eye, EyeOff } from 'lucide-react';
 
-// Define the schema for validation
 const newPasswordSchema = z.object({
   newPassword: z.string()
     .min(1, "New password is required.")
     .min(8, "Password must be at least 8 characters long.")
-    .regex(/[A-Z]/, {
-      message: "Password must contain at least one uppercase letter.",
-    })
-    .regex(/[a-z]/, {
-      message: "Password must contain at least one lowercase letter.",
-    })
-    .regex(/\d/, {
-      message: "Password must contain at least one number.",
-    })
-    .regex(/[\W_]/, {
-      message: "Password must contain at least one special character.",
-    }),
+    .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter." })
+    .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter." })
+    .regex(/\d/, { message: "Password must contain at least one number." })
+    .regex(/[\W_]/, { message: "Password must contain at least one special character." }),
   confirmPassword: z.string()
     .min(1, "Confirm password is required.")
     .min(8, "Confirmation password must be at least 8 characters long.")
@@ -34,7 +25,7 @@ const newPasswordSchema = z.object({
   path: ["confirmPassword"],
 });
 
-export default function UpdatePasswordForm({ onClose }) {
+export default function UpdatePasswordForm({ onClose, onPasswordUpdated }) {
   const { control, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(newPasswordSchema),
     defaultValues: { newPassword: "", confirmPassword: "" },
@@ -45,7 +36,10 @@ export default function UpdatePasswordForm({ onClose }) {
 
   const onSubmit = async (data) => {
     console.log("Submitted Data:", data);
+
     try {
+      // Call your API or mutation for updating the password here
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
       toast.success("Password updated successfully!");
       reset();
       onClose();
@@ -74,6 +68,7 @@ export default function UpdatePasswordForm({ onClose }) {
                   <Input
                     type={newPasswordVisible ? "text" : "password"}
                     placeholder="Enter new password"
+                    autoComplete="new-password"
                     {...field}
                   />
                 )}
@@ -101,6 +96,7 @@ export default function UpdatePasswordForm({ onClose }) {
                   <Input
                     type={confirmPasswordVisible ? "text" : "password"}
                     placeholder="Confirm new password"
+                    autoComplete="confirm-password"
                     {...field}
                   />
                 )}

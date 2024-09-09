@@ -1,42 +1,51 @@
-import React from "react";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { toast } from "sonner";
-import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
+import React from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import {
   InputOTP,
   InputOTPGroup,
+  InputOTPSeparator,
   InputOTPSlot,
-} from "@/components/ui/input-otp";
-import { Button } from "@/components/ui/button";
-import { FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { useVerifyOtpMutation } from "@/slices/users-api-slice";
+} from '@/components/ui/input-otp';
 
+// Schema for OTP verification
 const otpSchema = z.object({
   otp: z.string()
     .length(6, "OTP must be 6 digits long.")
-    .regex(REGEXP_ONLY_DIGITS_AND_CHARS, "Invalid OTP format."),
+    .regex(/^\d+$/, "Invalid OTP format."),
 });
 
-export default function OTPForm({ onClose }) {
-  const { control, handleSubmit, reset, formState: { errors } } = useForm({
+export default function OTPForm({ onClose, onOtpVerified }) {
+  const { control, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm({
     resolver: zodResolver(otpSchema),
     defaultValues: { otp: "" },
   });
 
+  const otpValue = watch("otp");
+
   const onSubmit = async (data) => {
-    console.log("Submitted OTP:", data);
+    console.log("Submitted OTP:", data.otp); // Debugging line
 
     try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
       toast.success("OTP verified successfully!");
       reset();
-      onClose();
+      onOtpVerified(); // Notify parent component when OTP is verified
     } catch (error) {
       console.error("Error verifying OTP:", error);
       toast.error("Failed to verify OTP.");
     }
+  };
+
+  // Helper to handle OTP changes
+  const handleOtpChange = (value) => {
+    setValue('otp', value, { shouldValidate: true });
   };
 
   return (
@@ -48,25 +57,34 @@ export default function OTPForm({ onClose }) {
 
       <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col items-center">
         <FormItem>
-          <FormLabel className="font-bold hidden">OTP</FormLabel>
-          <FormControl className="flex justify-center">
-            <InputOTP maxLength={6} pattern={REGEXP_ONLY_DIGITS_AND_CHARS}>
-              <InputOTPGroup className="flex">
-                {[0, 1, 2, 3, 4, 5].map((index) => (
-                  <Controller
-                    key={index}
-                    name={`otp.${index}`}
-                    control={control}
-                    render={({ field }) => (
+          <FormLabel className="font-bold">OTP</FormLabel>
+          <FormControl>
+            <Controller
+              name="otp"
+              control={control}
+              render={({ field }) => (
+                <InputOTP
+                  maxLength={6}
+                  value={otpValue}
+                  onChange={(value) => handleOtpChange(value)}
+                >
+                  <InputOTPGroup>
+                    {Array.from({ length: 6 }).map((_, index) => (
                       <InputOTPSlot
+                        key={index}
                         index={index}
-                        {...field}
+                        value={otpValue[index] || ''}
+                        onChange={(e) => {
+                          const newValue = otpValue.slice(0, index) + e.target.value + otpValue.slice(index + 1);
+                          handleOtpChange(newValue);
+                        }}
                       />
-                    )}
-                  />
-                ))}
-              </InputOTPGroup>
-            </InputOTP>
+                    ))}
+                  </InputOTPGroup>
+                  <InputOTPSeparator />
+                </InputOTP>
+              )}
+            />
           </FormControl>
           {errors.otp && <FormMessage>{errors.otp.message}</FormMessage>}
         </FormItem>

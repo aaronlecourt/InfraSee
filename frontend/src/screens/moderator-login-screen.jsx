@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useModeratorLoginMutation } from "../slices/users-api-slice";
 import { setCredentials } from "../slices/auth-slice";
 import { toast } from "sonner";
-import { useForm } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Eye, EyeOff, Lock } from "lucide-react";
@@ -27,8 +27,6 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
-import { Helmet, HelmetProvider } from "react-helmet-async";
 import {
   Dialog,
   DialogTrigger,
@@ -36,9 +34,9 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import ResetPasswordForm from "@/components/elements/resetpassword";
-import OTPForm from "@/components/elements/otp-form";
-import UpdatePasswordForm from "@/components/elements/updatePass-form";
+import { Menu } from "lucide-react";
+import { Helmet, HelmetProvider } from "react-helmet-async";
+import MultiStepForm from "@/components/elements/multistep-form";
 
 const formSchema = z.object({
   email: z
@@ -67,7 +65,7 @@ function ModeratorLoginScreen() {
   const [login] = useModeratorLoginMutation();
   const { userInfo } = useSelector((state) => state.auth);
 
-  const form = useForm({
+  const methods = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
@@ -75,13 +73,10 @@ function ModeratorLoginScreen() {
     },
   });
 
-  const { handleSubmit, control } = form;
+  const { handleSubmit, control } = methods;
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [isMultiStepFormOpen, setMultiStepFormOpen] = useState(false);
   const [isSheetOpen, setSheetOpen] = useState(false);
-  const [isResetPasswordDialogOpen, setResetPasswordDialogOpen] =
-    useState(false);
-  const [isOTPDialogOpen, setisOTPDialogOpen] = useState(false);
-  const [isUpdatePassDialogOpen, setisUpdatePassDialogOpen] = useState(false);
   const [isTermsDialogOpen, setTermsDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -170,7 +165,7 @@ function ModeratorLoginScreen() {
                   </p>
                 </div>
 
-                <Form {...form}>
+                <FormProvider {...methods}>
                   <form
                     onSubmit={handleSubmit(onLoginSubmit)}
                     className="space-y-3"
@@ -232,7 +227,7 @@ function ModeratorLoginScreen() {
 
                     <div className="w-full flex items-center justify-end text-right">
                       <Button
-                        onClick={() => setResetPasswordDialogOpen(true)}
+                        onClick={() => setMultiStepFormOpen(true)}
                         type="button"
                         variant="link"
                         className="flex items-center justify-end text-right"
@@ -248,7 +243,15 @@ function ModeratorLoginScreen() {
                       Sign In
                     </Button>
                   </form>
-                </Form>
+                </FormProvider>
+
+                <FormProvider>
+                  <MultiStepForm
+                    open={isMultiStepFormOpen}
+                    onClose={() => setMultiStepFormOpen(false)}
+                  />
+                </FormProvider>
+
                 <div className="mt-3 text-sm text-gray-500 text-center flex flex-col items-center lg:flex-row md:items-center md:justify-center md:space-x-1">
                   <span className="md:mt-2">
                     By clicking sign in, you agree to our
@@ -276,10 +279,6 @@ function ModeratorLoginScreen() {
               </div>
             </div>
           </div>
-          <ResetPasswordForm
-            open={isResetPasswordDialogOpen}
-            onClose={() => setResetPasswordDialogOpen(false)}
-          />
         </main>
       </div>
     </HelmetProvider>
