@@ -32,8 +32,7 @@ export default function OTPForm({ onClose, onOtpVerified }) {
     console.log("Submitted OTP:", data.otp); // Debugging line
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+      
       toast.success("OTP verified successfully!");
       reset();
       onOtpVerified(); // Notify parent component when OTP is verified
@@ -57,7 +56,7 @@ export default function OTPForm({ onClose, onOtpVerified }) {
 
       <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col items-center">
         <FormItem>
-          <FormLabel className="font-bold">OTP</FormLabel>
+          <FormLabel className="font-bold hidden">OTP</FormLabel>
           <FormControl>
             <Controller
               name="otp"
@@ -81,7 +80,6 @@ export default function OTPForm({ onClose, onOtpVerified }) {
                       />
                     ))}
                   </InputOTPGroup>
-                  <InputOTPSeparator />
                 </InputOTP>
               )}
             />
