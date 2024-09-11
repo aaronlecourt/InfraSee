@@ -140,6 +140,14 @@ const AdminDashboardScreen = () => {
                 </AvatarFallback>
               </Avatar>
             </div>
+            {userInfo && (
+              <div className="flex flex-col">
+                <p className="font-bold leading-none">{userInfo.name}</p>
+                <p className="font-normal text-xs text-gray-500">
+                  {userInfo.email}
+                </p>
+              </div>
+            )}
           </div>
           <div className="flex justify-between gap-2 mt-2">
             <div className="flex">
