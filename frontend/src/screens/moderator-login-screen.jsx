@@ -37,6 +37,7 @@ import {
 import { Menu } from "lucide-react";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import MultiStepForm from "@/components/elements/multistep-form";
+import TermsAndConditions from "@/components/elements/terms-conditions";
 
 const formSchema = z.object({
   email: z
@@ -271,7 +272,7 @@ function ModeratorLoginScreen() {
                     <DialogContent>
                       <DialogTitle>Terms and Conditions</DialogTitle>
                       <DialogDescription>
-                        {/* Add terms and conditions text here */}
+                        <TermsAndConditions/>
                       </DialogDescription>
                     </DialogContent>
                   </Dialog>
