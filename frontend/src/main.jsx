@@ -21,10 +21,10 @@ import AdminDashboardScreen from "./screens/admin-dashboard-screen.jsx";
 import ModeratorDashboardScreen from "./screens/moderator-dashboard-screen.jsx";
 import AdminRoute from "./components/admin-route.jsx";
 import ModeratorRoute from "./components/moderator-route.jsx";
-import UnauthorizedPage from "./screens/unauthorized-screen.jsx";
 import NotFoundPage from "./screens/not-found-screen.jsx";
 import AdminReportsScreen from "./screens/admin-reports.jsx";
-import { FormProvider } from './FormContext'; // Import FormProvider
+import UnauthorizedPage from "./screens/unauthorized-screen.jsx";
+import { FormProvider } from "./FormContext"; // Import FormProvider
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -39,7 +39,10 @@ const router = createBrowserRouter(
         <Route path="/settings" element={<SettingsScreen />} />
       </Route>
       <Route element={<ModeratorRoute />}>
-        <Route path="/moderator/dashboard" element={<ModeratorDashboardScreen />} />
+        <Route
+          path="/moderator/dashboard"
+          element={<ModeratorDashboardScreen />}
+        />
       </Route>
 
       {/* Admin routes */}
@@ -58,9 +61,9 @@ const router = createBrowserRouter(
 ReactDOM.createRoot(document.getElementById("root")).render(
   <Provider store={store}>
     <React.StrictMode>
-      <FormProvider>
-        <RouterProvider router={router} />
-      </FormProvider>
+        <FormProvider>
+          <RouterProvider router={router} />
+        </FormProvider>
     </React.StrictMode>
   </Provider>
 );
