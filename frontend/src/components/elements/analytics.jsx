@@ -1,9 +1,9 @@
 import React from "react";
 
-export function Archives() {
+export function Analytics() {
   return (
     <>
-    <p>archives</p>
+    <p>Analytics</p>
     </>
   );
 }

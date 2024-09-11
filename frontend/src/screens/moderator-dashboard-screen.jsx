@@ -17,6 +17,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Overview } from "@/components/elements/overview";
 import { Archives } from "@/components/elements/archives";
 import { Reports } from "@/components/elements/reports";
+import { Analytics } from "@/components/elements/analytics";
 import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
 import { Helmet, HelmetProvider } from "react-helmet-async";
@@ -118,6 +119,7 @@ const ModeratorDashboardScreen = () => {
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="reports">Reports</TabsTrigger>
               <TabsTrigger value="archives">Archives</TabsTrigger>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
             </TabsList>
             <TabsContent value="overview">
               <Overview goToReportsTab={goToReportsTab} />{" "}
@@ -128,6 +130,9 @@ const ModeratorDashboardScreen = () => {
             </TabsContent>
             <TabsContent value="archives">
               <Archives />
+            </TabsContent>
+            <TabsContent value="analytics">
+              <Analytics />
             </TabsContent>
           </Tabs>
         </main>

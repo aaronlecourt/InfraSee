@@ -31,11 +31,7 @@ const formSchema = z.object({
   email: z
     .string()
     .min(1, "Email is required.")
-    .email("Invalid email address.")
-    .regex(
-      /@m\.infrasee\.com$/,
-      "Email must be from the domain @m.infrasee.com"
-    ),
+    .email("Invalid email address."),
   password: z
     .string()
     .min(1, "Password is required.")
@@ -132,7 +128,7 @@ export function RegisterForm() {
                 <FormControl>
                   <Input
                     type="email"
-                    placeholder="user@m.infrasee.com"
+                    placeholder="user@gmail.com"
                     autoComplete="email"
                     {...field}
                   />

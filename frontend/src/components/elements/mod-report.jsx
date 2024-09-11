@@ -43,15 +43,15 @@ export function ModReport({ user }) {
             Your report form must always have:
           </p>
 
-          <h6 className="font-bold text-md">Full Name</h6>
+          <h6 className="font-bold text-[1rem]">Full Name</h6>
           <p className="text-gray-500 text-sm mb-4">Reporter Identification</p>
 
-          <h6 className="font-bold text-md">Contact Number</h6>
+          <h6 className="font-bold text-[1rem]">Contact Number</h6>
           <p className="text-gray-500 text-sm mb-4">
             Provides a way to contact and notify reporter
           </p>
 
-          <h6 className="font-bold text-md">Description</h6>
+          <h6 className="font-bold text-[1rem]">Description</h6>
           <p className="text-gray-500 text-sm mb-4">
             Provide a detailed description of a report
           </p>
@@ -80,7 +80,7 @@ export function ModReport({ user }) {
                 )}
               />
               <div>
-                <h6 className="font-bold text-md">Image Upload</h6>
+                <h6 className="font-bold text-[1rem]">Image Upload</h6>
                 <p className="text-gray-500 text-sm">
                   Allow reporters to upload an image
                 </p>
@@ -102,7 +102,7 @@ export function ModReport({ user }) {
                 )}
               />
               <div>
-                <h6 className="font-bold text-md">Email Address</h6>
+                <h6 className="font-bold text-[1rem]">Email Address</h6>
                 <p className="text-gray-500 text-sm">
                   Provide another way to contact the reporter
                 </p>
@@ -124,7 +124,7 @@ export function ModReport({ user }) {
                 )}
               />
               <div>
-                <h6 className="font-bold text-md">Account Number</h6>
+                <h6 className="font-bold text-[1rem]">Account Number</h6>
                 <p className="text-gray-500 text-sm">
                   Make sure reports are credible and made by users with an
                   account under your company
