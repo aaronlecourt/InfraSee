@@ -52,13 +52,13 @@ export function ModSecurity() {
 
   return (
     <FormProvider {...methods}>
-      <div className="sm:w-1/2 w-full">
+      <div className="">
         <h1 className="text-xl font-bold mb-2">Security</h1>
         <p className="text-gray-500 text-sm mb-4">Change your password.</p>
         <hr className="mb-4" />
 
         <Form {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:w-1/2 w-full">
             <FormField
               control={control}
               name="currentPassword"

@@ -121,11 +121,11 @@ const ModeratorDashboardScreen = () => {
               <TabsTrigger value="archives">Archives</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
             </TabsList>
-            <TabsContent value="overview">
-              <Overview goToReportsTab={goToReportsTab} />{" "}
+            <TabsContent value="overview" className="h-[calc(100vh-11rem)]">
+              <Overview goToReportsTab={goToReportsTab}/>
               {/* Pass function as prop */}
             </TabsContent>
-            <TabsContent value="reports">
+            <TabsContent value="reports" className="h-[calc(100vh-11rem)]">
               <Reports />
             </TabsContent>
             <TabsContent value="archives">

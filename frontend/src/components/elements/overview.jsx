@@ -14,18 +14,20 @@ import {
 
 export function Overview({ goToReportsTab }) {
   return (
-    <>
+    <div className="h-full flex flex-col">
       <ReportCounter
         total_reps={0}
         inprog_reps={0}
         resolved_reps={0}
         dismissed_reps={0}
       />
-      <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 h-auto">
-        <div className="border rounded-md col-span-1 sm:col-span-2 min-h-[20rem]">map here</div>
+      <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 h-full">
+        <div className="border rounded-md col-span-1 sm:col-span-2 min-h-[30rem]">
+          map here
+        </div>
         <div className="col-span-1 sm:col-span-1">
-          <Card>
-            <CardHeader>
+          <Card className="flex flex-col h-full min-h-[30rem]">
+            <CardHeader className="flex-none">
               <CardTitle className="text-base font-bold leading-none">
                 Recent Reports
               </CardTitle>
@@ -33,13 +35,15 @@ export function Overview({ goToReportsTab }) {
                 Below are some of your most recent reports.
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[200px] w-full p-1">
+
+            <CardContent className="flex-1 w-full overflow-hidden">
+              <ScrollArea className="h-full px-5">
                 {/* top 5 most recent reports here */}
                 reports here
               </ScrollArea>
             </CardContent>
-            <CardFooter>
+
+            <CardFooter className="flex-none">
               <Button
                 variant="link"
                 className="w-full text-gray-500 flex gap-1"
@@ -52,6 +56,6 @@ export function Overview({ goToReportsTab }) {
           </Card>
         </div>
       </div>
-    </>
+    </div>
   );
 }

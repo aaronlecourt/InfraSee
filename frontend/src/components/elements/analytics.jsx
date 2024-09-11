@@ -2,8 +2,8 @@ import React from "react";
 
 export function Analytics() {
   return (
-    <>
-    <p>Analytics</p>
-    </>
+    <div className="h-full">
+      <p>Analytics</p>
+    </div>
   );
 }

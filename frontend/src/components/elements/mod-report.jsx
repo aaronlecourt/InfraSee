@@ -14,7 +14,6 @@ const FormSchema = z.object({
 });
 
 export function ModReport({ user }) {
-  console.log(user.image_toggled);
   // Initialize the form with default values based on user prop
   const { control, handleSubmit } = useForm({
     resolver: zodResolver(FormSchema),
@@ -32,100 +31,102 @@ export function ModReport({ user }) {
 
   return (
     <div className="w-full">
-      <h1 className="text-xl font-bold mb-2">Report Form</h1>
-      <p className="text-gray-500 text-sm mb-4">
+      <h1 className="text-2xl font-bold mb-2">Report Form</h1>
+      <p className="text-gray-600 text-sm mb-4">
         Modify and toggle the contents of your report form.
       </p>
-      <hr />
-      <div className="flex-row sm:flex gap-x-4">
-        <div className="p-4 sm:border-r">
-          <p className="text-gray-500 text-sm mb-4">
+      <hr className="" />
+
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex-1 p-4 sm:border-r border-gray-300">
+          <p className="text-gray-600 text-sm mb-4">
             Your report form must always have:
           </p>
 
-          <h6 className="font-bold text-[1rem]">Full Name</h6>
-          <p className="text-gray-500 text-sm mb-4">Reporter Identification</p>
+          <div className="mb-6">
+            <h6 className="font-bold text-base">Full Name</h6>
+            <p className="text-gray-500 text-xs font-normal">Reporter Identification</p>
+          </div>
 
-          <h6 className="font-bold text-[1rem]">Contact Number</h6>
-          <p className="text-gray-500 text-sm mb-4">
-            Provides a way to contact and notify reporter
-          </p>
+          <div className="mb-6">
+            <h6 className="font-bold text-base">Contact Number</h6>
+            <p className="text-gray-500 text-xs font-normal">
+              Provides a way to contact and notify reporter
+            </p>
+          </div>
 
-          <h6 className="font-bold text-[1rem]">Description</h6>
-          <p className="text-gray-500 text-sm mb-4">
-            Provide a detailed description of a report
-          </p>
+          <div className="mb-6">
+            <h6 className="font-bold text-base">Description</h6>
+            <p className="text-gray-500 text-xs font-normal">
+              Provide a detailed description of a report
+            </p>
+          </div>
         </div>
-        <div className="py-4">
-          <p className="text-gray-500 text-sm mb-4">
+
+        <div className="flex-1 p-4">
+          <p className="text-gray-600 text-sm mb-4">
             You can toggle the following fields:
           </p>
 
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col gap-y-4"
+            className="flex flex-col gap-6"
           >
-            <div className="flex gap-4 items-center">
+            <div className="flex items-center gap-4">
               <Controller
                 name="image_toggle"
                 control={control}
                 render={({ field }) => (
-                  <div>
-                    <Switch
-                      id="image_toggle-switch"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </div>
+                  <Switch
+                    id="image_toggle-switch"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 )}
               />
               <div>
-                <h6 className="font-bold text-[1rem]">Image Upload</h6>
-                <p className="text-gray-500 text-sm">
+                <h6 className="font-bold text-base">Image Upload</h6>
+                <p className="text-gray-500 text-xs font-normal">
                   Allow reporters to upload an image
                 </p>
               </div>
             </div>
 
-            <div className="flex gap-4 items-center">
+            <div className="flex items-center gap-4">
               <Controller
                 name="email_toggle"
                 control={control}
                 render={({ field }) => (
-                  <div>
-                    <Switch
-                      id="email_toggle-switch"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </div>
+                  <Switch
+                    id="email_toggle-switch"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 )}
               />
               <div>
-                <h6 className="font-bold text-[1rem]">Email Address</h6>
-                <p className="text-gray-500 text-sm">
+                <h6 className="font-bold text-base">Email Address</h6>
+                <p className="text-gray-500 text-xs font-normal">
                   Provide another way to contact the reporter
                 </p>
               </div>
             </div>
 
-            <div className="flex gap-4 items-center">
+            <div className="flex items-center gap-4">
               <Controller
                 name="accntnum_toggle"
                 control={control}
                 render={({ field }) => (
-                  <div>
-                    <Switch
-                      id="accntnum_toggle-switch"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </div>
+                  <Switch
+                    id="accntnum_toggle-switch"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 )}
               />
               <div>
-                <h6 className="font-bold text-[1rem]">Account Number</h6>
-                <p className="text-gray-500 text-sm">
+                <h6 className="font-bold text-base">Account Number</h6>
+                <p className="text-gray-500 text-xs font-normal">
                   Make sure reports are credible and made by users with an
                   account under your company
                 </p>
@@ -133,7 +134,7 @@ export function ModReport({ user }) {
             </div>
 
             <Button type="submit" className="hidden">Submit</Button> 
-            {/* Button is hidden since dapat kada toggle naguupdate na agad may toast success langs */}
+            {/* Button is hidden since kada toggle naguupdate na agad may toast success langs */}
           </form>
         </div>
       </div>

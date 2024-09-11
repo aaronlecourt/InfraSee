@@ -2,8 +2,8 @@ import React from "react";
 
 export function Archives() {
   return (
-    <>
-    <p>archives</p>
-    </>
+    <div className="h-full">
+      <p>archives</p>
+    </div>
   );
 }
