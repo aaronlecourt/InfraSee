@@ -1,3 +1,4 @@
+// src/pages/AdminDashboardScreen.jsx
 import React, { useState, useEffect } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
@@ -14,9 +15,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-  DialogDescription
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { RegisterForm } from "@/components/elements/register-form";
+import { DataTable } from "@/components/ui/DataTable";
+import { columnsAccounts } from "@/components/data-table/columnsAccounts";
+// import { columnsReports } from "@/components/data-table/columnsReports";
+import axios from "axios";
 
 const AdminDashboardScreen = () => {
   const navigate = useNavigate();
@@ -27,6 +32,42 @@ const AdminDashboardScreen = () => {
 
   // Dialog state
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Data table state
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch data from both endpoints concurrently
+        const [fetchAccounts, fetchInfrastructureTypes] = await Promise.all([
+          axios.get("/api/users/moderators"),
+          axios.get("/api/infrastructure-types")
+        ]);
+  
+        // Create a map of infrastructure types with infra_type as key and infra_name as value
+        const infraTypeMap = fetchInfrastructureTypes.data.reduce((acc, infra) => {
+          acc[infra._id] = infra.infra_name;
+          return acc;
+        }, {});
+  
+        // Map through accounts data and replace infra_type with infra_name
+        const updatedAccounts = fetchAccounts.data.map(account => ({
+          ...account,
+          infra_name: infraTypeMap[account.infra_type] || account.infra_type // Default to original infra_type if no match found
+        }));
+  
+        // Set the updated data to state
+        setData(updatedAccounts);
+        console.log(updatedAccounts); // For debugging
+  
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+  
+    fetchData();
+  }, [isDialogOpen]);
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -62,14 +103,17 @@ const AdminDashboardScreen = () => {
     }
   };
 
+  const columns =
+    activeButton === "accounts" ? columnsAccounts : columnsReports;
+
   return (
-    <HelmetProvider>
-      <div className="grid grid-cols-1 xl:grid-cols-5">
+    <div className="grid grid-cols-1 xl:grid-cols-5">
+      <HelmetProvider>
         <Helmet>
           <title>{"InfraSee | Admin Dashboard"}</title>
         </Helmet>
-        {/* desktop header */}
-        <header className="h-screen border-r p-3 xl:block hidden">
+        {/* desktop div */}
+        <div className="border-r p-3 xl:block hidden">
           <div className="border rounded-lg p-2 flex gap-2 items-center justify-start">
             <div>
               <Avatar className="h-8 w-8 hover:ring-4 ring-slate-300 cursor-pointer">
@@ -128,10 +172,10 @@ const AdminDashboardScreen = () => {
               <div className="text-xs font-normal opacity-60">⌘+L</div>
             </Button>
           </div>
-        </header>
+        </div>
 
-        {/* mobile header */}
-        <header className="border-b p-3 xl:hidden block">
+        {/* mobile div */}
+        <div className="border-b p-3 xl:hidden block">
           <div className="border rounded-lg p-2 flex gap-2 items-center justify-start">
             <div>
               <Avatar className="h-8 w-8 hover:ring-4 ring-slate-300 cursor-pointer">
@@ -179,7 +223,6 @@ const AdminDashboardScreen = () => {
                 <div>0</div>
               </Button>
             </div>
-
             <div>
               <Button
                 variant="ghost"
@@ -196,47 +239,51 @@ const AdminDashboardScreen = () => {
               </Button>
             </div>
           </div>
-        </header>
+        </div>
 
         {/* Main content */}
-        <main className="xl:col-span-4 p-4">
-          <div className="mb-5">
-            <h1 className="text-2xl font-bold mb-1 text-gray-900">Accounts</h1>
-            <p className="text-sm text-gray-500">
-              Manage the moderator accounts here.
-            </p>
+        <div className="xl:col-span-4 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold mb-1 text-gray-900">
+                Accounts
+              </h1>
+              <p className="text-sm text-gray-500">
+                Manage the moderator accounts here.
+              </p>
+            </div>
+            <div>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="filter1"
+                    size="filter"
+                    className="flex items-center gap-2"
+                  >
+                    <Plus size={15} />
+                    <p>New Account</p>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Account</DialogTitle>
+                    <DialogDescription>
+                      Add a new moderator account by filling up the form below.
+                      Click add when you're done.
+                    </DialogDescription>
+                  </DialogHeader>
+                  {/* register form component here */}
+                  <RegisterForm />
+                  <DialogClose onClick={() => setIsDialogOpen(false)} />
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
-          <div className="flex justify-between">
-            <p>filters here</p>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="filter1"
-                  size="filter"
-                  className="flex items-center gap-2"
-                >
-                  <Plus size={15} />
-                  <p>New Account</p>
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create New Account</DialogTitle>
-                  <DialogDescription>
-                    Add a new moderator account by filling up the form below.
-                    Click add when you're done.
-                  </DialogDescription>
-                </DialogHeader>
-                {/* register form component here */}
-                <RegisterForm />
-                <DialogClose onClick={() => setIsDialogOpen(false)} />
-              </DialogContent>
-            </Dialog>
-          </div>
-          <div>table here</div>
-        </main>
-      </div>
-    </HelmetProvider>
+
+          <DataTable data={data} columns={columns} />
+        </div>
+      </HelmetProvider>
+    </div>
   );
 };
 
