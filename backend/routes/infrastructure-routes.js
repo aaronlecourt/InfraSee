@@ -1,5 +1,5 @@
 import express from 'express';
-import { getInfrastructureTypes, createInfrastructureType, deleteInfrastructureType } from '../controllers/infrastructureController.js';
+import { getInfrastructureTypes, createInfrastructureType, deleteInfrastructureType } from '../controllers/infrastructure-controller.js';
 import { protect, admin} from "../middleware/auth-middleware.js";
 
 const router = express.Router();
