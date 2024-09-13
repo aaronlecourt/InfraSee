@@ -17,9 +17,8 @@ import {
   DialogClose,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { RegisterForm } from "@/components/elements/register-form";
 import { DataTable } from "@/components/ui/DataTable";
-import { columnsAccounts } from "@/components/data-table/columnsAccounts";
+import { columnsAccounts } from "@/components/data-table/columns/columnsAccounts";
 // import { columnsReports } from "@/components/data-table/columnsReports";
 import axios from "axios";
 
@@ -29,9 +28,6 @@ const AdminDashboardScreen = () => {
   const [activeButton, setActiveButton] = useState("accounts");
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
-
-  // Dialog state
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Data table state
   const [data, setData] = useState([]);
@@ -67,7 +63,7 @@ const AdminDashboardScreen = () => {
     };
   
     fetchData();
-  }, [isDialogOpen]);
+  }, [data]);
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -251,32 +247,6 @@ const AdminDashboardScreen = () => {
               <p className="text-sm text-gray-500">
                 Manage the moderator accounts here.
               </p>
-            </div>
-            <div>
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="filter1"
-                    size="filter"
-                    className="flex items-center gap-2"
-                  >
-                    <Plus size={15} />
-                    <p>New Account</p>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create New Account</DialogTitle>
-                    <DialogDescription>
-                      Add a new moderator account by filling up the form below.
-                      Click add when you're done.
-                    </DialogDescription>
-                  </DialogHeader>
-                  {/* register form component here */}
-                  <RegisterForm />
-                  <DialogClose onClick={() => setIsDialogOpen(false)} />
-                </DialogContent>
-              </Dialog>
             </div>
           </div>
 
