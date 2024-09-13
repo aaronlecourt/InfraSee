@@ -40,7 +40,7 @@ export const columnsAccounts = [
       <DataTableColumnHeader column={column} title="Moderator Name" />
     ),
     cell: ({ row }) => (
-      <div className="w-[150px]">{row.getValue("name")}</div>
+      <div className="">{row.getValue("name")}</div>
     ),
     enableSorting: true,
     enableHiding: true,
@@ -51,7 +51,7 @@ export const columnsAccounts = [
       <DataTableColumnHeader column={column} title="Email Address" />
     ),
     cell: ({ row }) => (
-      <div className="w-[150px]">{row.getValue("email")}</div>
+      <div className="">{row.getValue("email")}</div>
     ),
     enableSorting: true,
     enableHiding: true,
@@ -62,7 +62,7 @@ export const columnsAccounts = [
       <DataTableColumnHeader column={column} title="Infrastructure Type" />
     ),
     cell: ({ row }) => (
-      <div className="w-[150px]">{row.getValue("infra_name")}</div>
+      <div className="">{row.getValue("infra_name")}</div>
     ),
     enableSorting: true,
     enableHiding: true,
@@ -73,7 +73,7 @@ export const columnsAccounts = [
       <DataTableColumnHeader column={column} title="Created On" />
     ),
     cell: ({ row }) => (
-      <div className="w-[150px]">{formatDate(row.getValue("createdAt"))}</div>
+      <div className="">{formatDate(row.getValue("createdAt"))}</div>
     ),
     enableSorting: true,
     enableHiding: true,

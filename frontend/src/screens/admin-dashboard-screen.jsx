@@ -63,7 +63,7 @@ const AdminDashboardScreen = () => {
     };
   
     fetchData();
-  }, [data]);
+  }, [1000]);
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {

@@ -38,25 +38,28 @@ export function DataTableToolbar({ table }) {
       <div className="flex flex-wrap items-center justify-end">
         <div className="flex items-center gap-2">
           <div>
-          <CalendarDatePicker
-            date={dateRange}
-            onDateSelect={handleDateSelect}
-            className="h-9 w-[250px]"
-            variant="outline"
-          />
+            <CalendarDatePicker
+              date={dateRange}
+              onDateSelect={handleDateSelect}
+              className="h-9 w-[250px]"
+              variant="outline"
+            />
           </div>
         </div>
       </div>
       <div className="flex flex-wrap items-center">
         <div className="flex flex-1 flex-wrap items-center gap-2">
-          <Input
-            placeholder="Filter account name..."
-            value={table.getColumn("name")?.getFilterValue() ?? ""}
-            onChange={(event) => {
-              table.getColumn("name")?.setFilterValue(event.target.value);
-            }}
-            className="h-9 w-[150px] lg:w-[250px]"
-          />
+          {table.getColumn("infra_name") && (
+            <Input
+              placeholder="Filter moderator name..."
+              value={table.getColumn("name")?.getFilterValue() ?? ""}
+              onChange={(event) => {
+                table.getColumn("name")?.setFilterValue(event.target.value);
+              }}
+              className="h-9 w-[150px] lg:w-[250px]"
+            />
+          )}
+
           {table.getColumn("infra_name") && (
             <DataTableFacetedFilter
               column={table.getColumn("infra_name")}
@@ -117,8 +120,9 @@ export function DataTableToolbar({ table }) {
             </Dialog>
           </div>
           <DataTableViewOptions table={table} />
-          <Button size="filter"className=" flex gap-2">
-            <Download size={15}/>Export CSV
+          <Button size="filter" className=" flex gap-2">
+            <Download size={15} />
+            Export CSV
           </Button>
         </div>
       </div>

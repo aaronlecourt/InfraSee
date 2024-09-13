@@ -1,6 +1,5 @@
 import React from "react";
 import { CheckIcon, PlusCircledIcon } from "@radix-ui/react-icons";
-
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,14 +19,19 @@ import {
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 
-// Function component for DataTableFacetedFilter
-export function DataTableFacetedFilter({
-  column,
-  title,
-  options
-}) {
+export function DataTableFacetedFilter({ column, title, options }) {
   const facets = column?.getFacetedUniqueValues();
   const selectedValues = new Set(column?.getFilterValue() || []);
+
+  const handleSelect = (value) => {
+    const updatedSelectedValues = new Set(selectedValues);
+    if (updatedSelectedValues.has(value)) {
+      updatedSelectedValues.delete(value);
+    } else {
+      updatedSelectedValues.add(value);
+    }
+    column?.setFilterValue(updatedSelectedValues.size ? Array.from(updatedSelectedValues) : undefined);
+  };
 
   return (
     <Popover>
@@ -81,17 +85,7 @@ export function DataTableFacetedFilter({
                 return (
                   <CommandItem
                     key={option.value}
-                    onSelect={() => {
-                      if (isSelected) {
-                        selectedValues.delete(option.value);
-                      } else {
-                        selectedValues.add(option.value);
-                      }
-                      const filterValues = Array.from(selectedValues);
-                      column?.setFilterValue(
-                        filterValues.length ? filterValues : undefined
-                      );
-                    }}
+                    onSelect={() => handleSelect(option.value)}
                   >
                     <div
                       className={cn(
