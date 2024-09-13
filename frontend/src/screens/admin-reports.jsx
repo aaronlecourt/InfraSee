@@ -7,6 +7,10 @@ import { Button } from "@/components/ui/button";
 import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
 import { Helmet, HelmetProvider } from "react-helmet-async";
+import { DataTable } from "@/components/ui/DataTable";
+import axios from "axios";
+import { columnsAccounts } from "@/components/data-table/columns/columnsAccounts";
+import { columnsReports } from "@/components/data-table/columns/columnsReports";
 
 const AdminReportsScreen = () => {
   const navigate = useNavigate();
@@ -14,6 +18,42 @@ const AdminReportsScreen = () => {
   const [activeButton, setActiveButton] = useState("reports");
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
+  const [data, setData] = useState([]);
+  const columns =
+  activeButton === "reports" ? columnsAccounts : columnsReports;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch data from both endpoints concurrently
+        const [fetchAccounts, fetchInfrastructureTypes] = await Promise.all([
+          axios.get("/api/users/moderators"),
+          axios.get("/api/infrastructure-types")
+        ]);
+  
+        // Create a map of infrastructure types with infra_type as key and infra_name as value
+        const infraTypeMap = fetchInfrastructureTypes.data.reduce((acc, infra) => {
+          acc[infra._id] = infra.infra_name;
+          return acc;
+        }, {});
+  
+        // Map through accounts data and replace infra_type with infra_name
+        const updatedAccounts = fetchAccounts.data.map(account => ({
+          ...account,
+          infra_name: infraTypeMap[account.infra_type] || account.infra_type // Default to original infra_type if no match found
+        }));
+  
+        // Set the updated data to state
+        setData(updatedAccounts);
+        console.log(updatedAccounts); // For debugging
+  
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+  
+    fetchData();
+  }, [1000]);
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -50,13 +90,13 @@ const AdminReportsScreen = () => {
   };
 
   return (
-    <HelmetProvider>
-      <div className="grid grid-cols-1 xl:grid-cols-5">
+    <div className="grid grid-cols-1 xl:grid-cols-5">
+      <HelmetProvider>
         <Helmet>
           <title>{"InfraSee | Reports"}</title>
         </Helmet>
-        {/* desktop header */}
-        <header className="h-screen border-r p-3 xl:block hidden">
+        {/* desktop div */}
+        <div className="border-r p-3 xl:block hidden">
           <div className="border rounded-lg p-2 flex gap-2 items-center justify-start">
             <div>
               <Avatar className="h-8 w-8 hover:ring-4 ring-slate-300 cursor-pointer">
@@ -84,7 +124,7 @@ const AdminReportsScreen = () => {
             >
               <div className="flex items-center">
                 <User className="mr-2 h-5 w-5" />
-                <span>Accounts</span>
+                <span>Reports</span>
               </div>
               <div>0</div>
             </Button>
@@ -115,10 +155,10 @@ const AdminReportsScreen = () => {
               <div className="text-xs font-normal opacity-60">⌘+L</div>
             </Button>
           </div>
-        </header>
+        </div>
 
-        {/* mobile header */}
-        <header className="border-b p-3 xl:hidden block">
+        {/* mobile div */}
+        <div className="border-b p-3 xl:hidden block">
           <div className="border rounded-lg p-2 flex gap-2 items-center justify-start">
             <div>
               <Avatar className="h-8 w-8 hover:ring-4 ring-slate-300 cursor-pointer">
@@ -166,7 +206,6 @@ const AdminReportsScreen = () => {
                 <div>0</div>
               </Button>
             </div>
-
             <div>
               <Button
                 variant="ghost"
@@ -183,14 +222,25 @@ const AdminReportsScreen = () => {
               </Button>
             </div>
           </div>
-        </header>
+        </div>
 
         {/* Main content */}
-        <main className="xl:col-span-4 p-4">
-          {/* Your main content goes here */}
-        </main>
-      </div>
-    </HelmetProvider>
+        <div className="xl:col-span-4 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold mb-1 text-gray-900">
+                Reports
+              </h1>
+              <p className="text-sm text-gray-500">
+                Manage the moderator accounts here.
+              </p>
+            </div>
+          </div>
+
+          <DataTable data={data} columns={columns} />
+        </div>
+      </HelmetProvider>
+    </div>
   );
 };
 
