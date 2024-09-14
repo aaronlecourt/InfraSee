@@ -235,9 +235,7 @@ const AdminReportsScreen = () => {
                 {activeButton === "reports" ? "Reports" : "Accounts"}
               </h1>
               <p className="text-sm text-gray-500">
-                {activeButton === "reports"
-                  ? "Manage the reports here."
-                  : "Manage the moderator accounts here."}
+                Manage all reports made.
               </p>
             </div>
           </div>
