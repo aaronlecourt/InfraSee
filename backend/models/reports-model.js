@@ -1,10 +1,12 @@
 import mongoose from "mongoose";
+import User from "./user-model.js";
+import Status from "./status-model.js";
 
 const reportSchema = mongoose.Schema(
   {
     report_mod: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "users",
+      ref: User,
       required: true,
     },
     report_img: {
@@ -21,7 +23,7 @@ const reportSchema = mongoose.Schema(
     },
     report_status: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "status",
+      ref: Status,
     },
     report_address: {
       type: String,
@@ -41,6 +43,6 @@ const reportSchema = mongoose.Schema(
   }
 );
 
-const Report = mongoose.model("Report", reportSchema);
+const Report = mongoose.models.Report || mongoose.model("Report", reportSchema);
 
 export default Report;

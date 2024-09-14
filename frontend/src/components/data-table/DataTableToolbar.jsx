@@ -30,9 +30,9 @@ export function DataTableToolbar({ table }) {
 
   const handleDateSelect = ({ from, to }) => {
     setDateRange({ from, to });
-    table.getColumn("date")?.setFilterValue([from, to]);
+    table.getColumn("createdAt")?.setFilterValue([from, to]);
   };
-
+  
   return (
     <div className="mt-2 flex flex-col gap-2">
       <div className="flex flex-wrap items-center justify-end">
@@ -51,7 +51,7 @@ export function DataTableToolbar({ table }) {
         <div className="flex flex-1 flex-wrap items-center gap-2">
           {table.getColumn("infra_name") && (
             <Input
-              placeholder="Filter moderator name..."
+              placeholder="Search moderator name..."
               value={table.getColumn("name")?.getFilterValue() ?? ""}
               onChange={(event) => {
                 table.getColumn("name")?.setFilterValue(event.target.value);
@@ -59,7 +59,18 @@ export function DataTableToolbar({ table }) {
               className="h-9 w-[150px] lg:w-[250px]"
             />
           )}
-
+          {table.getColumn("report_by") && (
+            <Input
+              placeholder="Search reporter name..."
+              value={table.getColumn("report_by")?.getFilterValue() ?? ""}
+              onChange={(event) => {
+                table
+                  .getColumn("report_by")
+                  ?.setFilterValue(event.target.value);
+              }}
+              className="h-9 w-[150px] lg:w-[250px]"
+            />
+          )}
           {table.getColumn("infra_name") && (
             <DataTableFacetedFilter
               column={table.getColumn("infra_name")}
@@ -73,6 +84,34 @@ export function DataTableToolbar({ table }) {
                 // Add other types here
               ]}
             />
+          )}
+          {table.getColumn("report_mod") && (
+            <>
+              <DataTableFacetedFilter
+                column={table.getColumn("report_mod")}
+                title="Report Moderator"
+                options={[
+                  { label: "Power and Energy", value: "Power and Energy" },
+                  { label: "Water and Waste", value: "Water and Waste" },
+                  { label: "Transportation", value: "Transportation" },
+                  { label: "Telecommunications", value: "Telecommunications" },
+                  { label: "Commercial", value: "Commercial" },
+                  // Add other types here
+                ]}
+              />
+              <DataTableFacetedFilter
+                column={table.getColumn("report_status")}
+                title="Status"
+                options={[
+                  { label: "Power and Energy", value: "Power and Energy" },
+                  { label: "Water and Waste", value: "Water and Waste" },
+                  { label: "Transportation", value: "Transportation" },
+                  { label: "Telecommunications", value: "Telecommunications" },
+                  { label: "Commercial", value: "Commercial" },
+                  // Add other types here
+                ]}
+              />
+            </>
           )}
           {isFiltered && (
             <Button
@@ -93,32 +132,34 @@ export function DataTableToolbar({ table }) {
               Delete ({table.getFilteredSelectedRowModel().rows.length})
             </Button>
           )}
-          <div>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="filter1"
-                  size="filter"
-                  className="flex items-center gap-2"
-                >
-                  <Plus size={15} />
-                  <p>New Account</p>
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create New Account</DialogTitle>
-                  <DialogDescription>
-                    Add a new moderator account by filling up the form below.
-                    Click add when you're done.
-                  </DialogDescription>
-                </DialogHeader>
-                {/* register form component here */}
-                <RegisterForm />
-                <DialogClose onClick={() => setIsDialogOpen(false)} />
-              </DialogContent>
-            </Dialog>
-          </div>
+          {table.getColumn("infra_name") && (
+            <div>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="filter1"
+                    size="filter"
+                    className="flex items-center gap-2"
+                  >
+                    <Plus size={15} />
+                    <p>New Account</p>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Account</DialogTitle>
+                    <DialogDescription>
+                      Add a new moderator account by filling up the form below.
+                      Click add when you're done.
+                    </DialogDescription>
+                  </DialogHeader>
+                  {/* register form component here */}
+                  <RegisterForm />
+                  <DialogClose onClick={() => setIsDialogOpen(false)} />
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
           <DataTableViewOptions table={table} />
           <Button size="filter" className=" flex gap-2">
             <Download size={15} />

@@ -18,42 +18,45 @@ const AdminReportsScreen = () => {
   const [activeButton, setActiveButton] = useState("reports");
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
-  const [data, setData] = useState([]);
-  const columns =
-  activeButton === "reports" ? columnsAccounts : columnsReports;
+  const [accountsData, setAccountsData] = useState([]);
+  const [reportsData, setReportsData] = useState([]);
+  const columns = activeButton === "reports" ? columnsReports : columnsAccounts;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Fetch data from both endpoints concurrently
-        const [fetchAccounts, fetchInfrastructureTypes] = await Promise.all([
+        const [fetchAccounts, fetchReports] = await Promise.all([
           axios.get("/api/users/moderators"),
-          axios.get("/api/infrastructure-types")
+          axios.get("/api/reports")
         ]);
-  
-        // Create a map of infrastructure types with infra_type as key and infra_name as value
-        const infraTypeMap = fetchInfrastructureTypes.data.reduce((acc, infra) => {
-          acc[infra._id] = infra.infra_name;
+
+        // Create a map of moderators with _id as key and name as value
+        const moderatorMap = fetchAccounts.data.reduce((acc, mod) => {
+          acc[mod._id] = mod.name;
           return acc;
         }, {});
-  
-        // Map through accounts data and replace infra_type with infra_name
-        const updatedAccounts = fetchAccounts.data.map(account => ({
-          ...account,
-          infra_name: infraTypeMap[account.infra_type] || account.infra_type // Default to original infra_type if no match found
+
+        // Map through reports data and replace report_mod with moderator name
+        const updatedReports = fetchReports.data.map(report => ({
+          ...report,
+          mod_name: moderatorMap[report.report_mod] || "Unknown" // Replace with "Unknown" if no match found
         }));
-  
+
         // Set the updated data to state
-        setData(updatedAccounts);
-        console.log(updatedAccounts); // For debugging
-  
+        setAccountsData(fetchAccounts.data);
+        setReportsData(updatedReports);
+
+        console.log('Accounts Data:', fetchAccounts.data); // For debugging
+        console.log('Reports Data:', updatedReports); // For debugging
+
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-  
+
     fetchData();
-  }, [1000]);
+  }, []);
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -124,7 +127,7 @@ const AdminReportsScreen = () => {
             >
               <div className="flex items-center">
                 <User className="mr-2 h-5 w-5" />
-                <span>Reports</span>
+                <span>Accounts</span>
               </div>
               <div>0</div>
             </Button>
@@ -229,15 +232,17 @@ const AdminReportsScreen = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold mb-1 text-gray-900">
-                Reports
+                {activeButton === "reports" ? "Reports" : "Accounts"}
               </h1>
               <p className="text-sm text-gray-500">
-                Manage the moderator accounts here.
+                {activeButton === "reports"
+                  ? "Manage the reports here."
+                  : "Manage the moderator accounts here."}
               </p>
             </div>
           </div>
 
-          <DataTable data={data} columns={columns} />
+          <DataTable data={activeButton === "reports" ? reportsData : accountsData} columns={columns} />
         </div>
       </HelmetProvider>
     </div>

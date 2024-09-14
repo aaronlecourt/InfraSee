@@ -6,7 +6,7 @@ import { format } from "date-fns";
 // Helper function to format date using date-fns
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return format(date, 'MMMM dd, yyyy');
+  return format(date, 'MMMM dd, yyyy hh:ss a');
 };
 
 export const columnsReports = [
@@ -35,34 +35,56 @@ export const columnsReports = [
     enableHiding: false,
   },
   {
-    accessorKey: "name",
+    accessorKey: "report_by",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Moderator Name" />
+      <DataTableColumnHeader column={column} title="Reported By" />
     ),
     cell: ({ row }) => (
-      <div className="">{row.getValue("name")}</div>
+      <div className="">{row.getValue("report_by")}</div>
     ),
     enableSorting: true,
     enableHiding: true,
   },
   {
-    accessorKey: "email",
+    accessorKey: "mod_name",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Email Address" />
+      <DataTableColumnHeader column={column} title="Moderator" />
     ),
     cell: ({ row }) => (
-      <div className="">{row.getValue("email")}</div>
+      <div className="">{row.getValue("mod_name")}</div>
     ),
     enableSorting: true,
     enableHiding: true,
   },
   {
-    accessorKey: "infra_name",
+    accessorKey: "report_desc",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Infrastructure Type" />
+      <DataTableColumnHeader column={column} title="Description" />
     ),
     cell: ({ row }) => (
-      <div className="">{row.getValue("infra_name")}</div>
+      <div className="">"{row.getValue("report_desc")}"</div>
+    ),
+    enableSorting: true,
+    enableHiding: true,
+  },
+  {
+    accessorKey: "report_status",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+    cell: ({ row }) => (
+      <div className="">{row.getValue("report_status")}</div>
+    ),
+    enableSorting: true,
+    enableHiding: true,
+  },
+  {
+    accessorKey: "report_address",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Address" />
+    ),
+    cell: ({ row }) => (
+      <div className="">{row.getValue("report_address")}</div>
     ),
     enableSorting: true,
     enableHiding: true,
