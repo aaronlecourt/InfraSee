@@ -124,7 +124,7 @@ const AdminReportsScreen = () => {
             >
               <div className="flex items-center">
                 <User className="mr-2 h-5 w-5" />
-                <span>Reports</span>
+                <span>Accounts</span>
               </div>
               <div>0</div>
             </Button>
@@ -232,7 +232,7 @@ const AdminReportsScreen = () => {
                 Reports
               </h1>
               <p className="text-sm text-gray-500">
-                Manage the moderator accounts here.
+                Manage all reports made.
               </p>
             </div>
           </div>
