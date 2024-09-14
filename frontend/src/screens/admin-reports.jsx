@@ -25,38 +25,19 @@ const AdminReportsScreen = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch data from both endpoints concurrently
-        const [fetchAccounts, fetchReports] = await Promise.all([
-          axios.get("/api/users/moderators"),
-          axios.get("/api/reports")
-        ]);
-
-        // Create a map of moderators with _id as key and name as value
-        const moderatorMap = fetchAccounts.data.reduce((acc, mod) => {
-          acc[mod._id] = mod.name;
-          return acc;
-        }, {});
-
-        // Map through reports data and replace report_mod with moderator name
-        const updatedReports = fetchReports.data.map(report => ({
-          ...report,
-          mod_name: moderatorMap[report.report_mod] || "Unknown" // Replace with "Unknown" if no match found
-        }));
-
-        // Set the updated data to state
-        setAccountsData(fetchAccounts.data);
-        setReportsData(updatedReports);
-
-        console.log('Accounts Data:', fetchAccounts.data); // For debugging
-        console.log('Reports Data:', updatedReports); // For debugging
-
+        const [fetchReports] = await Promise.all([
+          axios.get("/api/reports"),
+        ]); 
+        setReportsData(fetchReports.data);
+  
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-
+  
     fetchData();
   }, []);
+  
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {

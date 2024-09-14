@@ -28,34 +28,19 @@ const AdminDashboardScreen = () => {
   const [activeButton, setActiveButton] = useState("accounts");
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
+  const [accountsData, setAccountsData] = useState([]);
+  const [reportsData, setReportsData] = useState([]);
+  const columns = activeButton === "accounts" ? columnsAccounts : columnsReports;
 
-  // Data table state
-  const [data, setData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Fetch data from both endpoints concurrently
-        const [fetchAccounts, fetchInfrastructureTypes] = await Promise.all([
+        const [fetchAccounts] = await Promise.all([
           axios.get("/api/users/moderators"),
-          axios.get("/api/infrastructure-types")
-        ]);
-  
-        // Create a map of infrastructure types with infra_type as key and infra_name as value
-        const infraTypeMap = fetchInfrastructureTypes.data.reduce((acc, infra) => {
-          acc[infra._id] = infra.infra_name;
-          return acc;
-        }, {});
-  
-        // Map through accounts data and replace infra_type with infra_name
-        const updatedAccounts = fetchAccounts.data.map(account => ({
-          ...account,
-          infra_name: infraTypeMap[account.infra_type] || account.infra_type // Default to original infra_type if no match found
-        }));
-  
-        // Set the updated data to state
-        setData(updatedAccounts);
-        console.log(updatedAccounts); // For debugging
+        ]); 
+        setAccountsData(fetchAccounts.data);
   
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -63,7 +48,7 @@ const AdminDashboardScreen = () => {
     };
   
     fetchData();
-  }, [1000]);
+  }, []);
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -98,9 +83,6 @@ const AdminDashboardScreen = () => {
       console.log(err);
     }
   };
-
-  const columns =
-    activeButton === "accounts" ? columnsAccounts : columnsReports;
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-5">
@@ -242,7 +224,7 @@ const AdminDashboardScreen = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold mb-1 text-gray-900">
-                Accounts
+                {activeButton === "accounts" ? "Reports" : "Accounts"}
               </h1>
               <p className="text-sm text-gray-500">
                 Manage the moderator accounts here.
@@ -250,7 +232,7 @@ const AdminDashboardScreen = () => {
             </div>
           </div>
 
-          <DataTable data={data} columns={columns} />
+          <DataTable data={activeButton === "accounts" ? accountsData : reportsData} columns={columns} />
         </div>
       </HelmetProvider>
     </div>
