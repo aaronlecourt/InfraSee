@@ -46,12 +46,12 @@ export const columnsReports = [
     enableHiding: true,
   },
   {
-    accessorKey: "mod_name",
+    accessorKey: "report_mod",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Moderator" />
     ),
     cell: ({ row }) => (
-      <div className="">{row.getValue("mod_name")}</div>
+      <div className="">{row.getValue("report_mod")}</div>
     ),
     enableSorting: true,
     enableHiding: true,
