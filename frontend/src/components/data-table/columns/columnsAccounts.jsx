@@ -57,12 +57,14 @@ export const columnsAccounts = [
     enableHiding: true,
   },
   {
-    accessorKey: "infra_name",
+    accessorKey: "infra_type",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Infrastructure Type" />
     ),
     cell: ({ row }) => (
-      <div className="">{row.getValue("infra_name")}</div>
+      <div className="">
+        {row.getValue("infra_type")?.infra_name || "N/A"}
+      </div> 
     ),
     enableSorting: true,
     enableHiding: true,

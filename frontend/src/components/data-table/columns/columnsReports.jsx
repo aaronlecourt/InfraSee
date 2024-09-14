@@ -6,7 +6,7 @@ import { format } from "date-fns";
 // Helper function to format date using date-fns
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return format(date, 'MMMM dd, yyyy hh:ss a');
+  return format(date, 'MMMM dd, yyyy hh:mm:ss a'); // Corrected to use 'mm' for minutes and 'ss' for seconds
 };
 
 export const columnsReports = [
@@ -51,7 +51,7 @@ export const columnsReports = [
       <DataTableColumnHeader column={column} title="Moderator" />
     ),
     cell: ({ row }) => (
-      <div className="">{row.getValue("report_mod")}</div>
+      <div className="">{row.getValue("report_mod")?.name || "N/A"}</div> // Access the 'name' field
     ),
     enableSorting: true,
     enableHiding: true,
@@ -73,7 +73,7 @@ export const columnsReports = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => (
-      <div className="">{row.getValue("report_status")}</div>
+      <div className="">{row.getValue("report_status")?.stat_name || "Unknown"}</div> // Access the stat_name field from the populated data
     ),
     enableSorting: true,
     enableHiding: true,

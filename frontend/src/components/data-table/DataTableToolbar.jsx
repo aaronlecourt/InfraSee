@@ -1,4 +1,5 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { TrashIcon, Plus, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,9 +14,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { RegisterForm } from "@/components/elements/register-form";
-
 import { CalendarDatePicker } from "../elements/calendar-date-picker";
-
 import { DataTableViewOptions } from "./DataTableViewOptions";
 import { DataTableFacetedFilter } from "./DataTableFacetedFilter";
 
@@ -28,28 +27,54 @@ export function DataTableToolbar({ table }) {
     to: new Date(),
   });
 
+  const [filterOptions, setFilterOptions] = useState({
+    infraType: [],
+    reportMod: [],
+    reportStatus: [],
+  });
+
   const handleDateSelect = ({ from, to }) => {
     setDateRange({ from, to });
     table.getColumn("createdAt")?.setFilterValue([from, to]);
   };
-  
+
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        const [infraTypeResponse, reportModResponse, reportStatusResponse] = await Promise.all([
+          axios.get('/api/infrastructure-types'),
+          axios.get('/api/users/moderators'),
+          axios.get('/api/status')
+        ]);
+
+        setFilterOptions({
+          infraType: infraTypeResponse.data.map(type => ({ label: type.infra_name, value: type.infra_name })),
+          reportMod: reportModResponse.data.map(mod => ({ label: mod.name, value: mod.name })),
+          reportStatus: reportStatusResponse.data.map(status => ({ label: status.stat_name, value: status.stat_name })),
+        });
+      } catch (error) {
+        console.error("Error fetching filter options:", error);
+      }
+    };
+
+    fetchFilterOptions();
+  }, []);
+
   return (
     <div className="mt-2 flex flex-col gap-2">
       <div className="flex flex-wrap items-center justify-end">
         <div className="flex items-center gap-2">
-          <div>
-            <CalendarDatePicker
-              date={dateRange}
-              onDateSelect={handleDateSelect}
-              className="h-9 w-[250px]"
-              variant="outline"
-            />
-          </div>
+          <CalendarDatePicker
+            date={dateRange}
+            onDateSelect={handleDateSelect}
+            className="h-9 w-[250px]"
+            variant="outline"
+          />
         </div>
       </div>
       <div className="flex flex-wrap items-center">
         <div className="flex flex-1 flex-wrap items-center gap-2">
-          {table.getColumn("infra_name") && (
+          {table.getColumn("name") && (
             <Input
               placeholder="Search moderator name..."
               value={table.getColumn("name")?.getFilterValue() ?? ""}
@@ -64,25 +89,16 @@ export function DataTableToolbar({ table }) {
               placeholder="Search reporter name..."
               value={table.getColumn("report_by")?.getFilterValue() ?? ""}
               onChange={(event) => {
-                table
-                  .getColumn("report_by")
-                  ?.setFilterValue(event.target.value);
+                table.getColumn("report_by")?.setFilterValue(event.target.value);
               }}
               className="h-9 w-[150px] lg:w-[250px]"
             />
           )}
-          {table.getColumn("infra_name") && (
+          {table.getColumn("infra_type") && (
             <DataTableFacetedFilter
-              column={table.getColumn("infra_name")}
+              column={table.getColumn("infra_type")}
               title="Infrastructure Type"
-              options={[
-                { label: "Power and Energy", value: "Power and Energy" },
-                { label: "Water and Waste", value: "Water and Waste" },
-                { label: "Transportation", value: "Transportation" },
-                { label: "Telecommunications", value: "Telecommunications" },
-                { label: "Commercial", value: "Commercial" },
-                // Add other types here
-              ]}
+              options={filterOptions.infraType}
             />
           )}
           {table.getColumn("report_mod") && (
@@ -90,26 +106,12 @@ export function DataTableToolbar({ table }) {
               <DataTableFacetedFilter
                 column={table.getColumn("report_mod")}
                 title="Report Moderator"
-                options={[
-                  { label: "Power and Energy", value: "Power and Energy" },
-                  { label: "Water and Waste", value: "Water and Waste" },
-                  { label: "Transportation", value: "Transportation" },
-                  { label: "Telecommunications", value: "Telecommunications" },
-                  { label: "Commercial", value: "Commercial" },
-                  // Add other types here
-                ]}
+                options={filterOptions.reportMod}
               />
               <DataTableFacetedFilter
                 column={table.getColumn("report_status")}
                 title="Status"
-                options={[
-                  { label: "Power and Energy", value: "Power and Energy" },
-                  { label: "Water and Waste", value: "Water and Waste" },
-                  { label: "Transportation", value: "Transportation" },
-                  { label: "Telecommunications", value: "Telecommunications" },
-                  { label: "Commercial", value: "Commercial" },
-                  // Add other types here
-                ]}
+                options={filterOptions.reportStatus}
               />
             </>
           )}
@@ -132,33 +134,30 @@ export function DataTableToolbar({ table }) {
               Delete ({table.getFilteredSelectedRowModel().rows.length})
             </Button>
           )}
-          {table.getColumn("infra_name") && (
-            <div>
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="filter1"
-                    size="filter"
-                    className="flex items-center gap-2"
-                  >
-                    <Plus size={15} />
-                    <p>New Account</p>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create New Account</DialogTitle>
-                    <DialogDescription>
-                      Add a new moderator account by filling up the form below.
-                      Click add when you're done.
-                    </DialogDescription>
-                  </DialogHeader>
-                  {/* register form component here */}
-                  <RegisterForm />
-                  <DialogClose onClick={() => setIsDialogOpen(false)} />
-                </DialogContent>
-              </Dialog>
-            </div>
+          {table.getColumn("infra_type") && (
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="filter1"
+                  size="filter"
+                  className="flex items-center gap-2"
+                >
+                  <Plus size={15} />
+                  <p>New Account</p>
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New Account</DialogTitle>
+                  <DialogDescription>
+                    Add a new moderator account by filling up the form below.
+                    Click add when you're done.
+                  </DialogDescription>
+                </DialogHeader>
+                <RegisterForm />
+                <DialogClose onClick={() => setIsDialogOpen(false)} />
+              </DialogContent>
+            </Dialog>
           )}
           <DataTableViewOptions table={table} />
           <Button size="filter" className=" flex gap-2">
