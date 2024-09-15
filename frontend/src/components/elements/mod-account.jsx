@@ -29,10 +29,6 @@ const formSchema = z.object({
     .string()
     .min(1, "Email is required.")
     .email("Invalid email address."),
-  // .regex(
-  //   /@m\.infrasee\.com$/,
-  //   "Email must be from the domain @m.infrasee.com"
-  // ),
   infrastructureType: z.string().min(1, "Infrastructure type is required."),
 });
 
@@ -43,7 +39,7 @@ export function ModAccount({ user }) {
     defaultValues: {
       name: user?.name || "",
       email: user?.email || "",
-      infrastructureType: user?.infra_type || "",
+      infrastructureType: user?.infra_type?._id || "", // Use _id as value
     },
   });
 
@@ -70,7 +66,7 @@ export function ModAccount({ user }) {
       reset({
         name: user.name,
         email: user.email,
-        infrastructureType: user.infra_type || "",
+        infrastructureType: user.infra_type?._id || "", // Use _id here
       });
     }
   }, [user, reset]);
@@ -79,7 +75,6 @@ export function ModAccount({ user }) {
     const { name, email, infrastructureType } = data;
 
     try {
-      // Replace with actual update API call
       await axios.put("/api/update-account", {
         name,
         email,
@@ -88,7 +83,6 @@ export function ModAccount({ user }) {
 
       toast.success("Account updated successfully!");
     } catch (err) {
-      console.log(err);
       const errorMessage =
         err.response?.data?.message || "An error occurred during the update.";
       toast.error(errorMessage);
@@ -97,9 +91,7 @@ export function ModAccount({ user }) {
 
   // Find the selected infrastructure name
   const getInfraName = (value) => {
-    return (
-      infrastructureTypes.find((type) => type._id === value)?.infra_name
-    );
+    return infrastructureTypes.find((type) => type._id === value)?.infra_name;
   };
 
   return (
@@ -111,7 +103,10 @@ export function ModAccount({ user }) {
       <hr className="mb-4" />
 
       <Form {...form}>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:w-1/2 w-full">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4 md:w-1/2 w-full"
+        >
           <FormField
             control={control}
             name="name"
@@ -152,6 +147,7 @@ export function ModAccount({ user }) {
               </FormItem>
             )}
           />
+
           <FormField
             control={control}
             name="infrastructureType"
@@ -164,16 +160,14 @@ export function ModAccount({ user }) {
                 <FormControl>
                   <Select
                     value={field.value}
-                    onValueChange={(value) =>
-                      setValue("infrastructureType", value)
-                    }
+                    onValueChange={(value) => setValue("infrastructureType", value)}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={
                           field.value
                             ? getInfraName(field.value)
-                            : getInfraName(user?.infra_type)
+                            : getInfraName(user?.infra_type?._id) || "Select Infrastructure Type"
                         }
                       />
                     </SelectTrigger>
@@ -183,13 +177,11 @@ export function ModAccount({ user }) {
                           No types available
                         </SelectItem>
                       ) : (
-                        <>
-                          {infrastructureTypes.map((type) => (
-                            <SelectItem key={type._id} value={type._id}>
-                              {type.infra_name}
-                            </SelectItem>
-                          ))}
-                        </>
+                        infrastructureTypes.map((type) => (
+                          <SelectItem key={type._id} value={type._id}>
+                            {type.infra_name}
+                          </SelectItem>
+                        ))
                       )}
                     </SelectContent>
                   </Select>
@@ -206,3 +198,4 @@ export function ModAccount({ user }) {
     </div>
   );
 }
+

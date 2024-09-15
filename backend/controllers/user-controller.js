@@ -63,16 +63,15 @@ const adminUser = asyncHandler(async (req, res) => {
 // @access  Public
 const moderatorUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).populate('infra_type', 'infra_name');
 
   if (user && (await user.matchPassword(password))) {
-    // Check if user is a moderator
     if (!user.isModerator) {
       res.status(403);
       throw new Error("Access denied: Not a moderator");
     }
 
+    // Generate token for authenticated user
     generateToken(res, user._id);
 
     res.json({
@@ -81,12 +80,14 @@ const moderatorUser = asyncHandler(async (req, res) => {
       email: user.email,
       isAdmin: user.isAdmin,
       isModerator: user.isModerator,
+      infra_type: user.infra_type ? { _id: user.infra_type._id, infra_name: user.infra_type.infra_name } : null,
     });
   } else {
     res.status(401);
     throw new Error("Invalid email or password");
   }
 });
+
 
 // @desc    Register a new user
 // @route   POST /api/users
@@ -107,7 +108,7 @@ const registerUser = asyncHandler(async (req, res) => {
     res
       .status(400)
       .json({ message: "That email has already been used. Try again." });
-    return; // Ensure you return after sending a response
+    return;
   }
 
   const user = await User.create({
