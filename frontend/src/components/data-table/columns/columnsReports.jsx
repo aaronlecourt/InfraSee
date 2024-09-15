@@ -6,7 +6,7 @@ import { format } from "date-fns";
 // Helper function to format date using date-fns
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return format(date, 'MMMM dd, yyyy hh:mm:ss a'); // Corrected to use 'mm' for minutes and 'ss' for seconds
+  return format(date, 'MMMM dd, yyyy'); // Corrected to use 'mm' for minutes and 'ss' for seconds
 };
 
 export const columnsReports = [
