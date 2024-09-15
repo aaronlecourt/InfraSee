@@ -1,5 +1,6 @@
 import React from "react";
 import { ReportCounter } from "./report-counter";
+import { ReportList } from "./report-list";
 import { ChevronDown } from "lucide-react";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
@@ -12,15 +13,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export function Overview({ goToReportsTab }) {
+export function Overview({ goToReportsTab, data }) {
   return (
     <div className="h-full flex flex-col">
-      <ReportCounter
-        total_reps={0}
-        inprog_reps={0}
-        resolved_reps={0}
-        dismissed_reps={0}
-      />
+      <ReportCounter data={data} />
       <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 h-full">
         <div className="border rounded-md col-span-1 sm:col-span-2 min-h-[30rem]">
           map here
@@ -38,8 +34,7 @@ export function Overview({ goToReportsTab }) {
 
             <CardContent className="flex-1 w-full overflow-hidden">
               <ScrollArea className="h-full px-5">
-                {/* top 5 most recent reports here */}
-                reports here
+                <ReportList data={data}/>
               </ScrollArea>
             </CardContent>
 

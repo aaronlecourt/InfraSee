@@ -8,15 +8,6 @@ import { Button } from "@/components/ui/button";
 import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
 import { Helmet, HelmetProvider } from "react-helmet-async";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { DataTable } from "@/components/ui/DataTable";
 import { columnsAccounts } from "@/components/data-table/columns/columnsAccounts";
 // import { columnsReports } from "@/components/data-table/columnsReports";
@@ -48,7 +39,7 @@ const AdminDashboardScreen = () => {
     };
   
     fetchData();
-  }, []);
+  }, 5000);
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -224,7 +215,7 @@ const AdminDashboardScreen = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold mb-1 text-gray-900">
-                {activeButton === "accounts" ? "Reports" : "Accounts"}
+                {activeButton === "accounts" ? "Accounts" : "Reports"}
               </h1>
               <p className="text-sm text-gray-500">
                 Manage the moderator accounts here.

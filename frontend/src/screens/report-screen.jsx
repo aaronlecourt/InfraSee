@@ -15,7 +15,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerClose,
-  DrawerDescription
+  DrawerDescription,
 } from "@/components/ui/drawer";
 import { Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -23,7 +23,7 @@ import { ReportCounter } from "@/components/elements/report-counter";
 import { ComboBoxResponsive } from "@/components/elements/combo";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import ReportForm from "@/components/report-form";
-
+import axios from "axios";
 function ReportScreen() {
   const navigate = useNavigate();
   const [isNavbarSheetOpen, setNavbarSheetOpen] = useState(false);
@@ -32,6 +32,19 @@ function ReportScreen() {
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
 
+  const [data, setData] = useState([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [fetchReports] = await Promise.all([axios.get("/api/reports")]);
+        setData(fetchReports.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
   // Track screen size
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 640);
@@ -139,12 +152,7 @@ function ReportScreen() {
           </div>
 
           <div className="flex-none">
-            <ReportCounter
-              total_reps={0}
-              inprog_reps={0}
-              resolved_reps={0}
-              dismissed_reps={0}
-            />
+            <ReportCounter data={data} />
           </div>
         </main>
 
@@ -152,20 +160,24 @@ function ReportScreen() {
         {isReportSheetOpen && (
           <>
             {isMobile ? (
-              <Drawer open={isReportSheetOpen} onOpenChange={handleCloseReportForm}>
+              <Drawer
+                open={isReportSheetOpen}
+                onOpenChange={handleCloseReportForm}
+              >
                 <DrawerTrigger asChild>
                   <Button className="hidden">Open Report Drawer</Button>
                 </DrawerTrigger>
                 <DrawerContent side="bottom">
                   <DrawerHeader>
-                  <DrawerClose onClick={handleCloseReportForm} />
+                    <DrawerClose onClick={handleCloseReportForm} />
                     <DrawerTitle className="text-md font-bold leading-0">
-                      {selectedAccount ? selectedAccount.name : "Select a Moderator"}
+                      {selectedAccount
+                        ? selectedAccount.name
+                        : "Select a Moderator"}
                     </DrawerTitle>
                     <DrawerDescription className="text-xs font-normal">
                       Fill up the form below. Click submit when you're done.
                     </DrawerDescription>
-                    
                   </DrawerHeader>
                   <div className="p-4 pt-0">
                     <ReportForm selectedAccount={selectedAccount} />
@@ -184,7 +196,9 @@ function ReportScreen() {
                 <SheetContent side="right">
                   <SheetHeader>
                     <SheetTitle className="text-md font-bold leading-0">
-                      {selectedAccount ? selectedAccount.name : "Select a Moderator"}
+                      {selectedAccount
+                        ? selectedAccount.name
+                        : "Select a Moderator"}
                     </SheetTitle>
                     <SheetDescription className="text-xs font-normal">
                       Fill up the form below. Click submit when you're done.

@@ -62,8 +62,8 @@ export function DataTableToolbar({ table }) {
 
   return (
     <div className="mt-2 flex flex-col gap-2">
-      <div className="flex flex-wrap items-center justify-end">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-end mb-2">
+        <div className="flex items-center">
           <CalendarDatePicker
             date={dateRange}
             onDateSelect={handleDateSelect}
@@ -114,6 +114,13 @@ export function DataTableToolbar({ table }) {
                 options={filterOptions.reportStatus}
               />
             </>
+          )}
+          {table.getColumn("report_by") && !table.getColumn("report_mod") && (
+            <DataTableFacetedFilter
+            column={table.getColumn("report_status")}
+            title="Status"
+            options={filterOptions.reportStatus}
+          />
           )}
           {isFiltered && (
             <Button

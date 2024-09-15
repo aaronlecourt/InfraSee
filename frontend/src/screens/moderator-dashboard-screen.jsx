@@ -21,15 +21,32 @@ import { Analytics } from "@/components/elements/analytics";
 import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
 import { Helmet, HelmetProvider } from "react-helmet-async";
+import axios from "axios";
+import { columnsModReports } from "@/components/data-table/columns/columnsModReports";
 
 const ModeratorDashboardScreen = () => {
   const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.auth);
-  const [activeTab, setActiveTab] = useState("overview"); // Manage active tab state
+  const [activeTab, setActiveTab] = useState("overview");
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
+  const [data, setData] = useState([]);
 
-  // Handle the keyboard shortcut for logout
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [fetchReports] = await Promise.all([
+          axios.get("/api/reports/moderator/reports"),
+        ]);
+        setData(fetchReports.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, [activeTab]);
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if ((event.ctrlKey || event.metaKey) && event.key === "l") {
@@ -58,7 +75,6 @@ const ModeratorDashboardScreen = () => {
     }
   };
 
-  // Function to change the tab
   const goToReportsTab = () => {
     setActiveTab("reports");
   };
@@ -122,11 +138,10 @@ const ModeratorDashboardScreen = () => {
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
             </TabsList>
             <TabsContent value="overview" className="h-[calc(100vh-11rem)]">
-              <Overview goToReportsTab={goToReportsTab}/>
-              {/* Pass function as prop */}
+              <Overview goToReportsTab={goToReportsTab} data={data}/>
             </TabsContent>
             <TabsContent value="reports" className="h-[calc(100vh-11rem)]">
-              <Reports />
+              <Reports data={data} columns={columnsModReports} />
             </TabsContent>
             <TabsContent value="archives">
               <Archives />
