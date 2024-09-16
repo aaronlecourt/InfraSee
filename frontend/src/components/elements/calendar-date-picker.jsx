@@ -295,8 +295,7 @@ const CalendarDatePicker = forwardRef(
                     variant="outline"
                     size="sm"
                     className={cn({
-                      "bg-accent text-accent-foreground":
-                        selectedRange === range.label,
+                      "bg-black text-white": selectedRange === range.label,
                     })}
                     onClick={() =>
                       selectDateRange(range.start, range.end, range.label)

@@ -1,8 +1,8 @@
 import { DataTableColumnHeader } from "../DataTableColumnHeader";
-import { DataTableRowActions } from "../DataTableRowActions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { ZapIcon, DropletIcon, TrainTrackIcon, SatelliteDish, BuildingIcon } from "lucide-react";
+import { AdminAccountDataTableRowActions } from "../AdminAccountDataTableRowActions";
 
 const infraTypeIcons = {
   'Power and Energy' : <ZapIcon size={15} color="rgba(0,0,0,0.5)"/>,
@@ -97,6 +97,6 @@ export const columnsAccounts = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <DataTableRowActions row={row} />,
+    cell: ({ row }) => <AdminAccountDataTableRowActions row={row} />,
   },
 ];

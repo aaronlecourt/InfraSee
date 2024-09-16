@@ -1,7 +1,7 @@
 import { DataTableColumnHeader } from "../DataTableColumnHeader";
-import { DataTableRowActions } from "../DataTableRowActions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
+import { AdminReportDataTableRowActions } from "../AdminReportDataTableRowActions";
 
 // Helper function to format date using date-fns
 const formatDate = (dateString) => {
@@ -102,6 +102,6 @@ export const columnsReports = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <DataTableRowActions row={row} />,
+    cell: ({ row }) => <AdminReportDataTableRowActions row={row} />,
   },
 ];

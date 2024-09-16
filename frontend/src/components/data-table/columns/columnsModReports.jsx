@@ -1,5 +1,5 @@
 import { DataTableColumnHeader } from "../DataTableColumnHeader";
-import { DataTableRowActions } from "../DataTableRowActions";
+import { ModReportDataTableRowActions } from "../ModReportDataTableRowActions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 
@@ -91,6 +91,6 @@ export const columnsModReports = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <DataTableRowActions row={row} />,
+    cell: ({ row }) => <ModReportDataTableRowActions row={row} />,
   },
 ];

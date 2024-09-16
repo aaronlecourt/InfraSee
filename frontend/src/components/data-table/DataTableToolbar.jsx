@@ -169,7 +169,7 @@ export function DataTableToolbar({ table }) {
           <DataTableViewOptions table={table} />
           <Button size="filter" className=" flex gap-2">
             <Download size={15} />
-            Export CSV
+            CSV
           </Button>
         </div>
       </div>

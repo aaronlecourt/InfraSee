@@ -20,24 +20,33 @@ const AdminReportsScreen = () => {
   const dispatch = useDispatch();
   const [accountsData, setAccountsData] = useState([]);
   const [reportsData, setReportsData] = useState([]);
+  const [accountsCount, setAccountsCount] = useState(0); // State for accounts count
+  const [reportsCount, setReportsCount] = useState(0); // State for reports count
   const columns = activeButton === "reports" ? columnsReports : columnsAccounts;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [fetchReports] = await Promise.all([
-          axios.get("/api/reports"),
-        ]); 
+        const [fetchAccounts, fetchReports] = await Promise.all([
+          axios.get("/api/users/moderators"),
+          axios.get("/api/reports")
+        ]);
+
+        // Update state with data
+        setAccountsData(fetchAccounts.data);
         setReportsData(fetchReports.data);
-  
+
+        // Set counts
+        setAccountsCount(fetchAccounts.data.length);
+        setReportsCount(fetchReports.data.length);
+
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-  
+
     fetchData();
   }, []);
-  
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -110,7 +119,7 @@ const AdminReportsScreen = () => {
                 <User className="mr-2 h-5 w-5" />
                 <span>Accounts</span>
               </div>
-              <div>0</div>
+              <div>{accountsCount}</div> {/* Display accounts count */}
             </Button>
 
             <Button
@@ -124,7 +133,7 @@ const AdminReportsScreen = () => {
                 <FileStack className="mr-2 h-5 w-5" />
                 <span>Reports</span>
               </div>
-              <div>0</div>
+              <div>{reportsCount}</div> {/* Display reports count */}
             </Button>
 
             <Button
@@ -136,7 +145,7 @@ const AdminReportsScreen = () => {
                 <LogOut className="mr-2 h-5 w-5" />
                 <span>Log out</span>
               </div>
-              <div className="text-xs font-normal opacity-60">⌘+L</div>
+              <div className="text-xs opacity-60">⌘+L</div>
             </Button>
           </div>
         </div>
@@ -173,7 +182,7 @@ const AdminReportsScreen = () => {
                   <User className="mr-2 h-5 w-5" />
                   <span className="hidden sm:block">Accounts</span>
                 </div>
-                <div>0</div>
+                <div>{accountsCount}</div> {/* Display accounts count */}
               </Button>
 
               <Button
@@ -187,7 +196,7 @@ const AdminReportsScreen = () => {
                   <FileStack className="mr-2 h-5 w-5" />
                   <span className="hidden sm:block">Reports</span>
                 </div>
-                <div>0</div>
+                <div>{reportsCount}</div> {/* Display reports count */}
               </Button>
             </div>
             <div>
@@ -216,7 +225,7 @@ const AdminReportsScreen = () => {
                 {activeButton === "reports" ? "Reports" : "Accounts"}
               </h1>
               <p className="text-sm text-gray-500">
-                Manage all reports made.
+                Manage all {activeButton === "reports" ? "reports" : "moderator accounts"}.
               </p>
             </div>
           </div>
