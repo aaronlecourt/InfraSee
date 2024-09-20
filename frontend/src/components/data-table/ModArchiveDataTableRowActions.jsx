@@ -27,10 +27,10 @@ export function ModArchiveDataTableRowActions({ row }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">
         <DropdownMenuItem>Show Details</DropdownMenuItem>
+        <DropdownMenuItem>Restore</DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-orange-500">
-          Restore
-          <DropdownMenuShortcut>⌘+A</DropdownMenuShortcut>
+        <DropdownMenuItem className="text-red-500">
+          Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

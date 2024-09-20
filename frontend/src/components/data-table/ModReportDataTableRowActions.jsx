@@ -31,7 +31,6 @@ export function ModReportDataTableRowActions({ row }) {
         <DropdownMenuSeparator />
         <DropdownMenuItem className="text-yellow-500">
           Archive
-          <DropdownMenuShortcut>⌘+A</DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
