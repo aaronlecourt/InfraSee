@@ -40,7 +40,7 @@ const ModeratorDashboardScreen = () => {
       try {
         const [fetchReports, fetchArchives] = await Promise.all([
           axios.get("/api/reports/moderator/reports"),
-          axios.get("/api/reports/archived/reports"),
+          axios.get("/api/reports/moderator/archived/reports"),
         ]);
         setreport_Data(fetchReports.data);
         setArchiveData(fetchArchives.data);
