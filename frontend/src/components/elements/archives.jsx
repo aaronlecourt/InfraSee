@@ -1,9 +1,9 @@
 import React from "react";
-
-export function Archives() {
+import { DataTable } from "../ui/DataTable";
+export function Archives({ data, columns }) {
   return (
     <div className="h-full">
-      <p>archives</p>
+      <DataTable data={data} columns={columns} />
     </div>
   );
 }

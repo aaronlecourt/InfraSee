@@ -23,6 +23,7 @@ import { logout } from "@/slices/auth-slice";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import axios from "axios";
 import { columnsModReports } from "@/components/data-table/columns/columnsModReports";
+import { columnsModArchives } from "@/components/data-table/columns/columnsModArchives";
 
 const ModeratorDashboardScreen = () => {
   const navigate = useNavigate();
@@ -30,15 +31,19 @@ const ModeratorDashboardScreen = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
-  const [data, setData] = useState([]);
+
+  const [report_data, setreport_Data] = useState([]);
+  const [archive_data, setArchiveData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [fetchReports] = await Promise.all([
+        const [fetchReports, fetchArchives] = await Promise.all([
           axios.get("/api/reports/moderator/reports"),
+          axios.get("/api/reports/archived/reports"),
         ]);
-        setData(fetchReports.data);
+        setreport_Data(fetchReports.data);
+        setArchiveData(fetchArchives.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -138,13 +143,13 @@ const ModeratorDashboardScreen = () => {
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
             </TabsList>
             <TabsContent value="overview" className="h-[calc(100vh-11rem)]">
-              <Overview goToReportsTab={goToReportsTab} data={data}/>
+              <Overview goToReportsTab={goToReportsTab} data={report_data} />
             </TabsContent>
             <TabsContent value="reports" className="h-[calc(100vh-11rem)]">
-              <Reports data={data} columns={columnsModReports} />
+              <Reports data={report_data} columns={columnsModReports} />
             </TabsContent>
             <TabsContent value="archives">
-              <Archives />
+              <Archives data={archive_data} columns={columnsModArchives} />
             </TabsContent>
             <TabsContent value="analytics">
               <Analytics />
