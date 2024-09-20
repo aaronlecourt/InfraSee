@@ -37,6 +37,13 @@ const reportSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    is_archived: { 
+      type: Boolean, 
+      default: false 
+    },
+    archived_at: { 
+      type: Date 
+    },
   },
   {
     timestamps: true,
