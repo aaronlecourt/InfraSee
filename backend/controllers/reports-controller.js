@@ -79,7 +79,7 @@ const getModeratorArchivedReports = asyncHandler(async (req, res) => {
     // Fetch reports assigned to the moderator
     const reports = await Report.find({
       report_mod: userId,
-      is_archived: false,
+      is_archived: true,
     })
       .populate("report_mod", "name")
       .populate("report_status", "stat_name");
@@ -176,11 +176,69 @@ const restoreReport = asyncHandler(async (req, res) => {
 });
 
 
+const deleteReport = asyncHandler(async (req, res) => {
+  try {
+    const reportId = req.params.id;
+
+    // Find the report by ID and delete it
+    const report = await Report.findByIdAndDelete(reportId);
+
+    if (!report) {
+      res.status(404);
+      throw new Error("Report not found.");
+    }
+
+    res.json({ message: "Report deleted successfully" });
+  } catch (error) {
+    console.error(`Error deleting report: ${error.message}`);
+
+    if (error.name === 'CastError') {
+      res.status(400).json({ message: 'Invalid report ID format.' });
+    } else {
+      res.status(500).json({ message: 'Server error. Please try again later.' });
+    }
+  }
+});
+
+const updateReportStatus = asyncHandler(async (req, res) => {
+  try {
+    const reportId = req.params.id;
+    const { report_status } = req.body;
+
+    // Find the report by ID and update the status
+    const report = await Report.findByIdAndUpdate(
+      reportId,
+      { report_status },
+      { new: true } // Return the updated report
+    );
+
+    if (!report) {
+      res.status(404);
+      throw new Error("Report not found.");
+    }
+
+    res.json({ message: "Report status updated successfully", report });
+  } catch (error) {
+    console.error(`Error updating report status: ${error.message}`);
+
+    if (error.name === 'CastError') {
+      res.status(400).json({ message: 'Invalid report ID format.' });
+    } else {
+      res.status(500).json({ message: 'Server error. Please try again later.' });
+    }
+  }
+});
+
+
+
+
 export { 
   getReports, 
   getModeratorReports, 
   getModeratorArchivedReports,
   archiveReport, 
   getArchivedReports,
-  restoreReport
+  restoreReport,
+  deleteReport,
+  updateReportStatus,
  };

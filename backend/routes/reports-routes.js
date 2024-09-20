@@ -5,7 +5,9 @@ import {
     archiveReport,
     getModeratorArchivedReports,
     getArchivedReports,
-    restoreReport
+    restoreReport,
+    deleteReport,
+    updateReportStatus,
  } from "../controllers/reports-controller.js";
 import { protect } from "../middleware/auth-middleware.js";
 
@@ -17,5 +19,7 @@ router.route('/moderator/archived/reports').get(protect, getModeratorArchivedRep
 router.route('/archived/reports').get(protect, getArchivedReports);
 router.route('/archive/:id').put(archiveReport);
 router.route('/restore/:id').put(restoreReport);
+router.route('/delete/:id').delete(deleteReport);
+router.route('/status/:id').put(updateReportStatus);
 
 export default router;
