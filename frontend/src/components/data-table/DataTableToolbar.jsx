@@ -18,7 +18,7 @@ import { CalendarDatePicker } from "../elements/calendar-date-picker";
 import { DataTableViewOptions } from "./DataTableViewOptions";
 import { DataTableFacetedFilter } from "./DataTableFacetedFilter";
 
-export function DataTableToolbar({ table }) {
+export function DataTableToolbar({ table, activeTab }) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 

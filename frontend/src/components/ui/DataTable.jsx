@@ -31,7 +31,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-export function DataTable({ columns, data }) {
+export function DataTable({ columns, data, activeTab }) {
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState({});
   const [columnFilters, setColumnFilters] = useState([]);
@@ -61,7 +61,7 @@ export function DataTable({ columns, data }) {
 
   return (
     <div className="space-y-4">
-      <DataTableToolbar table={table} />
+      <DataTableToolbar table={table} activeTab={activeTab}/>
       <div className="overflow-y-auto rounded-md border">
         <TooltipProvider>
           <Table>
