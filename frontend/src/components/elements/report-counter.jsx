@@ -8,6 +8,7 @@ export function ReportCounter({ data }) {
       resolved: 0,
       dismissed: 0,
       pending: 0,
+      unresolved: 0,
     };
 
     reports.forEach((report) => {
@@ -22,6 +23,8 @@ export function ReportCounter({ data }) {
         counts.dismissed++;
       } else if (status === "Pending") {
         counts.pending++;
+      } else if (status === "Unresolved") {
+        counts.unresolved++;
       } else {
         console.warn(`Unexpected report status: ${status}`);
       }
