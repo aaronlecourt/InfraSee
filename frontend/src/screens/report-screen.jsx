@@ -107,6 +107,10 @@ function ReportScreen() {
                   <span className="sr-only">Open Menu</span>
                 </Button>
               </SheetTrigger>
+              <SheetHeader className="hidden">
+                <SheetTitle></SheetTitle>
+                <SheetDescription></SheetDescription>
+              </SheetHeader>
               <SheetContent side="top">
                 <nav className="grid gap-4 py-1">
                   <Button onClick={handleContactClick} variant="ghost">
