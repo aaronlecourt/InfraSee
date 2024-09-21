@@ -37,12 +37,15 @@ const reportSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    is_archived: { 
-      type: Boolean, 
-      default: false 
+    account_num: {
+      type: String,
     },
-    archived_at: { 
-      type: Date 
+    is_archived: {
+      type: Boolean,
+      default: false,
+    },
+    archived_at: {
+      type: Date,
     },
   },
   {
