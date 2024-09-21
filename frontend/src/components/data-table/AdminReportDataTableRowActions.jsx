@@ -30,11 +30,6 @@ export function AdminReportDataTableRowActions({ row }) {
     setDeleteDialogOpen(false);
   };
 
-  const handleEdit = () => {
-    console.log("Editing report:", dialogData); // Implement your edit logic here
-    setDeleteDialogOpen(false);
-  };
-
   const handleCloseDialog = () => {
     setShowDetailsDialogOpen(false);
     setDeleteDialogOpen(false);
@@ -53,10 +48,6 @@ export function AdminReportDataTableRowActions({ row }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
-          <DropdownMenuItem onClick={handleEdit} className="flex gap-2">
-            <Edit size={14} />
-            Edit
-          </DropdownMenuItem>
           <DropdownMenuItem onClick={handleShowDetails} className="flex gap-2">
             <Eye size={14} />
             Show Details
