@@ -33,11 +33,11 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
   const methods = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      status: data?.report_status?.stat_name || "",
+      status: data?.report_status?._id || "", // Use _id for default value
     },
   });
 
-  const { handleSubmit, setValue } = methods;
+  const { handleSubmit, setValue, control } = methods;
 
   useEffect(() => {
     if (isOpen) {
@@ -55,14 +55,21 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
 
   useEffect(() => {
     if (data && data.report_status) {
-      setValue("status", data.report_status.stat_name);
+      setValue("status", data.report_status._id); // Set the _id as the default value
     }
   }, [data, setValue]);
 
-  const onSubmit = (formData) => {
-    console.log("Updated status:", formData.status);
-    // Here you can handle the form submission, e.g., send the update to the server
-    onClose();
+  const onSubmit = async (formData) => {
+    console.log("Updated status ID:", formData.status);
+    const reportId = data._id; // Assuming data contains the report ID
+    try {
+      const response = await axios.put(`/api/reports/status/${reportId}`, { report_status: formData.status });
+      console.log(response.data.message);
+      onClose(); // Close dialog after success
+    } catch (error) {
+      console.error("Error updating report status:", error);
+      // You might want to set an error message here
+    }
   };
 
   return (
@@ -86,9 +93,13 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                   </label>
                   <Controller
                     name="status"
-                    control={methods.control}
+                    control={control}
                     render={({ field }) => (
-                      <Select {...field} className="w-full">
+                      <Select
+                        onValueChange={field.onChange} // Handle value change
+                        value={field.value} // Set current value
+                        className="w-full"
+                      >
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select a status" />
                         </SelectTrigger>
@@ -98,9 +109,9 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                             {statusOptions.map((option) => (
                               <SelectItem
                                 key={option._id}
-                                value={option.stat_name}
+                                value={option._id} // Use _id as the value
                               >
-                                {option.stat_name}
+                                {option.stat_name} {/* Display stat_name */}
                               </SelectItem>
                             ))}
                           </SelectGroup>

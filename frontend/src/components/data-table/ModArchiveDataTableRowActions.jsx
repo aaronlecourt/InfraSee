@@ -1,5 +1,5 @@
 "use client";
-
+import axios from "axios";
 import { useState } from "react";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
@@ -20,20 +20,38 @@ export function ModArchiveDataTableRowActions({ row }) {
   const [isRestoreDialogOpen, setRestoreDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [dialogData, setDialogData] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const handleShowDetails = () => {
     setDialogData(row.original);
     setShowDetailsDialogOpen(true);
   };
 
-  const handleRestore = () => {
-    console.log("Restoring report:", dialogData); // Implement your restore logic here
-    setRestoreDialogOpen(false);
+  const handleRestore = async () => {
+    const reportId = row.original._id;
+    try {
+      const response = await axios.put(`/api/reports/restore/${reportId}`);
+      console.log(response.data.message);
+      setRestoreDialogOpen(false);
+    } catch (error) {
+      console.error("Error restoring report:", error);
+      setErrorMessage(
+        error.response?.data?.message || "Failed to restore report."
+      );
+    }
   };
-
-  const handleDelete = () => {
-    console.log("Deleting report:", dialogData); // Implement your delete logic here
-    setDeleteDialogOpen(false);
+  const handleDelete = async () => {
+    const reportId = row.original._id;
+    try {
+      const response = await axios.delete(`/api/reports/delete/${reportId}`);
+      console.log(response.data.message);
+      setDeleteDialogOpen(false);
+    } catch (error) {
+      console.error("Error deleting report:", error);
+      setErrorMessage(
+        error.response?.data?.message || "Failed to delete report."
+      );
+    }
   };
 
   const handleCloseDialog = () => {

@@ -1,5 +1,5 @@
 "use client";
-
+import axios from "axios";
 import { useState } from "react";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
@@ -18,28 +18,38 @@ import { EyeIcon, ArchiveIcon, Edit } from "lucide-react";
 export function ModReportDataTableRowActions({ row }) {
   const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);
   const [isUpdateStatusDialogOpen, setUpdateStatusDialogOpen] = useState(false);
-  const [isArchiveDialogOpen, setArchiveDialogOpen] = useState(false); // State for the archive dialog
+  const [isArchiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [dialogData, setDialogData] = useState(null);
+  const [newStatus, setNewStatus] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const handleShowDetails = () => {
     setDialogData(row.original);
     setShowDetailsDialogOpen(true);
   };
 
-  const handleUpdateStatus = () => {
+  const handleUpdateStatus = async () => {
     setDialogData(row.original);
     setUpdateStatusDialogOpen(true);
   };
 
-  const handleArchive = () => {
-    console.log("Archiving report:", dialogData); // Implement your archiving logic here
-    setArchiveDialogOpen(false);
+  const handleArchive = async () => {
+    const reportId = row.original._id;
+    try {
+      const response = await axios.put(`/api/reports/archive/${reportId}`);
+      console.log(response.data.message);
+      setArchiveDialogOpen(false);
+    } catch (error) {
+      console.error("Error archiving report:", error);
+      setErrorMessage(
+        error.response?.data?.message || "Failed to archive report."
+      );
+    }
   };
-
   const handleCloseDialog = () => {
     setShowDetailsDialogOpen(false);
     setUpdateStatusDialogOpen(false);
-    setArchiveDialogOpen(false); // Close the archive dialog as well
+    setArchiveDialogOpen(false);
   };
 
   return (
@@ -66,7 +76,7 @@ export function ModReportDataTableRowActions({ row }) {
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className="text-yellow-500 flex gap-2"
-            onClick={() => setArchiveDialogOpen(true)} // Open the archive dialog
+            onClick={() => setArchiveDialogOpen(true)}
           >
             <ArchiveIcon size={14} />
             Archive
@@ -81,13 +91,15 @@ export function ModReportDataTableRowActions({ row }) {
       />
       <UpdateStatusDialog
         isOpen={isUpdateStatusDialogOpen}
+        onConfirm={handleUpdateStatus} 
         onClose={handleCloseDialog}
         data={dialogData}
+        setNewStatus={setNewStatus}
       />
       <ConfirmArchiveDialog
         isOpen={isArchiveDialogOpen}
         onClose={handleCloseDialog}
-        onConfirm={handleArchive} // Pass the archive handler
+        onConfirm={handleArchive}
       />
     </>
   );

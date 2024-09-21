@@ -36,20 +36,33 @@ const ModeratorDashboardScreen = () => {
   const [archive_data, setArchiveData] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    setreport_Data([]);
+    setArchiveData([]);
+    const fetchReportsData = async () => {
       try {
-        const [fetchReports, fetchArchives] = await Promise.all([
-          axios.get("/api/reports/moderator/reports"),
-          axios.get("/api/reports/moderator/archived/reports"),
-        ]);
-        setreport_Data(fetchReports.data);
-        setArchiveData(fetchArchives.data);
+        console.log(activeTab);
+        if (activeTab === "reports") {
+          const reportsResponse = await axios.get(
+            "/api/reports/moderator/reports"
+          );
+          setreport_Data(reportsResponse.data);
+        } else if (activeTab === "overview") {
+          const reportsResponse = await axios.get(
+            "/api/reports/moderator/reports"
+          );
+          setreport_Data(reportsResponse.data);
+        } else if (activeTab === "archives") {
+          const archivesResponse = await axios.get(
+            "/api/reports/moderator/archived/reports"
+          );
+          setArchiveData(archivesResponse.data);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
-    fetchData();
+    fetchReportsData();
   }, [activeTab]);
 
   useEffect(() => {
