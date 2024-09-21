@@ -26,7 +26,7 @@ export function ReportDetailsDialog({ isOpen, onClose, data }) {
                         alt="Report related"
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-white to-transparent"></div>
+                      {/* <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-white to-transparent"></div> */}
                     </div>
                   )}
                 <div className="flex justify-between items-center pt-2">

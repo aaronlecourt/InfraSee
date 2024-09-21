@@ -13,6 +13,7 @@ import {
 import { ReportDetailsDialog } from "../elements/report-details-modal";
 import { UpdateStatusDialog } from "../elements/update-status-modal";
 import { ConfirmArchiveDialog } from "../elements/archive-confirm-modal";
+import { EyeIcon, ArchiveIcon, Edit } from "lucide-react";
 
 export function ModReportDataTableRowActions({ row }) {
   const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);
@@ -54,24 +55,29 @@ export function ModReportDataTableRowActions({ row }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
-          <DropdownMenuItem onClick={handleUpdateStatus}>Update Status</DropdownMenuItem>
-          <DropdownMenuItem onClick={handleShowDetails}>
+          <DropdownMenuItem onClick={handleUpdateStatus} className="flex gap-2">
+            <Edit size={14} />
+            Update Status
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleShowDetails} className="flex gap-2">
+            <EyeIcon size={14} />
             Show Details
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem 
-            className="text-yellow-500" 
+          <DropdownMenuItem
+            className="text-yellow-500 flex gap-2"
             onClick={() => setArchiveDialogOpen(true)} // Open the archive dialog
           >
+            <ArchiveIcon size={14} />
             Archive
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <ReportDetailsDialog 
-        isOpen={isShowDetailsDialogOpen} 
-        onClose={handleCloseDialog} 
-        data={dialogData} 
+      <ReportDetailsDialog
+        isOpen={isShowDetailsDialogOpen}
+        onClose={handleCloseDialog}
+        data={dialogData}
       />
       <UpdateStatusDialog
         isOpen={isUpdateStatusDialogOpen}
