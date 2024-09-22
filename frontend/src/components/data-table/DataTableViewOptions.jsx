@@ -21,8 +21,8 @@ export function DataTableViewOptions({ table }) {
           size="sm"
           className=""
         >
-          <MixerHorizontalIcon className="mr-2 h-4 w-4" />
-          View
+          <MixerHorizontalIcon className="md:mr-2 h-4 w-4" />
+          <p className="hidden md:block">View</p>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-[150px]">

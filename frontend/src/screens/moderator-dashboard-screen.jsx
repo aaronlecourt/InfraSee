@@ -195,10 +195,10 @@ const ModeratorDashboardScreen = () => {
               <Overview data={reportData} />
             </TabsContent>
             <TabsContent value="reports" className="h-[calc(100vh-11rem)]">
-              <Reports data={reportData} columns={columnsModReports} />
+              <Reports data={reportData} columns={columnsModReports} activeTab={activeTab}/>
             </TabsContent>
             <TabsContent value="archives">
-              <Archives data={archiveData} columns={columnsModArchives} />
+              <Archives data={archiveData} columns={columnsModArchives} activeTab={activeTab}/>
             </TabsContent>
             <TabsContent value="analytics">
               <Analytics />
