@@ -1,10 +1,12 @@
 import path from 'path';
+import { WebSocketServer } from 'ws';
 import express from 'express';
 import dotenv from 'dotenv';
 dotenv.config();
 import connectDB from './config/db.js';
 import cookieParser from 'cookie-parser';
 import { notFound, errorHandler } from './middleware/error-middleware.js';
+import { loggerMiddleware } from './middleware/logger middleware.js';
 import userRoutes from './routes/user-routes.js';
 import infrastructureRoutes from './routes/infrastructure-routes.js';
 import reportRoutes from './routes/reports-routes.js'
@@ -20,6 +22,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(cookieParser());
+
+app.use(loggerMiddleware);
 
 // API routes
 app.use('/api/users', userRoutes);
@@ -43,4 +47,28 @@ if (process.env.NODE_ENV === 'production') {
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(port, () => console.log(`Server started on port ${port}`));
+const server = app.listen(port, () =>
+  console.log(`Server started on port ${port}`)
+);
+
+export const wss = new WebSocketServer({ server }); 
+
+wss.on('connection', (ws) => {
+  console.log('New WebSocket connection established');
+
+  // Handle messages from clients
+  ws.on('message', (message) => {
+    console.log('Received message:', message);
+    // Broadcast message to all connected clients
+    wss.clients.forEach((client) => {
+      if (client.readyState === ws.OPEN) {
+        client.send(message);
+      }
+    });
+  });
+
+  // Handle WebSocket connection close
+  ws.on('close', () => {
+    console.log('WebSocket connection closed');
+  });
+});

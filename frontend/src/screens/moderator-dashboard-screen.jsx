@@ -7,7 +7,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuShortcut,
 } from "@/components/ui/dropdown-menu";
 import { Settings, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -32,52 +31,94 @@ const ModeratorDashboardScreen = () => {
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
 
-  const [report_data, setreport_Data] = useState([]);
-  const [archive_data, setArchiveData] = useState([]);
+  const [reportData, setReportData] = useState([]);
+  const [archiveData, setArchiveData] = useState([]);
+
+  // Fetch reports and archives
+  const fetchData = async () => {
+    const reportsEndpoint = "/api/reports/moderator/reports";
+    const archivesEndpoint = "/api/reports/moderator/archived/reports";
+
+    try {
+      const [reportsResponse, archivesResponse] = await Promise.all([
+        axios.get(reportsEndpoint),
+        axios.get(archivesEndpoint),
+      ]);
+      setReportData(reportsResponse.data);
+      setArchiveData(archivesResponse.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
   useEffect(() => {
-    setreport_Data([]);
-    setArchiveData([]);
-    const fetchReportsData = async () => {
+    fetchData();
+  }, []);
+
+  // WebSocket setup for auto-refreshing based on message type
+  useEffect(() => {
+    const socket = new WebSocket("ws://localhost:5000");
+
+    socket.onopen = () => console.log("WebSocket connection established");
+
+    socket.onmessage = (event) => {
       try {
-        console.log(activeTab);
-        if (activeTab === "reports") {
-          const reportsResponse = await axios.get(
-            "/api/reports/moderator/reports"
-          );
-          setreport_Data(reportsResponse.data);
-        } else if (activeTab === "overview") {
-          const reportsResponse = await axios.get(
-            "/api/reports/moderator/reports"
-          );
-          setreport_Data(reportsResponse.data);
-        } else if (activeTab === "archives") {
-          const archivesResponse = await axios.get(
-            "/api/reports/moderator/archived/reports"
-          );
-          setArchiveData(archivesResponse.data);
-        }
+        const newData = JSON.parse(event.data);
+        console.log("New Data from WebSocket:", newData);
+
+        const updatedReport = JSON.parse(newData.responseBody).report;
+
+        handleWebSocketUpdate(newData, updatedReport);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error parsing WebSocket message:", error);
       }
     };
 
-    fetchReportsData();
-  }, [activeTab]);
+    socket.onclose = () => console.log("WebSocket connection closed");
 
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "l") {
-        event.preventDefault();
-        handleLogout();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      socket.close();
     };
   }, []);
+
+  const handleWebSocketUpdate = (newData, updatedReport) => {
+    if (newData.method === "PUT") {
+      if (
+        newData.url.includes("/api/reports/archive/") &&
+        updatedReport.is_archived
+      ) {
+        setReportData((prevData) =>
+          prevData.filter((report) => report._id !== updatedReport._id)
+        );
+        setArchiveData((prevData) => [updatedReport, ...prevData]);
+        fetchData(); // Refresh data after actions
+      } else if (
+        newData.url.includes("/api/reports/restore/") &&
+        !updatedReport.is_archived
+      ) {
+        setArchiveData((prevData) =>
+          prevData.filter((archive) => archive._id !== updatedReport._id)
+        );
+        setReportData((prevData) => [updatedReport, ...prevData]);
+        fetchData();
+      } else if (newData.url.includes("/api/reports/status/")) {
+        setReportData((prevData) =>
+          prevData.map((report) =>
+            report._id === updatedReport._id ? updatedReport : report
+          )
+        );
+        fetchData();
+      }
+    } else if (newData.method === "DELETE") {
+      setReportData((prevData) =>
+        prevData.filter((report) => report._id !== updatedReport._id)
+      );
+      setArchiveData((prevData) =>
+        prevData.filter((archive) => archive._id !== updatedReport._id)
+      );
+      fetchData();
+    }
+  };
 
   const handleLogoClick = () => {
     navigate("/");
@@ -91,10 +132,6 @@ const ModeratorDashboardScreen = () => {
     } catch (err) {
       console.log(err);
     }
-  };
-
-  const goToReportsTab = () => {
-    setActiveTab("reports");
   };
 
   return (
@@ -138,7 +175,6 @@ const ModeratorDashboardScreen = () => {
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Logout</span>
-                    <DropdownMenuShortcut>⌘+L</DropdownMenuShortcut>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
               </DropdownMenuContent>
@@ -156,13 +192,13 @@ const ModeratorDashboardScreen = () => {
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
             </TabsList>
             <TabsContent value="overview" className="h-[calc(100vh-11rem)]">
-              <Overview goToReportsTab={goToReportsTab} data={report_data} />
+              <Overview data={reportData} />
             </TabsContent>
             <TabsContent value="reports" className="h-[calc(100vh-11rem)]">
-              <Reports data={report_data} columns={columnsModReports} activeTab={activeTab}/>
+              <Reports data={reportData} columns={columnsModReports} />
             </TabsContent>
             <TabsContent value="archives">
-              <Archives data={archive_data} columns={columnsModArchives} activeTab={activeTab}/>
+              <Archives data={archiveData} columns={columnsModArchives} />
             </TabsContent>
             <TabsContent value="analytics">
               <Analytics />
