@@ -14,6 +14,7 @@ import { ReportDetailsDialog } from "../elements/report-details-modal";
 import { ConfirmDeleteDialog } from "../elements/delete-confirm-modal";
 import { ConfirmRestoreDialog } from "../elements/restore-confirm-modal";
 import { EyeIcon, ArchiveRestore, Trash2 } from "lucide-react";
+import { toast } from 'sonner'; // Import Sonner toast
 
 export function ModArchiveDataTableRowActions({ row }) {
   const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);
@@ -32,25 +33,30 @@ export function ModArchiveDataTableRowActions({ row }) {
     try {
       const response = await axios.put(`/api/reports/restore/${reportId}`);
       console.log(response.data.message);
+      toast.success("Report restored successfully!"); // Add success toast
       setRestoreDialogOpen(false);
     } catch (error) {
       console.error("Error restoring report:", error);
       setErrorMessage(
         error.response?.data?.message || "Failed to restore report."
       );
+      toast.error("Error restoring report."); // Add error toast
     }
   };
+
   const handleDelete = async () => {
     const reportId = row.original._id;
     try {
       const response = await axios.delete(`/api/reports/delete/${reportId}`);
       console.log(response.data.message);
+      toast.success("Report deleted successfully!"); // Add success toast
       setDeleteDialogOpen(false);
     } catch (error) {
       console.error("Error deleting report:", error);
       setErrorMessage(
         error.response?.data?.message || "Failed to delete report."
       );
+      toast.error("Error deleting report."); // Add error toast
     }
   };
 
@@ -102,12 +108,12 @@ export function ModArchiveDataTableRowActions({ row }) {
       <ConfirmRestoreDialog
         isOpen={isRestoreDialogOpen}
         onClose={handleCloseDialog}
-        onConfirm={handleRestore} // Pass the restore handler
+        onConfirm={handleRestore}
       />
       <ConfirmDeleteDialog
         isOpen={isDeleteDialogOpen}
         onClose={handleCloseDialog}
-        onConfirm={handleDelete} // Pass the delete handler
+        onConfirm={handleDelete}
       />
     </>
   );

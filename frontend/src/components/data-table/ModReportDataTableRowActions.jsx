@@ -14,6 +14,7 @@ import { ReportDetailsDialog } from "../elements/report-details-modal";
 import { UpdateStatusDialog } from "../elements/update-status-modal";
 import { ConfirmArchiveDialog } from "../elements/archive-confirm-modal";
 import { EyeIcon, ArchiveIcon, Edit } from "lucide-react";
+import { toast } from 'sonner';
 
 export function ModReportDataTableRowActions({ row }) {
   const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);
@@ -38,14 +39,17 @@ export function ModReportDataTableRowActions({ row }) {
     try {
       const response = await axios.put(`/api/reports/archive/${reportId}`);
       console.log(response.data.message);
+      toast.success("Report archived successfully!");
       setArchiveDialogOpen(false);
     } catch (error) {
       console.error("Error archiving report:", error);
       setErrorMessage(
         error.response?.data?.message || "Failed to archive report."
       );
+      toast.error("Failed to archive report.");
     }
   };
+
   const handleCloseDialog = () => {
     setShowDetailsDialogOpen(false);
     setUpdateStatusDialogOpen(false);

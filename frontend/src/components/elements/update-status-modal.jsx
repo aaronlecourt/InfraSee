@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from 'sonner';
 
 // Define your Zod schema
 const schema = z.object({
@@ -47,6 +48,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
           setStatusOptions(response.data);
         } catch (error) {
           console.error("Failed to fetch status options", error);
+          toast.error("Failed to fetch status options.");
         }
       };
       fetchStatusOptions();
@@ -65,10 +67,11 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
     try {
       const response = await axios.put(`/api/reports/status/${reportId}`, { report_status: formData.status });
       console.log(response.data.message);
+      toast.success("Report status updated successfully!");
       onClose(); // Close dialog after success
     } catch (error) {
       console.error("Error updating report status:", error);
-      // You might want to set an error message here
+      toast.error("Error updating report status.");
     }
   };
 
