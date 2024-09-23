@@ -34,20 +34,27 @@ const ModeratorDashboardScreen = () => {
   const [reportData, setReportData] = useState([]);
   const [archiveData, setArchiveData] = useState([]);
 
-  // Fetch reports and archives
+  // Fetch reports and archives without explicit promises
   const fetchData = async () => {
     const reportsEndpoint = "/api/reports/moderator/reports";
     const archivesEndpoint = "/api/reports/moderator/archived/reports";
 
     try {
-      const [reportsResponse, archivesResponse] = await Promise.all([
-        axios.get(reportsEndpoint),
-        axios.get(archivesEndpoint),
-      ]);
+      // Fetch reports
+      const reportsResponse = await axios.get(reportsEndpoint);
       setReportData(reportsResponse.data);
+
+      // Fetch archives
+      const archivesResponse = await axios.get(archivesEndpoint);
       setArchiveData(archivesResponse.data);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      // Improved error handling
+      const errorMessage = error.response
+        ? error.response.data.message ||
+          "An error occurred while fetching data."
+        : error.message || "Network error. Please try again later.";
+
+      console.error("Error fetching data:", errorMessage);
     }
   };
 
@@ -109,12 +116,16 @@ const ModeratorDashboardScreen = () => {
         );
         fetchData();
       }
-    } else if (newData.method === "DELETE") {
-      setReportData((prevData) =>
-        prevData.filter((report) => report._id !== updatedReport._id)
-      );
+    } else if (
+      newData.method === "DELETE" &&
+      newData.url.includes("/api/reports/delete/")
+    ) {
+      const reportId = newData.url.split("/").pop(); // Extracts the last part of the URL
       setArchiveData((prevData) =>
-        prevData.filter((archive) => archive._id !== updatedReport._id)
+        prevData.filter((archive) => archive._id !== reportId)
+      );
+      setReportData((prevData) =>
+        prevData.filter((report) => report._id !== reportId)
       );
       fetchData();
     }

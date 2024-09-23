@@ -84,9 +84,9 @@ const getModeratorArchivedReports = asyncHandler(async (req, res) => {
       .populate("report_mod", "name")
       .populate("report_status", "stat_name");
 
+    // Check if reports were found
     if (!reports || reports.length === 0) {
-      res.status(404);
-      throw new Error("No reports found for this moderator.");
+      return res.status(404).json({ message: "No reports found for this moderator." });
     }
 
     res.json(reports);
@@ -98,12 +98,11 @@ const getModeratorArchivedReports = asyncHandler(async (req, res) => {
     } else if (error.name === "ValidationError") {
       res.status(422).json({ message: error.message });
     } else {
-      res
-        .status(500)
-        .json({ message: "Server error. Please try again later." });
+      res.status(500).json({ message: "Server error. Please try again later." });
     }
   }
 });
+
 
 const archiveReport = asyncHandler(async (req, res) => {
   try {

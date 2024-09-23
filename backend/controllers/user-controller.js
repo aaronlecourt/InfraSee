@@ -137,6 +137,31 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Refresh token
+// @route   POST /api/users/refresh
+// @access  Public
+const refreshToken = (req, res) => {
+  const token = req.cookies.jwt;
+
+  if (!token) {
+    return res.status(401).json({ message: 'No token provided' });
+  }
+
+  const decoded = jwt.decode(token);
+  const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+
+  if (decoded && decoded.exp) {
+    // Renew the token if it has expired or is expiring today
+    if (decoded.exp < currentTime || 
+        new Date(decoded.exp * 1000).toDateString() === new Date().toDateString()) {
+      const userId = decoded.userId; // Extract userId from decoded token
+      generateToken(res, userId); // Generate a new token
+    }
+  }
+};
+
+
+
 // @desc    Logout user / clear cookie
 // @route   POST /api/users/logout
 // @access  Public
@@ -316,6 +341,7 @@ export {
   adminUser,
   moderatorUser,
   registerUser,
+  refreshToken,
   logoutUser,
   getUserProfile,
   updateUserProfile,
