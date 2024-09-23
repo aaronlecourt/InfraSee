@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Cross2Icon } from "@radix-ui/react-icons";
-import { TrashIcon, Plus, Download } from "lucide-react";
+import {
+  TrashIcon,
+  Plus,
+  Download,
+  ArchiveIcon,
+  ArchiveRestore,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -41,16 +47,26 @@ export function DataTableToolbar({ table, activeTab }) {
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
-        const [infraTypeResponse, reportModResponse, reportStatusResponse] = await Promise.all([
-          axios.get('/api/infrastructure-types'),
-          axios.get('/api/users/moderators'),
-          axios.get('/api/status')
-        ]);
+        const [infraTypeResponse, reportModResponse, reportStatusResponse] =
+          await Promise.all([
+            axios.get("/api/infrastructure-types"),
+            axios.get("/api/users/moderators"),
+            axios.get("/api/status"),
+          ]);
 
         setFilterOptions({
-          infraType: infraTypeResponse.data.map(type => ({ label: type.infra_name, value: type.infra_name })),
-          reportMod: reportModResponse.data.map(mod => ({ label: mod.name, value: mod.name })),
-          reportStatus: reportStatusResponse.data.map(status => ({ label: status.stat_name, value: status.stat_name })),
+          infraType: infraTypeResponse.data.map((type) => ({
+            label: type.infra_name,
+            value: type.infra_name,
+          })),
+          reportMod: reportModResponse.data.map((mod) => ({
+            label: mod.name,
+            value: mod.name,
+          })),
+          reportStatus: reportStatusResponse.data.map((status) => ({
+            label: status.stat_name,
+            value: status.stat_name,
+          })),
         });
       } catch (error) {
         console.error("Error fetching filter options:", error);
@@ -62,115 +78,155 @@ export function DataTableToolbar({ table, activeTab }) {
 
   return (
     <div className="mt-2 flex flex-col gap-2">
-      <div className="flex flex-wrap items-center justify-end mb-2">
-        <div className="flex items-center">
-          <CalendarDatePicker
-            date={dateRange}
-            onDateSelect={handleDateSelect}
-            className="h-9 w-[250px]"
-            variant="outline"
-          />
-        </div>
-      </div>
-      <div className="flex flex-wrap items-center">
-        <div className="flex flex-1 flex-wrap items-center gap-2">
-          {table.getColumn("name") && (
-            <Input
-              placeholder="Search moderator name..."
-              value={table.getColumn("name")?.getFilterValue() ?? ""}
-              onChange={(event) => {
-                table.getColumn("name")?.setFilterValue(event.target.value);
-              }}
-              className="h-9 w-[150px] lg:w-[250px]"
-            />
-          )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-2">
+        <div className="col-span-1 flex gap-x-2">
+          {/* MODERATOR SEARCH */}
+          {/* Reports and Archives */}
           {table.getColumn("report_by") && (
             <Input
               placeholder="Search reporter name..."
               value={table.getColumn("report_by")?.getFilterValue() ?? ""}
+              className="h-9"
               onChange={(event) => {
-                table.getColumn("report_by")?.setFilterValue(event.target.value);
+                table
+                  .getColumn("report_by")
+                  ?.setFilterValue(event.target.value);
               }}
-              className="h-9 w-[150px] lg:w-[250px]"
             />
           )}
-          {table.getColumn("infra_type") && (
-            <DataTableFacetedFilter
-              column={table.getColumn("infra_type")}
-              title="Infrastructure Type"
-              options={filterOptions.infraType}
+          {/* ADMIN SEARCH */}
+          {/* Account Name */}
+          {table.getColumn("name") && (
+            <Input
+              placeholder="Search moderator name..."
+              value={table.getColumn("name")?.getFilterValue() ?? ""}
+              className="h-9"
+              onChange={(event) => {
+                table.getColumn("name")?.setFilterValue(event.target.value);
+              }}
             />
           )}
-          {table.getColumn("report_mod") && (
-            <>
-              <DataTableFacetedFilter
-                column={table.getColumn("report_mod")}
-                title="Report Moderator"
-                options={filterOptions.reportMod}
-              />
+
+          {/* DESKTOP VIEW/DOWNLOAD */}
+          <div className="flex gap-2 sm:hidden">
+            <DataTableViewOptions table={table} />
+            <Button size="filter" className="flex gap-2">
+              <Download size={15} />
+              <p className="hidden md:block">CSV</p>
+            </Button>
+          </div>
+        </div>
+        <div className="col-span-1">
+          {/* Calendar Picker */}
+          <CalendarDatePicker
+            date={dateRange}
+            onDateSelect={handleDateSelect}
+            variant="outline"
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-y-2">
+        <div className="col-span-1 flex items-center justify-between">
+          {/* FACETED FILTERS */}
+          <div className="flex items-center">
+            {table.getColumn("report_by") && !table.getColumn("report_mod") && (
               <DataTableFacetedFilter
                 column={table.getColumn("report_status")}
                 title="Status"
                 options={filterOptions.reportStatus}
               />
-            </>
-          )}
-          {table.getColumn("report_by") && !table.getColumn("report_mod") && (
-            <DataTableFacetedFilter
-            column={table.getColumn("report_status")}
-            title="Status"
-            options={filterOptions.reportStatus}
-          />
-          )}
-          {isFiltered && (
-            <Button
-              variant="ghost"
-              onClick={() => table.resetColumnFilters()}
-              className="h-9 px-2 lg:px-3"
-            >
-              Reset
-              <Cross2Icon className="ml-2 h-4 w-4" />
-            </Button>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          {table.getFilteredSelectedRowModel().rows.length > 0 && (
-            <Button variant="outline" size="sm">
-              <TrashIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-              Delete ({table.getFilteredSelectedRowModel().rows.length})
-            </Button>
-          )}
-          {table.getColumn("infra_type") && (
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="filter1"
-                  size="filter"
-                  className="flex items-center gap-2"
-                >
-                  <Plus size={15} />
-                  <p>New Account</p>
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create New Account</DialogTitle>
-                  <DialogDescription>
-                    Add a new moderator account by filling up the form below.
-                    Click add when you're done.
-                  </DialogDescription>
-                </DialogHeader>
-                <RegisterForm />
-                <DialogClose onClick={() => setIsDialogOpen(false)} />
-              </DialogContent>
-            </Dialog>
-          )}
-          <DataTableViewOptions table={table} />
-          <Button size="filter" className=" flex gap-2">
-            <Download size={15} />
-            CSV
-          </Button>
+            )}
+            {table.getColumn("infra_type") && (
+              <DataTableFacetedFilter
+                column={table.getColumn("infra_type")}
+                title="Infrastructure Type"
+                options={filterOptions.infraType}
+              />
+            )}
+            {table.getColumn("report_mod") && (
+              <div className="flex gap-x-2">
+                <DataTableFacetedFilter
+                  column={table.getColumn("report_mod")}
+                  title="Moderator"
+                  options={filterOptions.reportMod}
+                />
+                <DataTableFacetedFilter
+                  column={table.getColumn("report_status")}
+                  title="Status"
+                  options={filterOptions.reportStatus}
+                />
+              </div>
+            )}
+            {/* RESET BUTTON */}
+            {isFiltered && (
+              <Button
+                variant="ghost"
+                onClick={() => table.resetColumnFilters()}
+                className="h-9 px-2 lg:px-3"
+              >
+                Reset
+                <Cross2Icon className="ml-2 h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          {/* VIEW OPTIONS, MULTISELECT ACTIONS */}
+          <div className="flex gap-x-2">
+            {/* DESKTOP VIEW/DOWNLOAD */}
+            <div className="hidden gap-2 sm:flex">
+              <DataTableViewOptions table={table} />
+              <Button size="filter" className="flex gap-2">
+                <Download size={15} />
+                <p className="hidden md:block">CSV</p>
+              </Button>
+            </div>
+            <div className="flex gap-x-2">
+              {/* ADMIN MULTI DELETE */}
+              {table.getFilteredSelectedRowModel().rows.length > 0 &&
+                activeTab === undefined && (
+                  <Button
+                    variant="outline"
+                    size="filter"
+                    className="flex gap-2"
+                  >
+                    <TrashIcon size={15} aria-hidden="true" />
+                    <p className="hidden md:block">Delete</p>(
+                    {table.getFilteredSelectedRowModel().rows.length})
+                  </Button>
+                )}
+              {/* MOD MULTI ACTION */}
+              {table.getFilteredSelectedRowModel().rows.length > 0 &&
+                activeTab === "archives" && (
+                  <Button
+                    variant="outline"
+                    size="filter"
+                    className="flex gap-2"
+                  >
+                    <TrashIcon size={15} aria-hidden="true" />
+                    <p className="hidden md:block">Delete</p>(
+                    {table.getFilteredSelectedRowModel().rows.length})
+                  </Button>
+                )}
+              {table.getFilteredSelectedRowModel().rows.length > 0 &&
+                activeTab === "archives" && (
+                  <Button variant="outline" size="sm">
+                    <ArchiveRestore
+                      className="mr-2 h-4 w-4"
+                      aria-hidden="true"
+                    />
+                    <p className="hidden md:block">Restore</p>(
+                    {table.getFilteredSelectedRowModel().rows.length})
+                  </Button>
+                )}
+              {table.getFilteredSelectedRowModel().rows.length > 0 &&
+                activeTab === "reports" && (
+                  <Button variant="outline" size="sm">
+                    <ArchiveIcon className="mr-2 h-4 w-4" aria-hidden="true" />
+                    <p className="hidden md:block">Archive</p>(
+                    {table.getFilteredSelectedRowModel().rows.length})
+                  </Button>
+                )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

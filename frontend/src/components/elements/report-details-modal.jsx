@@ -16,7 +16,7 @@ export function ReportDetailsDialog({ isOpen, onClose, data }) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Report Details</DialogTitle>
-          <DialogDescription>
+          <DialogDescription asChild>
             {data ? (
               <div className="flex flex-col gap-y-1">
                 {data.report_img && (
