@@ -30,10 +30,11 @@ export function ComboBoxResponsive({ onSelect }) {
         const response = await axios.get("/api/users/moderators");
         const moderators = response.data;
         const categorizedModerators = moderators.reduce((acc, mod) => {
-          if (!acc[mod.infra_type]) {
-            acc[mod.infra_type] = [];
+          const infraId = mod.infra_type._id; // Ensure infra_type has _id
+          if (!acc[infraId]) {
+            acc[infraId] = [];
           }
-          acc[mod.infra_type].push(mod);
+          acc[infraId].push(mod);
           return acc;
         }, {});
         setModeratorsByType(categorizedModerators);
@@ -45,14 +46,12 @@ export function ComboBoxResponsive({ onSelect }) {
     fetchInfrastructureTypes();
     fetchModerators();
 
-    // Listen for window resize events
     const handleResize = () => {
       setIsDesktop(window.matchMedia("(min-width: 768px)").matches);
     };
 
     window.addEventListener('resize', handleResize);
 
-    // Cleanup listener on component unmount
     return () => {
       window.removeEventListener('resize', handleResize);
     };
@@ -61,22 +60,26 @@ export function ComboBoxResponsive({ onSelect }) {
   const handleModeratorSelect = (moderator) => {
     setSelectedModerator(moderator._id);
     if (onSelect) {
-      onSelect(moderator); // Pass the whole moderator object
+      onSelect(moderator);
     }
     setOpen(false);
   };
 
-  const filteredModeratorsByType = Object.entries(moderatorsByType).reduce((acc, [infraId, moderators]) => {
-    const filteredMods = moderators.filter(mod =>
-      mod.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    if (filteredMods.length > 0) {
-      acc[infraId] = filteredMods;
-    }
-    return acc;
-  }, {});
+  const getFilteredModerators = () => {
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    return Object.entries(moderatorsByType).reduce((acc, [infraId, moderators]) => {
+      const filteredMods = moderators.filter(mod =>
+        mod.name.toLowerCase().includes(lowerSearchTerm)
+      );
+      if (filteredMods.length > 0) {
+        acc[infraId] = filteredMods;
+      }
+      return acc;
+    }, {});
+  };
 
-  const selectedModeratorName = Object.values(moderatorsByType).flat().find((mod) => mod._id === selectedModerator)?.name;
+  const filteredModeratorsByType = getFilteredModerators();
+  const selectedModeratorName = Object.values(moderatorsByType).flat().find(mod => mod._id === selectedModerator)?.name;
 
   const renderContent = () => (
     <Command>
@@ -92,10 +95,7 @@ export function ComboBoxResponsive({ onSelect }) {
         ) : (
           Object.entries(filteredModeratorsByType).map(([infraId, moderators]) => (
             <React.Fragment key={infraId}>
-              <CommandItem
-                className="font-bold text-xs cursor-default"
-                disabled
-              >
+              <CommandItem className="font-bold text-xs cursor-default" disabled>
                 {infrastructureTypes.find(infra => infra._id === infraId)?.infra_name || "Unknown Infrastructure"}
               </CommandItem>
               <CommandGroup>
@@ -156,8 +156,8 @@ export function ComboBoxResponsive({ onSelect }) {
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="hidden">
-        <DrawerTitle>Report form</DrawerTitle>
-        <DrawerDescription>Fill up the form</DrawerDescription>
+          <DrawerTitle>Report form</DrawerTitle>
+          <DrawerDescription>Fill up the form</DrawerDescription>
         </DrawerHeader>
         <div className="mt-4 border-t">
           {renderContent()}
