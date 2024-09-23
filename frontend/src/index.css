@@ -4,18 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-::-webkit-scrollbar {
-  width: 5px;
-}
-::-webkit-scrollbar-track {
-  background: 'red'
-}
-::-webkit-scrollbar-thumb {
-  background: 'orange'
-}
-::-webkit-scrollbar-thumb:hover {
-  background: 'red'
-}
 @layer base {
   :root {
   
