@@ -56,7 +56,7 @@ export function RegisterForm() {
     },
   });
 
-  const { handleSubmit, control, setValue } = form;
+  const { handleSubmit, control, setValue, setError } = form;
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [infrastructureTypes, setInfrastructureTypes] = useState([]);
 
@@ -74,9 +74,29 @@ export function RegisterForm() {
     fetchInfrastructureTypes();
   }, []);
 
+  const checkEmailExists = async (email) => {
+    try {
+      const response = await axios.get(`/api/users/check-email/${email}`);
+      return response.data.exists;
+    } catch (error) {
+      toast.error("Error checking email availability.");
+      return false;
+    }
+  };
+
   const onSubmit = async (data) => {
     const { name, email, password, infrastructureType } = data;
-  
+
+    // Check if the email already exists
+    const emailExists = await checkEmailExists(email);
+    if (emailExists) {
+      setError("email", {
+        type: "manual",
+        message: "Email is already in use.",
+      });
+      return;
+    }
+
     try {
       const res = await register({
         name,
@@ -84,9 +104,9 @@ export function RegisterForm() {
         password,
         infra_type: infrastructureType,
       }).unwrap();
-  
+
       toast.success("Moderator account added successfully!");
-      form.reset()
+      form.reset();
       navigate("/admin/dashboard");
     } catch (err) {
       console.log(err);
@@ -94,7 +114,6 @@ export function RegisterForm() {
       toast.error(errorMessage);
     }
   };
-  
 
   return (
     <div>

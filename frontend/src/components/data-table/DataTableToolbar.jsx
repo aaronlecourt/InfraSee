@@ -81,21 +81,17 @@ export function DataTableToolbar({ table, activeTab }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-2">
         <div className="col-span-1 flex gap-x-2">
           {/* MODERATOR SEARCH */}
-          {/* Reports and Archives */}
           {table.getColumn("report_by") && (
             <Input
               placeholder="Search reporter name..."
               value={table.getColumn("report_by")?.getFilterValue() ?? ""}
               className="h-9"
               onChange={(event) => {
-                table
-                  .getColumn("report_by")
-                  ?.setFilterValue(event.target.value);
+                table.getColumn("report_by")?.setFilterValue(event.target.value);
               }}
             />
           )}
           {/* ADMIN SEARCH */}
-          {/* Account Name */}
           {table.getColumn("name") && (
             <Input
               placeholder="Search moderator name..."
@@ -106,7 +102,6 @@ export function DataTableToolbar({ table, activeTab }) {
               }}
             />
           )}
-
           {/* DESKTOP VIEW/DOWNLOAD */}
           <div className="flex gap-2 sm:hidden">
             <DataTableViewOptions table={table} />
@@ -225,6 +220,26 @@ export function DataTableToolbar({ table, activeTab }) {
                     {table.getFilteredSelectedRowModel().rows.length})
                   </Button>
                 )}
+              {/* ADD BUTTON HERE */}
+              {table.getColumn("infra_type") && activeTab === undefined && (
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="filter" className="flex gap-2">
+                      <Plus size={15} />
+                      <p className="hidden md:block">Add Moderator</p>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Moderator</DialogTitle>
+                      <DialogDescription>
+                        Please fill in the details below.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <RegisterForm />
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
           </div>
         </div>
