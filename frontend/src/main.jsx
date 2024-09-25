@@ -12,6 +12,7 @@ import "./index.css";
 import store from "./store.js";
 import { Provider } from "react-redux";
 import HomeScreen from "./screens/home-screen.jsx";
+import ContactUsScreen from "./screens/contact-us-screen.jsx";
 import AdminLoginScreen from "./screens/admin-login-screen.jsx";
 import ReportScreen from "./screens/report-screen.jsx";
 import PrivateRoute from "./components/private-route.jsx";
@@ -30,6 +31,7 @@ const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
       <Route index element={<HomeScreen />} />
+      <Route path="/contact-us" element={<ContactUsScreen/>} />
       <Route path="/admin/login" element={<AdminLoginScreen />} />
       <Route path="/moderator/login" element={<ModeratorLoginScreen />} />
       <Route path="/report" element={<ReportScreen />} />
