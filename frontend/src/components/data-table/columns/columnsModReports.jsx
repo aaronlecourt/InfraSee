@@ -36,6 +36,7 @@ export const columnsModReports = [
   },
   {
     accessorKey: "report_by",
+    title: "Reported By",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Reported By" />
     ),
@@ -47,6 +48,7 @@ export const columnsModReports = [
   },
   {
     accessorKey: "report_desc",
+    title: "Description",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Description" />
     ),
@@ -58,6 +60,7 @@ export const columnsModReports = [
   },
   {
     accessorKey: "report_status",
+    title: "Status",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
@@ -69,6 +72,7 @@ export const columnsModReports = [
   },
   {
     accessorKey: "report_address",
+    title: "Address",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Address" />
     ),
@@ -80,6 +84,7 @@ export const columnsModReports = [
   },
   {
     accessorKey: "createdAt",
+    title: "Created On",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Created On" />
     ),
