@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import axios from "axios";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,22 +12,29 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AccountDetailsDialog } from "../elements/account-details-modal";
-import { ConfirmDeleteDialog } from "../elements/delete-confirm-modal"; // Import the delete dialog
-import { Edit, Eye, Trash2 } from "lucide-react"; // Import icons
+import { ConfirmDeleteDialog } from "../elements/delete-confirm-modal";
+import { Edit, Eye, Trash2 } from "lucide-react";
 
 export function AdminAccountDataTableRowActions({ row }) {
   const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [dialogData, setDialogData] = useState(null);
-console.log(row.original)
+  const userId = row.original._id; 
+
+  console.log(row.original);
   const handleShowDetails = () => {
-    setDialogData(row.original); // Set the current row data
+    setDialogData(row.original);
     setShowDetailsDialogOpen(true);
   };
 
-  const handleDelete = () => {
-    console.log("Deleting account:", dialogData); // Implement your delete logic here
-    setDeleteDialogOpen(false);
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`/api/users/delete/${userId}`);
+      console.log("Account deleted:", dialogData);
+      setDeleteDialogOpen(false);
+    } catch (error) {
+      console.error("Error deleting account:", error);
+    }
   };
 
   const handleCloseDialog = () => {
@@ -47,7 +55,10 @@ console.log(row.original)
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
-          <DropdownMenuItem onClick={() => console.log("Edit")} className="flex gap-2">
+          <DropdownMenuItem
+            onClick={() => console.log("Edit")}
+            className="flex gap-2"
+          >
             <Edit size={14} />
             Edit Account
           </DropdownMenuItem>

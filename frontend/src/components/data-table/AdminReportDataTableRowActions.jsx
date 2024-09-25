@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import axios from "axios";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,23 +12,36 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ReportDetailsDialog } from "../elements/report-details-modal"; // Import the dialog
-import { ConfirmDeleteDialog } from "../elements/delete-confirm-modal"; // Import the delete dialog
+import { ReportDetailsDialog } from "../elements/report-details-modal"; 
+import { ConfirmDeleteDialog } from "../elements/delete-confirm-modal"; 
 import { Edit, Eye, Trash2 } from "lucide-react";
+import { toast } from 'sonner';
 
 export function AdminReportDataTableRowActions({ row }) {
   const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [dialogData, setDialogData] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const handleShowDetails = () => {
     setDialogData(row.original); // Set the current row data
     setShowDetailsDialogOpen(true);
   };
 
-  const handleDelete = () => {
-    console.log("Deleting report:", dialogData); // Implement your delete logic here
-    setDeleteDialogOpen(false);
+  const handleDelete = async () => {
+    const reportId = row.original._id;
+    try {
+      const response = await axios.delete(`/api/reports/delete/${reportId}`);
+      console.log(response.data.message);
+      toast.success("Report deleted successfully!"); // Add success toast
+      setDeleteDialogOpen(false);
+    } catch (error) {
+      console.error("Error deleting report:", error);
+      setErrorMessage(
+        error.response?.data?.message || "Failed to delete report."
+      );
+      toast.error("Error deleting report."); // Add error toast
+    }
   };
 
   const handleCloseDialog = () => {

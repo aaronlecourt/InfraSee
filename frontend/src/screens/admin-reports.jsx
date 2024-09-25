@@ -11,6 +11,7 @@ import { DataTable } from "@/components/ui/DataTable";
 import axios from "axios";
 import { columnsAccounts } from "@/components/data-table/columns/columnsAccounts";
 import { columnsReports } from "@/components/data-table/columns/columnsReports";
+import useWebSocket from "../../../backend/utils/websocket.js";
 
 const AdminReportsScreen = () => {
   const navigate = useNavigate();
@@ -20,33 +21,63 @@ const AdminReportsScreen = () => {
   const dispatch = useDispatch();
   const [accountsData, setAccountsData] = useState([]);
   const [reportsData, setReportsData] = useState([]);
-  const [accountsCount, setAccountsCount] = useState(0); // State for accounts count
-  const [reportsCount, setReportsCount] = useState(0); // State for reports count
+  const [accountsCount, setAccountsCount] = useState(0);
+  const [reportsCount, setReportsCount] = useState(0);
+  const [loading, setLoading] = useState(true);
   const columns = activeButton === "reports" ? columnsReports : columnsAccounts;
 
+  const fetchData = async () => {
+    const accountsEndpoint = "/api/users/moderators";
+    const reportsEndpoint = "/api/reports";
+    setLoading(true);
+
+    try {
+      // Fetch accounts
+      const accountsResponse = await axios.get(accountsEndpoint);
+      setAccountsData(accountsResponse.data);
+
+      // Fetch reports
+      const reportsResponse = await axios.get(reportsEndpoint);
+      setReportsData(reportsResponse.data);
+
+      // Set counts based on the fetched data
+      setAccountsCount(accountsResponse.data.length);
+      setReportsCount(reportsResponse.data.length);
+    } catch (error) {
+      // Improved error handling
+      const errorMessage = error.response
+        ? error.response.data.message ||
+          "An error occurred while fetching data."
+        : error.message || "Network error. Please try again later.";
+
+      console.error("Error fetching data:", errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [fetchAccounts, fetchReports] = await Promise.all([
-          axios.get("/api/users/moderators"),
-          axios.get("/api/reports")
-        ]);
-
-        // Update state with data
-        setAccountsData(fetchAccounts.data);
-        setReportsData(fetchReports.data);
-
-        // Set counts
-        setAccountsCount(fetchAccounts.data.length);
-        setReportsCount(fetchReports.data.length);
-
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
     fetchData();
   }, []);
+
+  const handleWebSocketUpdate = (newData) => {
+    if (
+      newData.method === "DELETE" &&
+      newData.url.includes("/api/reports/delete/")
+    ) {
+      const reportId = newData.url.split("/").pop();
+      setReportsData((prevData) =>
+        prevData.filter((report) => report._id !== reportId)
+      );
+      fetchData();
+    }
+  };
+
+  const parseUserData = (newData) => {
+    return JSON.parse(newData.responseBody).report;
+  };
+
+  useWebSocket("ws://localhost:5000", handleWebSocketUpdate, parseUserData);
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -225,12 +256,22 @@ const AdminReportsScreen = () => {
                 {activeButton === "reports" ? "Reports" : "Accounts"}
               </h1>
               <p className="text-sm text-gray-500">
-                Manage all {activeButton === "reports" ? "reports" : "moderator accounts"}.
+                Manage all{" "}
+                {activeButton === "reports" ? "reports" : "moderator accounts"}.
               </p>
             </div>
           </div>
 
-          <DataTable data={activeButton === "reports" ? reportsData : accountsData} columns={columns} />
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <span className="text-lg">Loading...</span>
+            </div>
+          ) : (
+            <DataTable
+              columns={columns}
+              data={activeButton === "reports" ? reportsData : accountsData}
+            />
+          )}
         </div>
       </HelmetProvider>
     </div>

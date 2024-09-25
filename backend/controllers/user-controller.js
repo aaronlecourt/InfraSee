@@ -118,6 +118,7 @@ const registerUser = asyncHandler(async (req, res) => {
     isAdmin,
     isModerator,
     infra_type,
+    createdAt: new Date(),
   });
 
   if (user) {
@@ -130,6 +131,7 @@ const registerUser = asyncHandler(async (req, res) => {
       isAdmin: user.isAdmin,
       isModerator: user.isModerator,
       infra_type: user.infra_type,
+      createdAt: user.createdAt,
     });
   } else {
     res.status(400);
@@ -137,29 +139,33 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Refresh token
-// @route   POST /api/users/refresh
-// @access  Public
-const refreshToken = (req, res) => {
-  const token = req.cookies.jwt;
 
-  if (!token) {
-    return res.status(401).json({ message: 'No token provided' });
-  }
+// @desc    Delete a user
+// @route   DELETE /api/users/:id
+// @access  Private/Admin or Moderator
+const deleteUser = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.params.id;
 
-  const decoded = jwt.decode(token);
-  const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+    // Find the user by ID and delete it
+    const user = await User.findByIdAndDelete(userId);
 
-  if (decoded && decoded.exp) {
-    // Renew the token if it has expired or is expiring today
-    if (decoded.exp < currentTime || 
-        new Date(decoded.exp * 1000).toDateString() === new Date().toDateString()) {
-      const userId = decoded.userId; // Extract userId from decoded token
-      generateToken(res, userId); // Generate a new token
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found.");
+    }
+
+    res.json({ message: "User removed successfully" });
+  } catch (error) {
+    console.error(`Error deleting user: ${error.message}`);
+
+    if (error.name === 'CastError') {
+      res.status(400).json({ message: 'Invalid user ID format.' });
+    } else {
+      res.status(500).json({ message: 'Server error. Please try again later.' });
     }
   }
-};
-
+});
 
 
 // @desc    Logout user / clear cookie
@@ -341,7 +347,7 @@ export {
   adminUser,
   moderatorUser,
   registerUser,
-  refreshToken,
+  deleteUser,
   logoutUser,
   getUserProfile,
   updateUserProfile,

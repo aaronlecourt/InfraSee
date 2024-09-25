@@ -4,7 +4,8 @@ import {
   authUser,
   adminUser,
   moderatorUser,
-  refreshToken,
+  deleteUser,
+  // refreshToken,
   logoutUser,
   getUserProfile,
   updateUserProfile,
@@ -19,20 +20,20 @@ import { protect } from "../middleware/auth-middleware.js";
 
 const router = express.Router();
 
-router.post("/", registerUser);
-router.post("/auth", authUser);
-router.post("/auth/admin", adminUser, refreshToken);
-router.post("/auth/moderator", moderatorUser, refreshToken);
-router.post("/logout", logoutUser);
+router.route("/").post(registerUser);
+router.route("/delete/:id").delete(deleteUser);
+router.route("/auth").post(authUser);
+router.route("/auth/admin").post(adminUser);
+router.route("/auth/moderator").post(moderatorUser);
+router.route("/logout").post(logoutUser);
 router
   .route("/profile")
   .get(protect, getUserProfile)
   .put(protect, updateUserProfile);
-router.post("/verify-otp", verifyOtp);
-router.post("/password-reset/request", requestPasswordReset);
-router.post("/password-reset", resetPassword);
-router.get("/moderators", getModerators);
-router.get("/check-email/:email", checkEmailExists);
-router.post("/refresh", refreshToken);
+router.route("/verify-otp").post(verifyOtp);
+router.route("/password-reset/request").post(requestPasswordReset);
+router.route("/password-reset").post(resetPassword);
+router.route("/moderators").get(getModerators);
+router.route("/check-email/:email").get(checkEmailExists);
 
 export default router;

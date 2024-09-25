@@ -23,6 +23,7 @@ import { Helmet, HelmetProvider } from "react-helmet-async";
 import axios from "axios";
 import { columnsModReports } from "@/components/data-table/columns/columnsModReports";
 import { columnsModArchives } from "@/components/data-table/columns/columnsModArchives";
+import useWebSocket from "../../../backend/utils/websocket.js";
 
 const ModeratorDashboardScreen = () => {
   const navigate = useNavigate();
@@ -30,14 +31,15 @@ const ModeratorDashboardScreen = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
-
   const [reportData, setReportData] = useState([]);
   const [archiveData, setArchiveData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Fetch reports and archives without explicit promises
   const fetchData = async () => {
     const reportsEndpoint = "/api/reports/moderator/reports";
     const archivesEndpoint = "/api/reports/moderator/archived/reports";
+    setLoading(true);
 
     try {
       // Fetch reports
@@ -55,38 +57,22 @@ const ModeratorDashboardScreen = () => {
         : error.message || "Network error. Please try again later.";
 
       console.error("Error fetching data:", errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  // WebSocket setup for auto-refreshing based on message type
-  useEffect(() => {
-    const socket = new WebSocket("ws://localhost:5000");
-
-    socket.onopen = () => console.log("WebSocket connection established");
-
-    socket.onmessage = (event) => {
-      try {
-        const newData = JSON.parse(event.data);
-        console.log("New Data from WebSocket:", newData);
-
-        const updatedReport = JSON.parse(newData.responseBody).report;
-
-        handleWebSocketUpdate(newData, updatedReport);
-      } catch (error) {
-        console.error("Error parsing WebSocket message:", error);
+    setLoading(true);
+    setTimeout(() => {
+      if (activeTab === "reports") {
+        fetchData();
+      } else if (activeTab === "archives") {
+        fetchData();
       }
-    };
-
-    socket.onclose = () => console.log("WebSocket connection closed");
-
-    return () => {
-      socket.close();
-    };
-  }, []);
+      setLoading(false);
+    }, 1000);
+  }, [activeTab]);
 
   const handleWebSocketUpdate = (newData, updatedReport) => {
     if (newData.method === "PUT") {
@@ -120,7 +106,7 @@ const ModeratorDashboardScreen = () => {
       newData.method === "DELETE" &&
       newData.url.includes("/api/reports/delete/")
     ) {
-      const reportId = newData.url.split("/").pop(); // Extracts the last part of the URL
+      const reportId = newData.url.split("/").pop();
       setArchiveData((prevData) =>
         prevData.filter((archive) => archive._id !== reportId)
       );
@@ -130,6 +116,12 @@ const ModeratorDashboardScreen = () => {
       fetchData();
     }
   };
+
+  const parseUserData = (newData) => {
+    return JSON.parse(newData.responseBody).report;
+  };
+
+  useWebSocket("ws://localhost:5000", handleWebSocketUpdate, parseUserData);
 
   const handleLogoClick = () => {
     navigate("/");
@@ -202,17 +194,56 @@ const ModeratorDashboardScreen = () => {
               <TabsTrigger value="archives">Archives</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
             </TabsList>
+            {/* Overview Tab */}
             <TabsContent value="overview" className="h-[calc(100vh-11rem)]">
-              <Overview data={reportData} />
+              {loading ? (
+                <div className="flex justify-center items-center h-full">
+                  <p>Loading...</p>
+                </div>
+              ) : (
+                <Overview data={reportData} />
+              )}
             </TabsContent>
+
+            {/* Reports Tab */}
             <TabsContent value="reports" className="h-[calc(100vh-11rem)]">
-              <Reports data={reportData} columns={columnsModReports} activeTab={activeTab}/>
+              {loading ? (
+                <div className="flex justify-center items-center h-full">
+                  <p>Loading...</p>
+                </div>
+              ) : (
+                <Reports
+                  data={reportData}
+                  columns={columnsModReports}
+                  activeTab={activeTab}
+                />
+              )}
             </TabsContent>
-            <TabsContent value="archives">
-              <Archives data={archiveData} columns={columnsModArchives} activeTab={activeTab}/>
+
+            {/* Archives Tab */}
+            <TabsContent value="archives" className="h-[calc(100vh-11rem)]">
+              {loading ? (
+                <div className="flex justify-center items-center h-full">
+                  <p>Loading...</p>
+                </div>
+              ) : (
+                <Archives
+                  data={archiveData}
+                  columns={columnsModArchives}
+                  activeTab={activeTab}
+                />
+              )}
             </TabsContent>
-            <TabsContent value="analytics">
-              <Analytics />
+
+            {/* Analytics Tab */}
+            <TabsContent value="analytics" className="h-[calc(100vh-11rem)]">
+              {loading ? (
+                <div className="flex justify-center items-center h-full">
+                  <p>Loading...</p>
+                </div>
+              ) : (
+                <Analytics />
+              )}
             </TabsContent>
           </Tabs>
         </main>

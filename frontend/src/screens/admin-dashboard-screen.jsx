@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -9,8 +10,8 @@ import { logout } from "@/slices/auth-slice";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { DataTable } from "@/components/ui/DataTable";
 import { columnsAccounts } from "@/components/data-table/columns/columnsAccounts";
-// import { columnsReports } from "@/components/data-table/columnsReports";
-import axios from "axios";
+import { columnsReports } from "@/components/data-table/columns/columnsReports";
+import useWebSocket from "../../../backend/utils/websocket.js";
 
 const AdminDashboardScreen = () => {
   const navigate = useNavigate();
@@ -20,34 +21,80 @@ const AdminDashboardScreen = () => {
   const dispatch = useDispatch();
   const [accountsData, setAccountsData] = useState([]);
   const [reportsData, setReportsData] = useState([]);
-  const [accountsCount, setAccountsCount] = useState(0); // State for accounts count
-  const [reportsCount, setReportsCount] = useState(0); // State for reports count
-  const columns = activeButton === "accounts" ? columnsAccounts : columnsReports;
+  const [accountsCount, setAccountsCount] = useState(0);
+  const [reportsCount, setReportsCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const columns =
+    activeButton === "accounts" ? columnsAccounts : columnsReports;
+
+  const fetchData = async () => {
+    const accountsEndpoint = "/api/users/moderators";
+    const reportsEndpoint = "/api/reports";
+    setLoading(true);
+
+    try {
+      // Fetch accounts
+      const accountsResponse = await axios.get(accountsEndpoint);
+      setAccountsData(accountsResponse.data);
+
+      // Fetch reports
+      const reportsResponse = await axios.get(reportsEndpoint);
+      setReportsData(reportsResponse.data);
+
+      // Set counts based on the fetched data
+      setAccountsCount(accountsResponse.data.length);
+      setReportsCount(reportsResponse.data.length);
+    } catch (error) {
+      // Improved error handling
+      const errorMessage = error.response
+        ? error.response.data.message ||
+          "An error occurred while fetching data."
+        : error.message || "Network error. Please try again later.";
+
+      console.error("Error fetching data:", errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch data from both endpoints concurrently
-        const [fetchAccounts, fetchReports] = await Promise.all([
-          axios.get("/api/users/moderators"),
-          axios.get("/api/reports")
-        ]);
-
-        // Update state with data
-        setAccountsData(fetchAccounts.data);
-        setReportsData(fetchReports.data);
-
-        // Set counts
-        setAccountsCount(fetchAccounts.data.length);
-        setReportsCount(fetchReports.data.length);
-
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
     fetchData();
   }, []);
+
+  const handleWebSocketUpdate = (newData) => {
+    if (newData.method === "POST" && newData.url === "/api/users") {
+      const newUser = JSON.parse(newData.responseBody);
+      if (newUser.createdAt) {
+        newUser.createdAt = new Date(newUser.createdAt);
+      }
+      setAccountsData((prevData) => [...prevData, newUser]);
+      fetchData();
+    } else if (
+      newData.method === "DELETE" &&
+      newData.url.includes("/api/users/delete/")
+    ) {
+      const userId = newData.url.split("/").pop();
+      setAccountsData((prevData) =>
+        prevData.filter((user) => user._id !== userId)
+      );
+      fetchData();
+    } else if (
+      newData.method === "DELETE" &&
+      newData.url.includes("/api/reports/delete/")
+    ) {
+      const reportId = newData.url.split("/").pop();
+      setReportsData((prevData) =>
+        prevData.filter((report) => report._id !== reportId)
+      );
+      fetchData();
+    }
+  };
+
+  const parseUserData = (newData) => {
+    return JSON.parse(newData.responseBody).user;
+  };
+
+  useWebSocket("ws://localhost:5000", handleWebSocketUpdate, parseUserData);
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -226,12 +273,23 @@ const AdminDashboardScreen = () => {
                 {activeButton === "accounts" ? "Accounts" : "Reports"}
               </h1>
               <p className="text-sm text-gray-500">
-                Manage the {activeButton === "accounts" ? "moderator accounts" : "reports"} here.
+                Manage the{" "}
+                {activeButton === "accounts" ? "moderator accounts" : "reports"}{" "}
+                here.
               </p>
             </div>
           </div>
 
-          <DataTable data={activeButton === "accounts" ? accountsData : reportsData} columns={columns} />
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <span className="text-lg">Loading...</span>
+            </div>
+          ) : (
+            <DataTable
+              data={activeButton === "accounts" ? accountsData : reportsData}
+              columns={columns}
+            />
+          )}
         </div>
       </HelmetProvider>
     </div>

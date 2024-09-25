@@ -236,7 +236,7 @@ export function DataTableToolbar({ table, activeTab }) {
                         Please fill in the details below.
                       </DialogDescription>
                     </DialogHeader>
-                    <RegisterForm />
+                    <RegisterForm onClose={() => setIsDialogOpen(false)} />
                   </DialogContent>
                 </Dialog>
               )}

@@ -14,7 +14,7 @@ import { ReportDetailsDialog } from "../elements/report-details-modal";
 import { ConfirmDeleteDialog } from "../elements/delete-confirm-modal";
 import { ConfirmRestoreDialog } from "../elements/restore-confirm-modal";
 import { EyeIcon, ArchiveRestore, Trash2 } from "lucide-react";
-import { toast } from 'sonner'; // Import Sonner toast
+import { toast } from 'sonner';
 
 export function ModArchiveDataTableRowActions({ row }) {
   const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);

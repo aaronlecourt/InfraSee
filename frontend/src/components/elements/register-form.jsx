@@ -43,7 +43,7 @@ const formSchema = z.object({
   infrastructureType: z.string().min(1, "Infrastructure type is required."),
 });
 
-export function RegisterForm() {
+export function RegisterForm({onClose}) {
   const navigate = useNavigate();
   const [register] = useRegisterMutation();
   const form = useForm({
@@ -106,8 +106,8 @@ export function RegisterForm() {
       }).unwrap();
 
       toast.success("Moderator account added successfully!");
+      onClose();
       form.reset();
-      navigate("/admin/dashboard");
     } catch (err) {
       console.log(err);
       const errorMessage = err.data?.message || "An error occurred during registration.";
