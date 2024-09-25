@@ -45,6 +45,7 @@ export const columnsAccounts = [
   },
   {
     accessorKey: "name",
+    title: "Moderator Name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Moderator Name" />
     ),
@@ -56,6 +57,7 @@ export const columnsAccounts = [
   },
   {
     accessorKey: "email",
+    title: "Email",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Email Address" />
     ),
@@ -67,6 +69,7 @@ export const columnsAccounts = [
   },
   {
     accessorKey: "infra_type",
+    title: "Infrastructure Type",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Infrastructure Type" />
     ),
@@ -86,6 +89,7 @@ export const columnsAccounts = [
   },
   {
     accessorKey: "createdAt",
+    title: "Created On",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Created On" />
     ),
