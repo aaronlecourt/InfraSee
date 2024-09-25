@@ -35,44 +35,44 @@ const ModeratorDashboardScreen = () => {
   const [archiveData, setArchiveData] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    setLoading(true);
+    setReportData([]);
+    setArchiveData([]);
+
+    setTimeout(() => {
+      fetchData();
+    }, 1000);
+  }, [activeTab]);
+
   // Fetch reports and archives without explicit promises
   const fetchData = async () => {
     const reportsEndpoint = "/api/reports/moderator/reports";
     const archivesEndpoint = "/api/reports/moderator/archived/reports";
     setLoading(true);
 
-    try {
-      // Fetch reports
-      const reportsResponse = await axios.get(reportsEndpoint);
-      setReportData(reportsResponse.data);
+    setTimeout(async () => {
+      try {
+        // Fetch reports
+        const reportsResponse = await axios.get(reportsEndpoint);
+        setReportData(reportsResponse.data);
 
-      // Fetch archives
-      const archivesResponse = await axios.get(archivesEndpoint);
-      setArchiveData(archivesResponse.data);
-    } catch (error) {
-      // Improved error handling
-      const errorMessage = error.response
-        ? error.response.data.message ||
-          "An error occurred while fetching data."
-        : error.message || "Network error. Please try again later.";
+        // Fetch archives
+        const archivesResponse = await axios.get(archivesEndpoint);
+        setArchiveData(archivesResponse.data);
+      } catch (error) {
+        // Improved error handling
+        const errorMessage = error.response
+          ? error.response.data.message ||
+            "An error occurred while fetching data."
+          : error.message || "Network error. Please try again later.";
 
-      console.error("Error fetching data:", errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      if (activeTab === "reports") {
-        fetchData();
-      } else if (activeTab === "archives") {
-        fetchData();
+        console.error("Error fetching data:", errorMessage);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }, 1000);
-  }, [activeTab]);
+  };
 
   const handleWebSocketUpdate = (newData, updatedReport) => {
     if (newData.method === "PUT") {
