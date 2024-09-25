@@ -18,8 +18,8 @@ export function Overview({ goToReportsTab, data }) {
     <div className="h-full flex flex-col">
       <ReportCounter data={data} />
       <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 h-full">
-        <div className="border rounded-md col-span-1 sm:col-span-2 min-h-[30rem]">
-          map here
+        <div className="border rounded-md col-span-1 sm:col-span-2 min-h-[30rem] bg-[url(https://user-images.githubusercontent.com/3392975/135143029-20abd824-0f3e-4e28-bad3-327acf7aec04.png)] bg-no-repeat bg-cover">
+          {/* map here */}
         </div>
         <div className="col-span-1 sm:col-span-1">
           <Card className="flex flex-col h-full min-h-[30rem]">

@@ -16,7 +16,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Overview } from "@/components/elements/overview";
 import { Archives } from "@/components/elements/archives";
 import { Reports } from "@/components/elements/reports";
-import { Analytics } from "@/components/elements/analytics";
+import Analytics from "@/components/elements/analytics";
 import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
 import { Helmet, HelmetProvider } from "react-helmet-async";
