@@ -24,6 +24,7 @@ import { ComboBoxResponsive } from "@/components/elements/combo";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import ReportForm from "@/components/report-form";
 import axios from "axios";
+import Maps from "@/components/elements/maps";
 function ReportScreen() {
   const navigate = useNavigate();
   const [isNavbarSheetOpen, setNavbarSheetOpen] = useState(false);
@@ -149,8 +150,9 @@ function ReportScreen() {
             </div>
 
             <div className="border rounded-md flex-1 sm:h-80vh mt-1">
-              <div className="h-full flex items-center justify-center bg-[url(https://user-images.githubusercontent.com/3392975/135143029-20abd824-0f3e-4e28-bad3-327acf7aec04.png)] bg-no-repeat bg-cover">
-                {/* map here */}
+              {/* <div className="h-full flex items-center justify-center bg-[url(https://user-images.githubusercontent.com/3392975/135143029-20abd824-0f3e-4e28-bad3-327acf7aec04.png)] bg-no-repeat bg-cover"> */}
+              <div className="h-full flex items-center justify-center">
+                <Maps/>
               </div>
             </div>
           </div>
