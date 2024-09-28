@@ -137,6 +137,10 @@ const ModeratorDashboardScreen = () => {
     }
   };
 
+  const goToReportsTab = () => {
+    setActiveTab('reports')
+  }
+  
   return (
     <HelmetProvider>
       <div>
@@ -201,7 +205,7 @@ const ModeratorDashboardScreen = () => {
                   <p>Loading...</p>
                 </div>
               ) : (
-                <Overview data={reportData} />
+                <Overview goToReportsTab={goToReportsTab} data={reportData} userInfo={userInfo}/>
               )}
             </TabsContent>
 

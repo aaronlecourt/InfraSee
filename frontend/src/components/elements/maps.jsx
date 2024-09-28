@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { APIProvider, Map, Marker, InfoWindow } from '@vis.gl/react-google-maps';
 import axios from 'axios';
 
-const Maps = () => {
+const Maps = ({ userInfo }) => {
   const [center] = useState({ lat: 16.4023, lng: 120.596 });
   const [reports, setReports] = useState([]);
   const [selectedReport, setSelectedReport] = useState(null);
@@ -10,8 +10,9 @@ const Maps = () => {
 
   useEffect(() => {
     const fetchReports = async () => {
+      const endpoint = userInfo ? '/api/reports/moderator/reports' : '/api/reports';
       try {
-        const response = await axios.get('http://localhost:3000/api/reports');
+        const response = await axios.get(endpoint);
         setReports(response.data);
       } catch (error) {
         console.error("Error fetching reports: ", error);
@@ -19,7 +20,7 @@ const Maps = () => {
     };
 
     fetchReports();
-  }, []);
+  }, [userInfo]);
 
   const benguetBounds = {
     north: 16.6023,
@@ -30,11 +31,11 @@ const Maps = () => {
 
   return (
     <APIProvider apiKey={apiKey}>
-      <div className="w-full h-svh sm:h-full"> {/* Mobile height and desktop height */}
+      <div className="w-full h-svh sm:h-full">
         <Map
           defaultCenter={center}
           defaultZoom={13}
-          style={{ width: '100%', height: '100%' }} // Use 100% height and width
+          style={{ width: '100%', height: '100%' }}
           gestureHandling={'greedy'}
           options={{
             restriction: {
