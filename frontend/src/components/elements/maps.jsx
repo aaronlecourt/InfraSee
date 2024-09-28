@@ -1,56 +1,75 @@
 import React, { useEffect, useState } from 'react';
-import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
+import { APIProvider, Map, Marker, InfoWindow } from '@vis.gl/react-google-maps';
+import axios from 'axios';
 
 const Maps = () => {
-  const [center, setCenter] = useState({ lat: 16.4023, lng: 120.596 }); // Default to Baguio City
-  const apiKey = "AIzaSyCq5N2BhjPRx_qLLIwmm6YMftl4oEab9vY";
+  const [center] = useState({ lat: 16.4023, lng: 120.596 });
+  const [reports, setReports] = useState([]);
+  const [selectedReport, setSelectedReport] = useState(null);
+  const apiKey = "AIzaSyCq5N2BhjPRx_qLLIwmm6YMftl4oEab9vY"; // Replace with your actual API key
 
   useEffect(() => {
-    const fetchLocation = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            setCenter({ lat: latitude, lng: longitude });
-          },
-          (error) => {
-            console.error("Error getting location: ", error);
-            // Fallback to Baguio City on error
-            setCenter({ lat: 16.4023, lng: 120.596 });
-          },
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
-        );
-      } else {
-        console.error("Geolocation is not supported by this browser.");
+    const fetchReports = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/reports');
+        setReports(response.data);
+      } catch (error) {
+        console.error("Error fetching reports: ", error);
       }
     };
 
-    fetchLocation();
+    fetchReports();
   }, []);
 
   const benguetBounds = {
-    north: 16.6023, // Northernmost latitude of Benguet
-    south: 16.1833, // Southernmost latitude of Benguet
-    east: 120.7461, // Easternmost longitude of Benguet
-    west: 120.4822, // Westernmost longitude of Benguet
+    north: 16.6023,
+    south: 16.1833,
+    east: 120.7461,
+    west: 120.4822,
   };
 
   return (
     <APIProvider apiKey={apiKey}>
-      <Map
-        defaultCenter={center}
-        defaultZoom={13}
-        gestureHandling={'greedy'}
-        disableDefaultUI={true}
-        options={{
-          restriction: {
-            latLngBounds: benguetBounds,
-            strictBounds: true,
-          },
-        }}
-      >
-        <Marker position={center} />
-      </Map>
+      <div className="w-full h-svh sm:h-full"> {/* Mobile height and desktop height */}
+        <Map
+          defaultCenter={center}
+          defaultZoom={13}
+          style={{ width: '100%', height: '100%' }} // Use 100% height and width
+          gestureHandling={'greedy'}
+          options={{
+            restriction: {
+              latLngBounds: benguetBounds,
+              strictBounds: true,
+            },
+          }}
+        >
+          {reports.map(report => (
+            <Marker
+              key={report._id}
+              position={{ lat: parseFloat(report.latitude), lng: parseFloat(report.longitude) }}
+              onClick={() => setSelectedReport(report)}
+            />
+          ))}
+
+          {selectedReport && (
+            <InfoWindow
+              position={{
+                lat: parseFloat(selectedReport.latitude),
+                lng: parseFloat(selectedReport.longitude),
+              }}
+              onCloseClick={() => setSelectedReport(null)}
+            >
+              <div>
+                <h3>{selectedReport.report_mod.name}</h3>
+                <p>{selectedReport.report_desc}</p>
+                <p><strong>Reported by:</strong> {selectedReport.report_by}</p>
+                <p><strong>Status:</strong> {selectedReport.report_status.stat_name}</p>
+                <p>{selectedReport.report_address}</p>
+              </div>
+            </InfoWindow>
+          )}
+        </Map>
+      </div>
     </APIProvider>
   );
 };
