@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { User, LogOut, FileStack } from "lucide-react";
+import { User, LogOut, FileStack, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
@@ -11,7 +11,16 @@ import { DataTable } from "@/components/ui/DataTable";
 import axios from "axios";
 import { columnsAccounts } from "@/components/data-table/columns/columnsAccounts";
 import { columnsReports } from "@/components/data-table/columns/columnsReports";
-import useWebSocket from "../../../backend/utils/websocket.js";
+// Fetch functions
+const fetchUsers = async () => {
+  const response = await axios.get("/api/users/moderators");
+  return response.data;
+};
+
+const fetchReports = async () => {
+  const response = await axios.get("/api/reports/");
+  return response.data;
+};
 
 const AdminReportsScreen = () => {
   const navigate = useNavigate();
@@ -23,61 +32,51 @@ const AdminReportsScreen = () => {
   const [reportsData, setReportsData] = useState([]);
   const [accountsCount, setAccountsCount] = useState(0);
   const [reportsCount, setReportsCount] = useState(0);
+  const [loadingReports, setLoadingReports] = useState(true);
+  const [loadingUsers, setLoadingUsers] = useState(true);
   const [loading, setLoading] = useState(true);
   const columns = activeButton === "reports" ? columnsReports : columnsAccounts;
 
-  const fetchData = async () => {
-    const accountsEndpoint = "/api/users/moderators";
-    const reportsEndpoint = "/api/reports";
-    setLoading(true);
-
+  const loadAccounts = async () => {
+    setLoadingUsers(true);
     try {
-      // Fetch accounts
-      const accountsResponse = await axios.get(accountsEndpoint);
-      setAccountsData(accountsResponse.data);
-
-      // Fetch reports
-      const reportsResponse = await axios.get(reportsEndpoint);
-      setReportsData(reportsResponse.data);
-
-      // Set counts based on the fetched data
-      setAccountsCount(accountsResponse.data.length);
-      setReportsCount(reportsResponse.data.length);
+      const data = await fetchUsers();
+      setAccountsData(data);
+      setAccountsCount(data.length);
     } catch (error) {
-      // Improved error handling
-      const errorMessage = error.response
-        ? error.response.data.message ||
-          "An error occurred while fetching data."
-        : error.message || "Network error. Please try again later.";
-
-      console.error("Error fetching data:", errorMessage);
+      console.error("Failed to fetch users", error);
     } finally {
-      setLoading(false);
+      setLoadingUsers(false);
+    }
+  };
+
+  const loadReports = async () => {
+    setLoadingReports(true);
+    try {
+      const data = await fetchReports();
+      setReportsData(data);
+      setReportsCount(data.length);
+    } catch (error) {
+      console.error("Failed to fetch reports", error);
+    } finally {
+      setLoadingReports(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    if (activeButton === "reports") {
+      await loadAccounts(); // Refresh accounts data
+    } else {
+      await loadReports(); // Refresh reports data
     }
   };
 
   useEffect(() => {
-    fetchData();
+    // Load accounts and reports on component mount
+    loadAccounts();
+    loadReports();
   }, []);
 
-  const handleWebSocketUpdate = (newData) => {
-    if (
-      newData.method === "DELETE" &&
-      newData.url.includes("/api/reports/delete/")
-    ) {
-      const reportId = newData.url.split("/").pop();
-      setReportsData((prevData) =>
-        prevData.filter((report) => report._id !== reportId)
-      );
-      fetchData();
-    }
-  };
-
-  const parseUserData = (newData) => {
-    return JSON.parse(newData.responseBody).report;
-  };
-
-  useWebSocket("ws://localhost:5000", handleWebSocketUpdate, parseUserData);
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -260,16 +259,23 @@ const AdminReportsScreen = () => {
                 {activeButton === "reports" ? "reports" : "moderator accounts"}.
               </p>
             </div>
+            <button
+              onClick={handleRefresh}
+              className="p-2 rounded-full hover:bg-muted-background"
+              aria-label="Refresh Data"
+            >
+              <RefreshCcw className="h-5 w-5" />
+            </button>
           </div>
 
-          {loading ? (
+          {loadingUsers || loadingReports ? (
             <div className="flex items-center justify-center h-full">
               <span className="text-lg">Loading...</span>
             </div>
           ) : (
             <DataTable
+              data={activeButton === "accounts" ? accountsData : reportsData}
               columns={columns}
-              data={activeButton === "reports" ? reportsData : accountsData}
             />
           )}
         </div>

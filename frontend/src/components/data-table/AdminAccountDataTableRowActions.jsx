@@ -20,8 +20,7 @@ export function AdminAccountDataTableRowActions({ row }) {
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [dialogData, setDialogData] = useState(null);
   const userId = row.original._id; 
-
-  console.log(row.original);
+  
   const handleShowDetails = () => {
     setDialogData(row.original);
     setShowDetailsDialogOpen(true);

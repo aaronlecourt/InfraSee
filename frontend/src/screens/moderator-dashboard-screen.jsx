@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Settings, LogOut } from "lucide-react";
+import { Settings, LogOut, RefreshCcw } from "lucide-react"; // Import RefreshCcw
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useDispatch, useSelector } from "react-redux";
@@ -23,105 +23,58 @@ import { Helmet, HelmetProvider } from "react-helmet-async";
 import axios from "axios";
 import { columnsModReports } from "@/components/data-table/columns/columnsModReports";
 import { columnsModArchives } from "@/components/data-table/columns/columnsModArchives";
-import useWebSocket from "../../../backend/utils/websocket.js";
+
+const fetchReports = async () => {
+  const response = await axios.get("/api/reports/moderator/reports");
+  return response.data;
+};
+
+const fetchArchives = async () => {
+  const response = await axios.get("/api/reports/moderator/archived/reports");
+  return response.data;
+};
 
 const ModeratorDashboardScreen = () => {
   const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.auth);
   const [activeTab, setActiveTab] = useState("overview");
+  const [reports, setReports] = useState([]);
+  const [archives, setArchives] = useState([]);
+  const [loadingReports, setLoadingReports] = useState(true);
+  const [loadingArchives, setLoadingArchives] = useState(true);
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
-  const [reportData, setReportData] = useState([]);
-  const [archiveData, setArchiveData] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setLoading(true);
-    setReportData([]);
-    setArchiveData([]);
-
-    setTimeout(() => {
-      fetchData();
-    }, 1000);
-  }, [activeTab]);
-
-  // Fetch reports and archives without explicit promises
-  const fetchData = async () => {
-    const reportsEndpoint = "/api/reports/moderator/reports";
-    const archivesEndpoint = "/api/reports/moderator/archived/reports";
-    setLoading(true);
-
-    setTimeout(async () => {
-      try {
-        // Fetch reports
-        const reportsResponse = await axios.get(reportsEndpoint);
-        setReportData(reportsResponse.data);
-
-        // Fetch archives
-        const archivesResponse = await axios.get(archivesEndpoint);
-        setArchiveData(archivesResponse.data);
-      } catch (error) {
-        // Improved error handling
-        const errorMessage = error.response
-          ? error.response.data.message ||
-            "An error occurred while fetching data."
-          : error.message || "Network error. Please try again later.";
-
-        console.error("Error fetching data:", errorMessage);
-      } finally {
-        setLoading(false);
-      }
-    }, 1000);
-  };
-
-  const handleWebSocketUpdate = (newData, updatedReport) => {
-    if (newData.method === "PUT") {
-      if (
-        newData.url.includes("/api/reports/archive/") &&
-        updatedReport.is_archived
-      ) {
-        setReportData((prevData) =>
-          prevData.filter((report) => report._id !== updatedReport._id)
-        );
-        setArchiveData((prevData) => [updatedReport, ...prevData]);
-        fetchData(); // Refresh data after actions
-      } else if (
-        newData.url.includes("/api/reports/restore/") &&
-        !updatedReport.is_archived
-      ) {
-        setArchiveData((prevData) =>
-          prevData.filter((archive) => archive._id !== updatedReport._id)
-        );
-        setReportData((prevData) => [updatedReport, ...prevData]);
-        fetchData();
-      } else if (newData.url.includes("/api/reports/status/")) {
-        setReportData((prevData) =>
-          prevData.map((report) =>
-            report._id === updatedReport._id ? updatedReport : report
-          )
-        );
-        fetchData();
-      }
-    } else if (
-      newData.method === "DELETE" &&
-      newData.url.includes("/api/reports/delete/")
-    ) {
-      const reportId = newData.url.split("/").pop();
-      setArchiveData((prevData) =>
-        prevData.filter((archive) => archive._id !== reportId)
-      );
-      setReportData((prevData) =>
-        prevData.filter((report) => report._id !== reportId)
-      );
-      fetchData();
+  // Fetch data
+  const loadReports = async () => {
+    setLoadingReports(true);
+    try {
+      const data = await fetchReports();
+      setReports(data);
+    } catch (error) {
+      console.error("Failed to fetch reports", error);
+    } finally {
+      setLoadingReports(false);
     }
   };
 
-  const parseUserData = (newData) => {
-    return JSON.parse(newData.responseBody).report;
+  const loadArchives = async () => {
+    setLoadingArchives(true);
+    try {
+      const data = await fetchArchives();
+      setArchives(data);
+    } catch (error) {
+      console.error("Failed to fetch archives", error);
+    } finally {
+      setLoadingArchives(false);
+    }
   };
 
-  useWebSocket("ws://localhost:5000", handleWebSocketUpdate, parseUserData);
+  // Initial load
+  useEffect(() => {
+    loadReports();
+    loadArchives();
+  }, []);
 
   const handleLogoClick = () => {
     navigate("/");
@@ -175,12 +128,12 @@ const ModeratorDashboardScreen = () => {
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
-                    <Settings className="mr-2 h-4 w-4" />
+                    <Settings className="mr-2 h-4 w-4 text-slate-950" />
                     <span>Go to Settings</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
-                    <LogOut className="mr-2 h-4 w-4" />
+                    <LogOut className="mr-2 h-4 w-4 text-slate-950" />
                     <span>Logout</span>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
@@ -188,9 +141,20 @@ const ModeratorDashboardScreen = () => {
             </DropdownMenu>
           </div>
         </header>
-
         <main className="p-4">
           <h1 className="text-3xl mb-1">Dashboard</h1>
+
+          {/* Refresh Icon */}
+          <div className="flex mb-4">
+            <RefreshCcw
+              onClick={() => {
+                loadReports();
+                loadArchives();
+              }}
+              className="cursor-pointer text-slate-950 hover:text-slate-700 w-6 h-6"
+            />
+          </div>
+
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="h-auto">
               <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -200,7 +164,7 @@ const ModeratorDashboardScreen = () => {
             </TabsList>
             {/* Overview Tab */}
             <TabsContent value="overview" className="h-[calc(100vh-11rem)]">
-              {loading ? (
+              {loadingReports ? (
                 <div className="flex justify-center items-center h-full">
                   <p>Loading...</p>
                 </div>
@@ -208,46 +172,37 @@ const ModeratorDashboardScreen = () => {
                 <Overview goToReportsTab={goToReportsTab} data={reportData} userInfo={userInfo}/>
               )}
             </TabsContent>
-
             {/* Reports Tab */}
             <TabsContent value="reports" className="h-[calc(100vh-11rem)]">
-              {loading ? (
+              {loadingReports ? (
                 <div className="flex justify-center items-center h-full">
                   <p>Loading...</p>
                 </div>
               ) : (
                 <Reports
-                  data={reportData}
+                  data={reports}
                   columns={columnsModReports}
                   activeTab={activeTab}
                 />
               )}
             </TabsContent>
-
             {/* Archives Tab */}
             <TabsContent value="archives" className="h-[calc(100vh-11rem)]">
-              {loading ? (
+              {loadingArchives ? (
                 <div className="flex justify-center items-center h-full">
                   <p>Loading...</p>
                 </div>
               ) : (
                 <Archives
-                  data={archiveData}
+                  data={archives}
                   columns={columnsModArchives}
                   activeTab={activeTab}
                 />
               )}
             </TabsContent>
-
             {/* Analytics Tab */}
             <TabsContent value="analytics" className="h-[calc(100vh-11rem)]">
-              {loading ? (
-                <div className="flex justify-center items-center h-full">
-                  <p>Loading...</p>
-                </div>
-              ) : (
-                <Analytics />
-              )}
+              <Analytics />
             </TabsContent>
           </Tabs>
         </main>

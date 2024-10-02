@@ -3,7 +3,7 @@ import axios from "axios";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { User, LogOut, FileStack, Plus } from "lucide-react";
+import { User, LogOut, FileStack, Plus, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
@@ -11,7 +11,17 @@ import { Helmet, HelmetProvider } from "react-helmet-async";
 import { DataTable } from "@/components/ui/DataTable";
 import { columnsAccounts } from "@/components/data-table/columns/columnsAccounts";
 import { columnsReports } from "@/components/data-table/columns/columnsReports";
-import useWebSocket from "../../../backend/utils/websocket.js";
+
+// Fetch functions
+const fetchUsers = async () => {
+  const response = await axios.get("/api/users/moderators");
+  return response.data;
+};
+
+const fetchReports = async () => {
+  const response = await axios.get("/api/reports/");
+  return response.data;
+};
 
 const AdminDashboardScreen = () => {
   const navigate = useNavigate();
@@ -23,78 +33,41 @@ const AdminDashboardScreen = () => {
   const [reportsData, setReportsData] = useState([]);
   const [accountsCount, setAccountsCount] = useState(0);
   const [reportsCount, setReportsCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loadingReports, setLoadingReports] = useState(true);
+  const [loadingUsers, setLoadingUsers] = useState(true);
   const columns =
     activeButton === "accounts" ? columnsAccounts : columnsReports;
 
-  const fetchData = async () => {
-    const accountsEndpoint = "/api/users/moderators";
-    const reportsEndpoint = "/api/reports";
-    setLoading(true);
-
+  const loadAccounts = async () => {
+    setLoadingUsers(true);
     try {
-      // Fetch accounts
-      const accountsResponse = await axios.get(accountsEndpoint);
-      setAccountsData(accountsResponse.data);
-
-      // Fetch reports
-      const reportsResponse = await axios.get(reportsEndpoint);
-      setReportsData(reportsResponse.data);
-
-      // Set counts based on the fetched data
-      setAccountsCount(accountsResponse.data.length);
-      setReportsCount(reportsResponse.data.length);
+      const data = await fetchUsers();
+      setAccountsData(data);
+      setAccountsCount(data.length); // Set count here
     } catch (error) {
-      // Improved error handling
-      const errorMessage = error.response
-        ? error.response.data.message ||
-          "An error occurred while fetching data."
-        : error.message || "Network error. Please try again later.";
-
-      console.error("Error fetching data:", errorMessage);
+      console.error("Failed to fetch users", error);
     } finally {
-      setLoading(false);
+      setLoadingUsers(false);
+    }
+  };
+
+  const loadReports = async () => {
+    setLoadingReports(true);
+    try {
+      const data = await fetchReports();
+      setReportsData(data);
+      setReportsCount(data.length); // Set count here
+    } catch (error) {
+      console.error("Failed to fetch reports", error);
+    } finally {
+      setLoadingReports(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    loadAccounts();
+    loadReports();
   }, []);
-
-  const handleWebSocketUpdate = (newData) => {
-    if (newData.method === "POST" && newData.url === "/api/users") {
-      const newUser = JSON.parse(newData.responseBody);
-      if (newUser.createdAt) {
-        newUser.createdAt = new Date(newUser.createdAt);
-      }
-      setAccountsData((prevData) => [...prevData, newUser]);
-      fetchData();
-    } else if (
-      newData.method === "DELETE" &&
-      newData.url.includes("/api/users/delete/")
-    ) {
-      const userId = newData.url.split("/").pop();
-      setAccountsData((prevData) =>
-        prevData.filter((user) => user._id !== userId)
-      );
-      fetchData();
-    } else if (
-      newData.method === "DELETE" &&
-      newData.url.includes("/api/reports/delete/")
-    ) {
-      const reportId = newData.url.split("/").pop();
-      setReportsData((prevData) =>
-        prevData.filter((report) => report._id !== reportId)
-      );
-      fetchData();
-    }
-  };
-
-  const parseUserData = (newData) => {
-    return JSON.parse(newData.responseBody).user;
-  };
-
-  useWebSocket("ws://localhost:5000", handleWebSocketUpdate, parseUserData);
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -127,6 +100,14 @@ const AdminDashboardScreen = () => {
       navigate("/admin/login");
     } catch (err) {
       console.log(err);
+    }
+  };
+
+  const handleRefresh = async () => {
+    if (activeButton === "accounts") {
+      await loadAccounts(); // Refresh accounts data
+    } else {
+      await loadReports(); // Refresh reports data
     }
   };
 
@@ -257,30 +238,34 @@ const AdminDashboardScreen = () => {
                   <LogOut className="mr-2 h-5 w-5" />
                   <span className="hidden sm:block">Log out</span>
                 </div>
-                <div className="text-xs font-normal opacity-60 hidden sm:block">
-                  ⌘+L
-                </div>
+                <div className="text-xs opacity-60">⌘+L</div>
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Main content */}
+        {/* Content section */}
         <div className="xl:col-span-4 p-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold mb-1 text-gray-900">
-                {activeButton === "accounts" ? "Accounts" : "Reports"}
+                {activeButton === "reports" ? "Reports" : "Accounts"}
               </h1>
               <p className="text-sm text-gray-500">
-                Manage the{" "}
-                {activeButton === "accounts" ? "moderator accounts" : "reports"}{" "}
-                here.
+                Manage all{" "}
+                {activeButton === "reports" ? "reports" : "moderator accounts"}.
               </p>
             </div>
+            <button
+              onClick={handleRefresh}
+              className="p-2 rounded-full hover:bg-muted-background"
+              aria-label="Refresh Data"
+            >
+              <RefreshCcw className="h-5 w-5" />
+            </button>
           </div>
 
-          {loading ? (
+          {loadingUsers || loadingReports ? (
             <div className="flex items-center justify-center h-full">
               <span className="text-lg">Loading...</span>
             </div>

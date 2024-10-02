@@ -44,7 +44,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
     if (isOpen) {
       const fetchStatusOptions = async () => {
         try {
-          const response = await axios.get("http://localhost:3000/api/status");
+          const response = await axios.get("/api/status/");
           setStatusOptions(response.data);
         } catch (error) {
           console.error("Failed to fetch status options", error);

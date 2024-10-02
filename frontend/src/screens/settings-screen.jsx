@@ -40,7 +40,7 @@ function SettingsScreen() {
   useEffect(() => {
     const fetchModerator = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/users/moderators");
+        const response = await axios.get("/api/users/moderators/");
         const moderators = response.data;
         const foundModerator = moderators.find((mod) => mod._id === userInfo._id);
         setModerator(foundModerator);

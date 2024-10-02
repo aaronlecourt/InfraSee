@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { APIProvider, Map, Marker, InfoWindow } from '@vis.gl/react-google-maps';
-import axios from 'axios';
+import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
 
 const Maps = ({ userInfo }) => {
   const [center] = useState({ lat: 16.4023, lng: 120.596 });
@@ -9,13 +8,22 @@ const Maps = ({ userInfo }) => {
   const apiKey = "AIzaSyCq5N2BhjPRx_qLLIwmm6YMftl4oEab9vY"; // Replace with your actual API key
 
   useEffect(() => {
-    const fetchReports = async () => {
-      const endpoint = userInfo ? '/api/reports/moderator/reports' : '/api/reports';
-      try {
-        const response = await axios.get(endpoint);
-        setReports(response.data);
-      } catch (error) {
-        console.error("Error fetching reports: ", error);
+    const fetchLocation = () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            setCenter({ lat: latitude, lng: longitude });
+          },
+          (error) => {
+            console.error("Error getting location: ", error);
+            // Fallback to Baguio City on error
+            setCenter({ lat: 16.4023, lng: 120.596 });
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+        );
+      } else {
+        console.error("Geolocation is not supported by this browser.");
       }
     };
 
@@ -31,46 +39,20 @@ const Maps = ({ userInfo }) => {
 
   return (
     <APIProvider apiKey={apiKey}>
-      <div className="w-full h-svh sm:h-full">
-        <Map
-          defaultCenter={center}
-          defaultZoom={13}
-          style={{ width: '100%', height: '100%' }}
-          gestureHandling={'greedy'}
-          options={{
-            restriction: {
-              latLngBounds: benguetBounds,
-              strictBounds: true,
-            },
-          }}
-        >
-          {reports.map(report => (
-            <Marker
-              key={report._id}
-              position={{ lat: parseFloat(report.latitude), lng: parseFloat(report.longitude) }}
-              onClick={() => setSelectedReport(report)}
-            />
-          ))}
-
-          {selectedReport && (
-            <InfoWindow
-              position={{
-                lat: parseFloat(selectedReport.latitude),
-                lng: parseFloat(selectedReport.longitude),
-              }}
-              onCloseClick={() => setSelectedReport(null)}
-            >
-              <div>
-                <h3>{selectedReport.report_mod.name}</h3>
-                <p>{selectedReport.report_desc}</p>
-                <p><strong>Reported by:</strong> {selectedReport.report_by}</p>
-                <p><strong>Status:</strong> {selectedReport.report_status.stat_name}</p>
-                <p>{selectedReport.report_address}</p>
-              </div>
-            </InfoWindow>
-          )}
-        </Map>
-      </div>
+      <Map
+        defaultCenter={center}
+        defaultZoom={7}
+        gestureHandling={'greedy'}
+        disableDefaultUI={true}
+        options={{
+          restriction: {
+            latLngBounds: benguetBounds,
+            strictBounds: true,
+          },
+        }}
+      >
+        <Marker position={center} />
+      </Map>
     </APIProvider>
   );
 };
