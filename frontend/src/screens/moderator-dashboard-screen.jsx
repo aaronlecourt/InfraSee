@@ -169,7 +169,7 @@ const ModeratorDashboardScreen = () => {
                   <p>Loading...</p>
                 </div>
               ) : (
-                <Overview goToReportsTab={goToReportsTab} data={reportData} userInfo={userInfo}/>
+                <Overview goToReportsTab={goToReportsTab} data={reports} userInfo={userInfo}/>
               )}
             </TabsContent>
             {/* Reports Tab */}

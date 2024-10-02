@@ -27,7 +27,6 @@ const Maps = ({ userInfo }) => {
       }
     };
 
-    fetchReports();
   }, [userInfo]);
 
   const benguetBounds = {
