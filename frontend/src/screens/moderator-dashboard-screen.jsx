@@ -1,86 +1,112 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect } from "react";
 import {
-  Sheet,
-  SheetTrigger,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
-  Drawer,
-  DrawerTrigger,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerClose,
-  DrawerDescription,
-} from "@/components/ui/drawer";
-import { Menu } from "lucide-react";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Spinner } from "@/components/ui/spinner";
+import { Settings, LogOut, RefreshCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ReportCounter } from "@/components/elements/report-counter";
-import { ComboBoxResponsive } from "@/components/elements/combo";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useDispatch, useSelector } from "react-redux";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Overview } from "@/components/elements/overview";
+import { Archives } from "@/components/elements/archives";
+import { Reports } from "@/components/elements/reports";
+import Analytics from "@/components/elements/analytics";
+import { useLogoutMutation } from "@/slices/users-api-slice";
+import { logout } from "@/slices/auth-slice";
 import { Helmet, HelmetProvider } from "react-helmet-async";
-import ReportForm from "@/components/report-form";
 import axios from "axios";
-import PublicMaps from "@/components/elements/publicmaps";
-function ReportScreen() {
+import { columnsModReports } from "@/components/data-table/columns/columnsModReports";
+import { columnsModArchives } from "@/components/data-table/columns/columnsModArchives";
+import { Button } from "@/components/ui/button";
+import { SkeletonTable } from "@/components/elements/skeletontable";
+const fetchReports = async () => {
+  const response = await axios.get("/api/reports/moderator/reports");
+  return response.data;
+};
+
+const fetchArchives = async () => {
+  const response = await axios.get("/api/reports/moderator/archived/reports");
+  return response.data;
+};
+
+const ModeratorDashboardScreen = () => {
   const navigate = useNavigate();
-  const [isNavbarSheetOpen, setNavbarSheetOpen] = useState(false);
-  const [isReportSheetOpen, setReportSheetOpen] = useState(false);
-  const [accountSelected, setAccountSelected] = useState(false);
-  const [selectedAccount, setSelectedAccount] = useState(null);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+  const { userInfo } = useSelector((state) => state.auth);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [reports, setReports] = useState([]);
+  const [archives, setArchives] = useState([]);
+  const [loadingReports, setLoadingReports] = useState(true);
+  const [loadingArchives, setLoadingArchives] = useState(true);
+  const [logoutApiCall] = useLogoutMutation();
+  const dispatch = useDispatch();
 
-  const [data, setData] = useState([]);
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [fetchReports] = await Promise.all([axios.get("/api/reports")]);
-        setData(fetchReports.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
+  // Fetch data
+  const loadReports = async () => {
+    setLoadingReports(true);
+    try {
+      const data = await fetchReports();
+      setReports(data);
+    } catch (error) {
+      console.error("Failed to fetch reports", error);
+    } finally {
+      setLoadingReports(false);
+    }
+  };
 
-    fetchData();
-  }, []);
-  // Track screen size
+  const loadArchives = async () => {
+    setLoadingArchives(true);
+    try {
+      const data = await fetchArchives();
+      setArchives(data);
+    } catch (error) {
+      console.error("Failed to fetch archives", error);
+    } finally {
+      setLoadingArchives(false);
+    }
+  };
+
+  // Initial load
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 640);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    loadReports();
+    loadArchives();
   }, []);
 
   const handleLogoClick = () => {
     navigate("/");
   };
 
-  const handleContactClick = () => {
-    navigate("/contact-us");
-  };
-
-  const handleFileReportClick = () => {
-    if (accountSelected) {
-      setReportSheetOpen(true);
+  const handleLogout = async () => {
+    try {
+      await logoutApiCall().unwrap();
+      dispatch(logout());
+      navigate("/moderator/login");
+    } catch (err) {
+      console.log(err);
     }
   };
 
-  const handleAccountSelect = useCallback((account) => {
-    setSelectedAccount(account);
-    setAccountSelected(true);
-  }, []);
-
-  const handleCloseReportForm = () => {
-    setReportSheetOpen(false);
+  const goToReportsTab = () => {
+    setActiveTab("reports");
   };
 
   return (
     <HelmetProvider>
-      <div className="flex flex-col min-h-screen">
+      <div>
         <Helmet>
-          <title>{"InfraSee | Make a Report"}</title>
+          <title>{"InfraSee | Moderator Dashboard"}</title>
         </Helmet>
         <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400">
           <div
@@ -89,133 +115,117 @@ function ReportScreen() {
           >
             <img src="/infrasee_black.png" alt="Infrasee Logomark" />
           </div>
-          <nav className="hidden sm:flex">
-            <Button onClick={handleContactClick} variant="ghost">
-              Contact Us
-            </Button>
-          </nav>
-
-          {/* Mobile navbar sheet trigger */}
-          <div className="sm:hidden">
-            <Sheet open={isNavbarSheetOpen} onOpenChange={setNavbarSheetOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setNavbarSheetOpen(true)}
-                >
-                  <Menu className="h-6 w-6" />
-                  <span className="sr-only">Open Menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetHeader className="hidden">
-                <SheetTitle></SheetTitle>
-                <SheetDescription></SheetDescription>
-              </SheetHeader>
-              <SheetContent side="top">
-                <nav className="grid gap-4 py-1">
-                  <Button onClick={handleContactClick} variant="ghost">
-                    Contact Us
-                  </Button>
-                </nav>
-              </SheetContent>
-            </Sheet>
+          <div className="relative">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar className="h-8 w-8 hover:ring-4 ring-slate-300 cursor-pointer">
+                  <AvatarFallback className="text-white bg-slate-950">
+                    M
+                  </AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 mr-3">
+                {userInfo && (
+                  <DropdownMenuLabel>
+                    <p>{userInfo.name}</p>
+                    <small className="text-gray-500 font-normal">
+                      {userInfo.email}
+                    </small>
+                  </DropdownMenuLabel>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onClick={() => navigate("/settings")}>
+                    <Settings className="mr-2 h-4 w-4 text-slate-950" />
+                    <span>Go to Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4 text-slate-950" />
+                    <span>Logout</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
+        <main className="p-4">
+          <h1 className="text-3xl mb-1">Dashboard</h1>
 
-        <main className="flex flex-col flex-1 p-4">
-          <div className="flex flex-col flex-1 mb-3 sm:flex-row sm:space-x-4 sm:space-y-0">
-            <div className="sm:flex-none sm:w-1/4">
-              <div className="rounded-md flex flex-col items-start justify-start gap-3">
-                <div className="">
-                  <h1 className="text-lg font-bold mb-2">
-                    Who is your report for?
-                  </h1>
-                  <p className="text-sm text-gray-500">
-                    Select an appropriate moderator based on the type of
-                    infrastructure.
-                  </p>
-                </div>
-                <div className="flex gap-2 w-full flex-row sm:flex-col mb-2">
-                  <ComboBoxResponsive onSelect={handleAccountSelect} />
-                  <Button
-                    className="w-full h-auto"
-                    disabled={!accountSelected}
-                    onClick={handleFileReportClick}
-                  >
-                    File a Report
-                  </Button>
-                </div>
-              </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <div className="flex items-center gap-2">
+              <TabsList className="h-auto">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="reports">Reports</TabsTrigger>
+                <TabsTrigger value="archives">Archives</TabsTrigger>
+                <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              </TabsList>
+              {/* Refresh Icon */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="filter"
+                      onClick={() => {
+                        loadReports();
+                        loadArchives();
+                      }}
+                    >
+                      <RefreshCcw size={15} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Refresh</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
-          </div>
-
-          <div className="flex-none">
-            <ReportCounter data={data} />
-          </div>
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="h-[calc(100vh-11rem)]">
+              {loadingReports ? (
+                <div className="flex justify-center items-center h-full">
+                  <Spinner size="large"/>
+                </div>
+              ) : (
+                <Overview
+                  goToReportsTab={goToReportsTab}
+                  data={reports}
+                  userInfo={userInfo}
+                />
+              )}
+            </TabsContent>
+            <TabsContent value="reports" className="h-[calc(100vh-11rem)]">
+              {loadingReports ? (
+                <SkeletonTable columns={columnsModReports} /> // Use the SkeletonTable here
+              ) : (
+                <Reports
+                  data={reports}
+                  columns={columnsModReports}
+                  activeTab={activeTab}
+                />
+              )}
+            </TabsContent>
+            <TabsContent value="archives" className="h-[calc(100vh-11rem)]">
+              {loadingArchives ? (
+                <SkeletonTable columns={columnsModArchives} /> // Use the SkeletonTable here
+              ) : (
+                <Archives
+                  data={archives}
+                  columns={columnsModArchives}
+                  activeTab={activeTab}
+                />
+              )}
+            </TabsContent>
+            {/* Analytics Tab */}
+            <TabsContent value="analytics" className="h-[calc(100vh-11rem)]">
+              <Analytics />
+            </TabsContent>
+          </Tabs>
         </main>
-
-        {/* Single instance of ReportForm */}
-        {isReportSheetOpen && (
-          <>
-            {isMobile ? (
-              <Drawer
-                open={isReportSheetOpen}
-                onOpenChange={handleCloseReportForm}
-              >
-                <DrawerTrigger asChild>
-                  <Button className="hidden">Open Report Drawer</Button>
-                </DrawerTrigger>
-                <DrawerContent side="bottom">
-                  <DrawerHeader>
-                    <DrawerClose onClick={handleCloseReportForm} />
-                    <DrawerTitle className="text-md font-bold leading-0">
-                      {selectedAccount
-                        ? selectedAccount.name
-                        : "Select a Moderator"}
-                    </DrawerTitle>
-                    <DrawerDescription className="text-xs font-normal">
-                      Fill up the form below. Click submit when you're done.
-                    </DrawerDescription>
-                  </DrawerHeader>
-                  <div className="p-4 pt-0">
-                    <ReportForm selectedAccount={selectedAccount} />
-                  </div>
-                </DrawerContent>
-              </Drawer>
-            ) : (
-              <Sheet
-                open={isReportSheetOpen}
-                onOpenChange={handleCloseReportForm}
-                className="hidden sm:block"
-              >
-                <SheetTrigger asChild>
-                  <Button className="hidden">Open Report Sheet</Button>
-                </SheetTrigger>
-                <SheetContent side="right">
-                  <SheetHeader>
-                    <SheetTitle className="text-md font-bold leading-0">
-                      {selectedAccount
-                        ? selectedAccount.name
-                        : "Select a Moderator"}
-                    </SheetTitle>
-                    <SheetDescription className="text-xs font-normal">
-                      Fill up the form below. Click submit when you're done.
-                    </SheetDescription>
-                  </SheetHeader>
-                  <div className="p-1">
-                    <ReportForm selectedAccount={selectedAccount} />
-                  </div>
-                </SheetContent>
-              </Sheet>
-            )}
-          </>
-        )}
       </div>
     </HelmetProvider>
   );
-}
+};
 
-export default ReportScreen;
-
-
+export default ModeratorDashboardScreen;
