@@ -8,7 +8,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Settings, LogOut, RefreshCcw } from "lucide-react"; // Import RefreshCcw
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Spinner } from "@/components/ui/spinner";
+import { Settings, LogOut, RefreshCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useDispatch, useSelector } from "react-redux";
@@ -154,22 +161,31 @@ const ModeratorDashboardScreen = () => {
                 <TabsTrigger value="analytics">Analytics</TabsTrigger>
               </TabsList>
               {/* Refresh Icon */}
-              <Button
-                variant="outline"
-                size="filter"
-                onClick={() => {
-                  loadReports();
-                  loadArchives();
-                }}
-              >
-                <RefreshCcw size={15} />
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="filter"
+                      onClick={() => {
+                        loadReports();
+                        loadArchives();
+                      }}
+                    >
+                      <RefreshCcw size={15} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Refresh</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             {/* Overview Tab */}
             <TabsContent value="overview" className="h-[calc(100vh-11rem)]">
               {loadingReports ? (
                 <div className="flex justify-center items-center h-full">
-                  <p>Loading...</p>
+                  <Spinner size="large"/>
                 </div>
               ) : (
                 <Overview
