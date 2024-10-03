@@ -8,9 +8,16 @@ import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { DataTable } from "@/components/ui/DataTable";
+import { Spinner } from "@/components/ui/spinner";
 import axios from "axios";
 import { columnsAccounts } from "@/components/data-table/columns/columnsAccounts";
 import { columnsReports } from "@/components/data-table/columns/columnsReports";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 // Fetch functions
 const fetchUsers = async () => {
   const response = await axios.get("/api/users/moderators");
@@ -76,7 +83,6 @@ const AdminReportsScreen = () => {
     loadAccounts();
     loadReports();
   }, []);
-
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -259,18 +265,30 @@ const AdminReportsScreen = () => {
                 {activeButton === "reports" ? "reports" : "moderator accounts"}.
               </p>
             </div>
-            <button
-              onClick={handleRefresh}
-              className="p-2 rounded-full hover:bg-muted-background"
-              aria-label="Refresh Data"
-            >
-              <RefreshCcw className="h-5 w-5" />
-            </button>
+            {/* Refresh Icon */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="default"
+                    size="filter"
+                    onClick={() => {
+                      handleRefresh();
+                    }}
+                  >
+                    <RefreshCcw size={15} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Refresh</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           {loadingUsers || loadingReports ? (
             <div className="flex items-center justify-center h-full">
-              <span className="text-lg">Loading...</span>
+              <Spinner size="large"></Spinner>
             </div>
           ) : (
             <DataTable

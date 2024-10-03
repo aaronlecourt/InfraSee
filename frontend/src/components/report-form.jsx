@@ -11,6 +11,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription
 } from "@/components/ui/form";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -229,7 +230,10 @@ export default function ReportForm({ selectedAccount }) {
                   <FormMessage>{errors.accountNumber?.message}</FormMessage>
                 </div>
                 <FormControl>
+                  <>
                   <Input placeholder="Enter your account number" {...field} />
+                  <FormDescription className="text-xs">This form requires your account number. Ensure all details above match your account information.</FormDescription>
+                  </>
                 </FormControl>
               </FormItem>
             )}

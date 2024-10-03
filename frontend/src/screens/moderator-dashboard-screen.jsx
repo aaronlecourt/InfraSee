@@ -8,7 +8,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Settings, LogOut, RefreshCcw } from "lucide-react"; // Import RefreshCcw
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Spinner } from "@/components/ui/spinner";
+import { Settings, LogOut, RefreshCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useDispatch, useSelector } from "react-redux";
@@ -23,7 +30,8 @@ import { Helmet, HelmetProvider } from "react-helmet-async";
 import axios from "axios";
 import { columnsModReports } from "@/components/data-table/columns/columnsModReports";
 import { columnsModArchives } from "@/components/data-table/columns/columnsModArchives";
-
+import { Button } from "@/components/ui/button";
+import { SkeletonTable } from "@/components/elements/skeletontable";
 const fetchReports = async () => {
   const response = await axios.get("/api/reports/moderator/reports");
   return response.data;
@@ -91,9 +99,9 @@ const ModeratorDashboardScreen = () => {
   };
 
   const goToReportsTab = () => {
-    setActiveTab('reports')
-  }
-  
+    setActiveTab("reports");
+  };
+
   return (
     <HelmetProvider>
       <div>
@@ -144,40 +152,52 @@ const ModeratorDashboardScreen = () => {
         <main className="p-4">
           <h1 className="text-3xl mb-1">Dashboard</h1>
 
-          {/* Refresh Icon */}
-          <div className="flex mb-4">
-            <RefreshCcw
-              onClick={() => {
-                loadReports();
-                loadArchives();
-              }}
-              className="cursor-pointer text-slate-950 hover:text-slate-700 w-6 h-6"
-            />
-          </div>
-
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="h-auto">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="reports">Reports</TabsTrigger>
-              <TabsTrigger value="archives">Archives</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            </TabsList>
+            <div className="flex items-center gap-2">
+              <TabsList className="h-auto">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="reports">Reports</TabsTrigger>
+                <TabsTrigger value="archives">Archives</TabsTrigger>
+                <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              </TabsList>
+              {/* Refresh Icon */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="filter"
+                      onClick={() => {
+                        loadReports();
+                        loadArchives();
+                      }}
+                    >
+                      <RefreshCcw size={15} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Refresh</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             {/* Overview Tab */}
             <TabsContent value="overview" className="h-[calc(100vh-11rem)]">
               {loadingReports ? (
                 <div className="flex justify-center items-center h-full">
-                  <p>Loading...</p>
+                  <Spinner size="large"/>
                 </div>
               ) : (
-                <Overview goToReportsTab={goToReportsTab} data={reports} userInfo={userInfo}/>
+                <Overview
+                  goToReportsTab={goToReportsTab}
+                  data={reports}
+                  userInfo={userInfo}
+                />
               )}
             </TabsContent>
-            {/* Reports Tab */}
             <TabsContent value="reports" className="h-[calc(100vh-11rem)]">
               {loadingReports ? (
-                <div className="flex justify-center items-center h-full">
-                  <p>Loading...</p>
-                </div>
+                <SkeletonTable columns={columnsModReports} /> // Use the SkeletonTable here
               ) : (
                 <Reports
                   data={reports}
@@ -186,12 +206,9 @@ const ModeratorDashboardScreen = () => {
                 />
               )}
             </TabsContent>
-            {/* Archives Tab */}
             <TabsContent value="archives" className="h-[calc(100vh-11rem)]">
               {loadingArchives ? (
-                <div className="flex justify-center items-center h-full">
-                  <p>Loading...</p>
-                </div>
+                <SkeletonTable columns={columnsModArchives} /> // Use the SkeletonTable here
               ) : (
                 <Archives
                   data={archives}
