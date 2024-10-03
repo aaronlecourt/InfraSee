@@ -21,7 +21,7 @@ export function Overview({ goToReportsTab, data, userInfo }) {
       <ReportCounter data={data} />
       <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 h-full">
         <div className="border rounded-md col-span-1 sm:col-span-2 min-h-[30rem]">
-          <Maps userInfo={loggedModerator_id}/>
+          <Maps userInfo={userInfo}/>
         </div>
         <div className="col-span-1 sm:col-span-1">
           <Card className="flex flex-col h-full min-h-[30rem]">
