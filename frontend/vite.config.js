@@ -19,4 +19,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    sourcemap: false, // Enable source maps for better debugging
+  },
 });
