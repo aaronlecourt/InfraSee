@@ -1,1 +1,22 @@
-{ "rewrites": [{ "source": "/(.*)", "destination": "/" }] }
+{
+    "rewrites": [
+      {
+        "source": "/(.*)",
+        "destination": "/frontend/index.html"
+      }
+    ],
+    "builds": [
+      {
+        "src": "frontend/package.json",
+        "use": "@vercel/static-build",
+        "config": {
+          "distDir": "frontend/dist"  
+        }
+      },
+      {
+        "src": "backend/server.js",
+        "use": "@vercel/node" 
+      }
+    ]
+  }
+  
