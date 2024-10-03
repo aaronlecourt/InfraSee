@@ -41,7 +41,7 @@ export function ReportCounter({ data }) {
 
   return (
     <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
-      <div className="border rounded-md p-2 flex justify-between sm:flex-col sm:p-3 items-center sm:items-start">
+      <div className="border rounded-md p-2 flex justify-between sm:flex-col sm:p-3 items-center sm:items-start bg-white">
         <p className="text-xs sm:text-sm text-wrap">Total Reports</p>
         <h1 className="text-lg text-gray-300 sm:text-primary sm:text-3xl">
           {total}
@@ -50,7 +50,7 @@ export function ReportCounter({ data }) {
           All reports made
         </small>
       </div>
-      <div className="border rounded-md p-2 flex justify-between sm:flex-col sm:p-3 items-center sm:items-start">
+      <div className="border rounded-md p-2 flex justify-between sm:flex-col sm:p-3 items-center sm:items-start bg-white">
         <p className="text-xs sm:text-sm text-wrap">In Progress Reports</p>
         <h1 className="text-lg text-gray-300 sm:text-primary sm:text-3xl">
           {inprogress}
@@ -59,7 +59,7 @@ export function ReportCounter({ data }) {
           Reports already being worked on
         </small>
       </div>
-      <div className="border rounded-md p-2 flex justify-between sm:flex-col sm:p-3 items-center sm:items-start">
+      <div className="border rounded-md p-2 flex justify-between sm:flex-col sm:p-3 items-center sm:items-start bg-white">
         <p className="text-xs sm:text-sm text-wrap">Resolved Reports</p>
         <h1 className="text-lg text-gray-300 sm:text-primary sm:text-3xl">
           {resolved}
@@ -68,7 +68,7 @@ export function ReportCounter({ data }) {
           Finished or solved reports
         </small>
       </div>
-      <div className="border rounded-md p-2 flex justify-between sm:flex-col sm:p-3 items-center sm:items-start">
+      <div className="border rounded-md p-2 flex justify-between sm:flex-col sm:p-3 items-center sm:items-start bg-white">
         <p className="text-xs sm:text-sm text-wrap">Dismissed Reports</p>
         <h1 className="text-lg text-gray-300 sm:text-primary sm:text-3xl">
           {dismissed}
@@ -77,7 +77,7 @@ export function ReportCounter({ data }) {
           False or unreliable reports
         </small>
       </div>
-      <div className="border rounded-md p-2 flex justify-between sm:flex-col sm:p-3 items-center sm:items-start">
+      <div className="border rounded-md p-2 flex justify-between sm:flex-col sm:p-3 items-center sm:items-start bg-white">
         <p className="text-xs sm:text-sm text-wrap">Pending Reports</p>
         <h1 className="text-lg text-gray-300 sm:text-primary sm:text-3xl">
           {pending}

@@ -26,7 +26,7 @@ const PublicMaps = ({ data }) => {
   };
 
   return (
-    <div className="h-[80vh] w-full">
+    <div className="h-[150vh] sm:h-screen w-screen">
       <APIProvider apiKey={apiKey}>
         <Map
           ref={mapRef}

@@ -8,23 +8,14 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import {
-  Drawer,
-  DrawerTrigger,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerClose,
-  DrawerDescription,
-} from "@/components/ui/drawer";
 import { Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 import { ReportCounter } from "@/components/elements/report-counter";
 import { ComboBoxResponsive } from "@/components/elements/combo";
-import { Helmet, HelmetProvider } from "react-helmet-async";
-import ReportForm from "@/components/report-form";
 import axios from "axios";
 import PublicMaps from "@/components/elements/publicmaps";
+import ReportForm from "@/components/report-form";
 function ReportScreen() {
   const navigate = useNavigate();
   const [isNavbarSheetOpen, setNavbarSheetOpen] = useState(false);
@@ -32,8 +23,8 @@ function ReportScreen() {
   const [accountSelected, setAccountSelected] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
-
   const [data, setData] = useState([]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -46,7 +37,7 @@ function ReportScreen() {
 
     fetchData();
   }, []);
-  // Track screen size
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 640);
     window.addEventListener("resize", handleResize);
@@ -82,86 +73,79 @@ function ReportScreen() {
         <Helmet>
           <title>{"InfraSee | Make a Report"}</title>
         </Helmet>
-        <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400">
-          <div
-            className="w-[6rem] mt-1 cursor-pointer"
-            onClick={handleLogoClick}
-          >
-            <img src="/infrasee_black.png" alt="Infrasee Logomark" />
-          </div>
-          <nav className="hidden sm:flex">
-            <Button onClick={handleContactClick} variant="ghost">
-              Contact Us
-            </Button>
-          </nav>
+        
+        <div className="relative h-full">
+          <PublicMaps data={data} className="absolute inset-0 z-0" />
+          <div className="absolute top-0 z-50 w-full h-fit p-3 flex items-center justify-between border-b border-muted-foreground bg-white">
+            <div
+              className="w-[6rem] mt-1 cursor-pointer"
+              onClick={handleLogoClick}
+            >
+              <img src="/infrasee-logo.svg" alt="Infrasee Logomark" />
+            </div>
+            <nav className="hidden sm:flex">
+              <Button onClick={handleContactClick} variant="ghost">
+                Contact Us
+              </Button>
+            </nav>
 
-          {/* Mobile navbar sheet trigger */}
-          <div className="sm:hidden">
-            <Sheet open={isNavbarSheetOpen} onOpenChange={setNavbarSheetOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setNavbarSheetOpen(true)}
-                >
-                  <Menu className="h-6 w-6" />
-                  <span className="sr-only">Open Menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetHeader className="hidden">
-                <SheetTitle></SheetTitle>
-                <SheetDescription></SheetDescription>
-              </SheetHeader>
-              <SheetContent side="top">
-                <nav className="grid gap-4 py-1">
-                  <Button onClick={handleContactClick} variant="ghost">
-                    Contact Us
-                  </Button>
-                </nav>
-              </SheetContent>
-            </Sheet>
-          </div>
-        </header>
-
-        <main className="flex flex-col flex-1 p-4">
-          <div className="flex flex-col flex-1 mb-3 sm:flex-row sm:space-x-4 sm:space-y-0">
-            <div className="sm:flex-none sm:w-1/4">
-              <div className="rounded-md flex flex-col items-start justify-start gap-3">
-                <div className="">
-                  <h1 className="text-lg font-bold mb-2">
-                    Who is your report for?
-                  </h1>
-                  <p className="text-sm text-gray-500">
-                    Select an appropriate moderator based on the type of
-                    infrastructure.
-                  </p>
-                </div>
-                <div className="flex gap-2 w-full flex-row sm:flex-col mb-2">
-                  <ComboBoxResponsive onSelect={handleAccountSelect} />
+            {/* Mobile navbar sheet trigger */}
+            <div className="sm:hidden">
+              <Sheet open={isNavbarSheetOpen} onOpenChange={setNavbarSheetOpen}>
+                <SheetTrigger asChild>
                   <Button
-                    className="w-full h-auto"
-                    disabled={!accountSelected}
-                    onClick={handleFileReportClick}
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setNavbarSheetOpen(true)}
                   >
-                    File a Report
+                    <Menu className="h-6 w-6" />
+                    <span className="sr-only">Open Menu</span>
                   </Button>
-                </div>
-              </div>
+                </SheetTrigger>
+                <SheetHeader className="hidden">
+                  <SheetTitle></SheetTitle>
+                  <SheetDescription></SheetDescription>
+                </SheetHeader>
+                <SheetContent side="top">
+                  <nav className="grid gap-4 py-1">
+                    <Button onClick={handleContactClick} variant="ghost">
+                      Contact Us
+                    </Button>
+                  </nav>
+                </SheetContent>
+              </Sheet>
             </div>
+          </div>
 
-            <div className="border rounded-md flex-1 mt-1">
-              <div className="h-full">
-                <PublicMaps data={data}/>
+          <div className="absolute z-50 top-20 left-5 right-5 rounded-lg max-w-sm bg-white p-4 border">
+            <div className="">
+              <div>
+                <h1 className="text-lg font-bold mb-2">
+                  Who is your report for?
+                </h1>
+                <p className="text-sm text-gray-500 mb-3">
+                  Select an appropriate moderator based on the type of
+                  infrastructure.
+                </p>
+              </div>
+              <div className="flex gap-2 w-full flex-row sm:flex-col">
+                <ComboBoxResponsive onSelect={handleAccountSelect} />
+                <Button
+                  className="w-full h-auto"
+                  disabled={!accountSelected}
+                  onClick={handleFileReportClick}
+                >
+                  File a Report
+                </Button>
               </div>
             </div>
           </div>
 
-          <div className="flex-none">
+          <div className="absolute z-50 bottom-5 left-5 right-5">
             <ReportCounter data={data} />
           </div>
-        </main>
 
-        {/* Single instance of ReportForm */}
+          {/* Single instance of ReportForm */}
         {isReportSheetOpen && (
           <>
             {isMobile ? (
@@ -217,6 +201,7 @@ function ReportScreen() {
             )}
           </>
         )}
+        </div>
       </div>
     </HelmetProvider>
   );
