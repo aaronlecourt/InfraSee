@@ -149,8 +149,8 @@ function ReportScreen() {
               </div>
             </div>
 
-            <div className="border rounded-md flex-1 sm:h-80vh mt-1">
-              <div className="h-full flex items-center justify-center">
+            <div className="border rounded-md flex-1 mt-1">
+              <div className="h-full">
                 <PublicMaps data={data}/>
               </div>
             </div>

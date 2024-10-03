@@ -17,7 +17,7 @@ const PublicMaps = ({ data }) => {
   const mapRef = useRef(null);
 
   const handleMapClick = () => {
-    setActiveMarker(null); // Close InfoWindow when clicking on the map
+    setActiveMarker(null);
   };
 
   const formatDate = (dateString) => {
@@ -26,11 +26,11 @@ const PublicMaps = ({ data }) => {
   };
 
   return (
-    <div className="h-full w-full">
+    <div className="h-[80vh] w-full">
       <APIProvider apiKey={apiKey}>
         <Map
           ref={mapRef}
-          defaultZoom={16}
+          defaultZoom={14}
           defaultCenter={initialLocation}
           gestureHandling={"greedy"}
           disableDefaultUI={true}
@@ -40,8 +40,7 @@ const PublicMaps = ({ data }) => {
               strictBounds: true,
             },
           }}
-          onClick={handleMapClick} // Handle clicks on the map
-          style={{ height: "100%", width: "100%" }} // Make map fill its container
+          onClick={handleMapClick}
         >
           {data.map((report) => {
             const reportLocation = {
@@ -90,14 +89,14 @@ const PublicMaps = ({ data }) => {
                           <span>-</span>
                         )}
                       </div>
-                      <p className="border-t mt-2 pt-2"><strong>Reported on:</strong> {formatDate(report.createdAt)}</p>
+                      <p className="border-t mt-2 pt-2 font-medium">{formatDate(report.createdAt)}</p>
                     </div>
 
-                    <div className="mt-3">
+                    <div className="mt-3 flex flex-col gap-y-2">
                       <img
                         src={report.report_img}
                         alt={report.report_desc}
-                        style={{ width: "100%", marginTop: 0 }}
+                        style={{ maxHeight: "200px", width: "100%", marginTop: 0 }}
                         className="rounded-md border"
                       />
                       <p>{report.report_address}</p>
