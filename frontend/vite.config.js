@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -19,9 +20,7 @@ export default defineConfig({
     },
   },
   build: {
-    sourcemap: false,
-  },
-  optimizeDeps: {
-    include: ["@vis.gl/react-google-maps"],  // Include the package here
+    outDir: "dist",
+    sourcemap: false, // Disable source maps in production
   },
 });
