@@ -20,10 +20,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: "frontend/dist",
+    outDir: "dist",
     sourcemap: false, // Disable source maps in production
-    rollupOptions: {
-      // Remove the external option unless you have specific needs
-    },
   },
 });
