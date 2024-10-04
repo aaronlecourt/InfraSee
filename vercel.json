@@ -6,12 +6,12 @@
       "use": "@vercel/node"
     },
     {
-      "src": "frontend/vite.config.js",  
+      "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
         "distDir": "frontend/dist",
-        "buildCommand": "npm run build", 
-        "outputDirectory": "frontend/dist"
+        "buildCommand": "npm run build",
+        "outputDirectory": "frontend/dist" 
       }
     }
   ],
