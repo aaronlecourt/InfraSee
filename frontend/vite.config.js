@@ -22,8 +22,8 @@ export default defineConfig({
   build: {
     outDir: "dist",
     sourcemap: false, // Disable source maps in production
-    rollupOptions: {
-      external: ["@vis.gl/react-google-maps"],  // Externalize this library
-    },
+    // rollupOptions: {
+    //   external: ["@vis.gl/react-google-maps"],  // Externalize this library
+    // },
   },
 });
