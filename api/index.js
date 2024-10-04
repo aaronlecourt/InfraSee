@@ -30,11 +30,11 @@ app.use('/api/reports', reportRoutes)
 app.use('/api/status', statusRoutes)
 
 if (process.env.NODE_ENV === 'production') {
-  const __dirname = path.resolve();
+  const __dirname = path.join();
   app.use(express.static(path.join(__dirname, '/frontend/dist')));
 
   app.get('*', (req, res) =>
-    res.sendFile(path.resolve(__dirname, 'frontend', 'dist', 'index.html'))
+    res.sendFile(path.join(__dirname, 'frontend', 'dist', 'index.html'))
   );
 } else {
   app.get('/', (req, res) => {
