@@ -31,7 +31,6 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
-    "nodemon": "^3.1.4",
-    "vite": "^5.4.8"
+    "nodemon": "^3.1.4"
   }
 }
