@@ -117,13 +117,13 @@ function ReportScreen() {
             </div>
           </div>
 
-          <div className="absolute z-50 top-20 left-5 right-5 rounded-lg max-w-sm bg-white p-4 border">
+          <div className="absolute z-50 top-56 left-5 right-5 rounded-lg max-w-xs bg-white p-3 border">
             <div className="">
               <div>
-                <h1 className="text-lg font-bold mb-2">
+                <h1 className="text-base font-bold">
                   Who is your report for?
                 </h1>
-                <p className="text-sm text-gray-500 mb-3">
+                <p className="text-xs text-muted-foreground font-medium mb-3 leading-4">
                   Select an appropriate moderator based on the type of
                   infrastructure.
                 </p>
