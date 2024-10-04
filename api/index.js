@@ -2,13 +2,13 @@ import path from 'path';
 import express from 'express';
 import dotenv from 'dotenv';
 dotenv.config();
-import connectDB from './config/db.js';
+import connectDB from '../backend/config/db.js';
 import cookieParser from 'cookie-parser';
-import { notFound, errorHandler } from './middleware/error-middleware.js';
-import userRoutes from './routes/user-routes.js';
-import infrastructureRoutes from './routes/infrastructure-routes.js';
-import reportRoutes from './routes/reports-routes.js'
-import statusRoutes from './routes/status-routes.js'
+import { notFound, errorHandler } from '../backend/middleware/error-middleware.js';
+import userRoutes from '../backend/routes/user-routes.js';
+import infrastructureRoutes from '../backend/routes/infrastructure-routes.js';
+import reportRoutes from '../backend/routes/reports-routes.js'
+import statusRoutes from '../backend/routes/status-routes.js'
 
 const port = process.env.PORT || 5000;
 
