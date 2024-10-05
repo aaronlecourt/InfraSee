@@ -261,7 +261,6 @@ const PublicMaps = ({ data }) => {
                 )
               );
             })}
-
           {selectedLocation && activeMarker === "selected" && (
             <>
               <AdvancedMarker
