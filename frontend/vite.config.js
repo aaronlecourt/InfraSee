@@ -23,4 +23,7 @@ export default defineConfig({
     outDir: "dist",
     sourcemap: false, // Disable source maps in production
   },
+  optimizeDeps: {
+    include: ["@googlemaps/markerclusterer"],
+  },
 });
