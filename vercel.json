@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api" }
+  ],
+  "framework": null,
+  "installCommand": null,
+  "buildCommand": "",
+  "outputDirectory": "public"
+}
