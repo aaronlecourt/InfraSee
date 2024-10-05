@@ -4,6 +4,6 @@
   ],
   "framework": null,
   "installCommand": null,
-  "buildCommand": "",
-  "outputDirectory": "public"
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
 }
