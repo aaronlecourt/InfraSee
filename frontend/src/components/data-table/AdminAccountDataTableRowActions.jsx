@@ -54,18 +54,18 @@ export function AdminAccountDataTableRowActions({ row }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
-          <DropdownMenuItem
+          {/* <DropdownMenuItem
             onClick={() => console.log("Edit")}
             className="flex gap-2"
           >
             <Edit size={14} />
             Edit Account
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
           {/* <DropdownMenuItem onClick={handleShowDetails} className="flex gap-2">
             <Eye size={14} />
             Show Details
           </DropdownMenuItem> */}
-          <DropdownMenuSeparator />
+          {/* <DropdownMenuSeparator /> */}
           <DropdownMenuItem
             className="text-red-600 flex gap-2"
             onClick={() => setDeleteDialogOpen(true)}

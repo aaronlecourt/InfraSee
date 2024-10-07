@@ -66,14 +66,14 @@ export function AdminReportDataTableRowActions({ row }) {
             <Eye size={14} />
             Show Details
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
+          {/* <DropdownMenuSeparator />
           <DropdownMenuItem
             className="text-red-600 flex gap-2"
             onClick={() => setDeleteDialogOpen(true)}
           >
             <Trash2 size={14} />
             Delete
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
         </DropdownMenuContent>
       </DropdownMenu>
 
