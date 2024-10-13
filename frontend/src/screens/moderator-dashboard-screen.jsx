@@ -14,6 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { io } from 'socket.io-client';
 import { Spinner } from "@/components/ui/spinner";
 import { Settings, LogOut, RefreshCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -32,6 +33,7 @@ import { columnsModReports } from "@/components/data-table/columns/columnsModRep
 import { columnsModArchives } from "@/components/data-table/columns/columnsModArchives";
 import { Button } from "@/components/ui/button";
 import { SkeletonTable } from "@/components/elements/skeletontable";
+
 const fetchReports = async () => {
   const response = await axios.get("/api/reports/moderator/reports");
   return response.data;
@@ -52,6 +54,20 @@ const ModeratorDashboardScreen = () => {
   const [loadingArchives, setLoadingArchives] = useState(true);
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const socket = io("http://localhost:5000");
+
+    socket.on("reportChange", (change) => {
+      console.log("Received report change:", change);
+      loadReports(); 
+      loadArchives();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   // Fetch data
   const loadReports = async () => {
