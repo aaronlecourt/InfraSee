@@ -29,7 +29,7 @@ const MultiStepForm = ({ open, onClose }) => {
     },
   });
 
-  const [currentStep, setCurrentStep] = useState(2);
+  const [currentStep, setCurrentStep] = useState(1);
   const [hasSetLocation, setHasSetLocation] = useState(false);
   const [locationData, setLocationData] = useState({
     address: '',
