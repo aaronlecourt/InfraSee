@@ -157,8 +157,9 @@ const ModeratorDashboardScreen = () => {
               <TabsList className="h-auto">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
-                <TabsTrigger value="archives">Archives</TabsTrigger>
-                <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                {/* Change archive to hidden */}
+                <TabsTrigger value="archives">Hidden Reports</TabsTrigger>
+                {/* <TabsTrigger value="analytics">Analytics</TabsTrigger> */}
               </TabsList>
               {/* Refresh Icon */}
               <TooltipProvider>
