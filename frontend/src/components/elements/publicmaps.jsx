@@ -144,7 +144,7 @@ const PublicMaps = ({ data }) => {
   return (
     <APIProvider apiKey={apiKey}>
       <div className="h-[100vh] sm:h-screen w-screen relative">
-        <div className="absolute top-20 left-5 z-50 bg-white p-3 rounded-lg border max-w-xs">
+        <div className="absolute hidden top-20 left-5 z-50 bg-white p-3 rounded-lg border max-w-xs">
           <p className="text-base font-bold">Set Report Location</p>
           <p className="text-xs text-muted-foreground font-medium leading-4 mb-4">
             Search for nearby landmarks or use your current location.
