@@ -4,20 +4,22 @@ import { LocateFixed } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { MapPin } from "lucide-react";
+import { useFormContext } from "react-hook-form";
 
-const LocationForm = ({ sethasSetLocation, locationData, setLocationData }) => {
+const LocationForm = ({ setHasSetLocation = () => {}, locationData, setLocationData }) => {
   const { address, latitude, longitude } = locationData;
   const [predictions, setPredictions] = useState([]);
+  const { setValue } = useFormContext();
   const inputRef = useRef(null);
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const markerRef = useRef(null);
 
   const baguioBounds = {
-    north: 16.4450,  // Northern bound adjusted to avoid La Trinidad
-    south: 16.3250,  // Southern bound
-    east: 120.6340,  // Eastern bound
-    west: 120.4650,  // Western bound
+    north: 16.4450,
+    south: 16.3250,
+    east: 120.6340,
+    west: 120.4650,
   };
 
   useEffect(() => {
@@ -30,7 +32,6 @@ const LocationForm = ({ sethasSetLocation, locationData, setLocationData }) => {
     }
   }, [latitude, longitude]);
 
-  // Set the input value to the stored address when the component mounts or updates
   useEffect(() => {
     if (address) {
       inputRef.current.value = address;
@@ -48,8 +49,11 @@ const LocationForm = ({ sethasSetLocation, locationData, setLocationData }) => {
           } else {
             try {
               const fullAddress = await reverseGeocode(latitude, longitude);
+              setValue("address", fullAddress);
+              setValue("latitude", latitude);
+              setValue("longitude", longitude);
               setLocationData({ address: fullAddress, latitude, longitude });
-              sethasSetLocation(true);
+              setHasSetLocation(true);
             } catch (error) {
               console.error("Reverse geocoding failed:", error);
               toast.error("Failed to get address for your location.");
@@ -82,12 +86,6 @@ const LocationForm = ({ sethasSetLocation, locationData, setLocationData }) => {
 
   const fetchPredictions = async (input) => {
     const service = new google.maps.places.AutocompleteService();
-
-    const bounds = new google.maps.LatLngBounds(
-      new google.maps.LatLng(baguioBounds.south, baguioBounds.west),
-      new google.maps.LatLng(baguioBounds.north, baguioBounds.east)
-    );
-
     service.getPlacePredictions(
       {
         input,
@@ -140,14 +138,16 @@ const LocationForm = ({ sethasSetLocation, locationData, setLocationData }) => {
         }
 
         const combinedAddress = `${placeName}, ${fullAddress}`;
-
         setLocationData({
           address: combinedAddress,
           latitude: lat,
           longitude: lng,
         });
         updateMap(lat, lng);
-        sethasSetLocation(true);
+        setValue("address", combinedAddress);
+        setValue("latitude", lat);
+        setValue("longitude", lng);
+        setHasSetLocation(true);
         setPredictions([]);
       }
     });
@@ -181,7 +181,10 @@ const LocationForm = ({ sethasSetLocation, locationData, setLocationData }) => {
 
           setLocationData({ address: fullAddress, latitude: lat, longitude: lng });
           updateMap(lat, lng);
-          sethasSetLocation(true);
+          setValue("address", fullAddress);
+          setValue("latitude", lat);
+          setValue("longitude", lng);
+          setHasSetLocation(true);
         })
         .catch((error) => {
           console.error("Failed to reverse geocode:", error);
@@ -234,7 +237,6 @@ const LocationForm = ({ sethasSetLocation, locationData, setLocationData }) => {
           </Button>
         </div>
 
-        {/* Predictions dropdown */}
         {predictions.length > 0 && (
           <ul className="absolute bg-white border rounded-md text-sm max-h-60 overflow-y-auto z-50 mt-12">
             {predictions.map((prediction) => (
@@ -257,7 +259,6 @@ const LocationForm = ({ sethasSetLocation, locationData, setLocationData }) => {
         )}
       </div>
 
-      {/* Div to show lat, lng, and address */}
       {locationData.latitude && locationData.longitude && (
         <div className="absolute bottom-4 left-4 right-4 p-2 bg-white border rounded-md shadow-md text-xs font-normal max-w-xs">
           <div>

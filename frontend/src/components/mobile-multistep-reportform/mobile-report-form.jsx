@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { useForm, FormProvider } from 'react-hook-form';
-import LocationForm from './forms/location-form';
-import InfraTypeForm from './forms/infratype-form';
-import DetailsForm from './forms/details-form';
+import React, { useState } from "react";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import LocationForm from "./forms/location-form";
+import InfraTypeForm from "./forms/infratype-form";
+import DetailsForm from "./forms/details-form";
 import {
   Sheet,
   SheetContent,
@@ -10,33 +12,44 @@ import {
   SheetTitle,
   SheetDescription,
   SheetClose,
-} from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
+// Define the validation schema using Zod
+const detailsSchema = z.object({
+  fullName: z.string().min(1, "Full Name is required."),
+  contactNumber: z.string().min(1, "Contact Number is required."),
+  description: z.string().min(1, "Description is required."),
+  email: z.string().email("Invalid email address.").optional(),
+  file: z
+    .any()
+    .refine((files) => files?.length == 1, "Image is required.")
+});
 
 const MultiStepForm = ({ open, onClose }) => {
   const methods = useForm({
     defaultValues: {
-      address: '',
-      latitude: '',
-      longitude: '',
-      infraType: '',
-      fullName: '',
-      contactNumber: '',
-      description: '',
-      email: '',
-      file: null,
+      address: "",
+      latitude: "",
+      longitude: "",
+      infraType: "",
+      fullName: "",
+      contactNumber: "",
+      description: "",
+      file: "",
     },
+    resolver: zodResolver(detailsSchema), // Integrate Zod validation
   });
 
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(3);
   const [hasSetLocation, setHasSetLocation] = useState(false);
   const [locationData, setLocationData] = useState({
-    address: '',
-    latitude: '',
-    longitude: '',
+    address: "",
+    latitude: "",
+    longitude: "",
   });
-  const [infraType, setInfraType] = useState('');
+  const [infraType, setInfraType] = useState("");
 
   const handleNextStep = () => {
     if (currentStep === 1 && !hasSetLocation) {
@@ -50,20 +63,33 @@ const MultiStepForm = ({ open, onClose }) => {
     setCurrentStep((prevStep) => prevStep - 1);
   };
 
+  const onSubmit = (data) => {
+    const submitData = {
+      address: data.address,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      infraType: infraType,
+      fullName: data.fullName,
+      contactNumber: data.contactNumber,
+      description: data.description,
+      file: data.file,
+    };
+    console.log("Submitting report:", submitData);
+    handleClose();
+    toast.success("Report submitted successfully!");
+  };
+
   const handleClose = () => {
     onClose();
     setCurrentStep(1);
     methods.reset();
     setHasSetLocation(false);
-    setLocationData({ address: '', latitude: '', longitude: '' });
-    setInfraType('');
+    setLocationData({ address: "", latitude: "", longitude: "" });
+    setInfraType("");
   };
 
   return (
-    <Sheet 
-      open={open} 
-      onOpenChange={handleClose}
-    >
+    <Sheet open={open} onOpenChange={handleClose}>
       <FormProvider {...methods}>
         <SheetContent className="p-5 rounded-t-xl" side="bottom">
           <SheetHeader className="mt-2 px-0">
@@ -73,17 +99,19 @@ const MultiStepForm = ({ open, onClose }) => {
               {currentStep === 3 && "Provide Report Details"}
             </SheetTitle>
             <SheetDescription className="mb-2">
-              {currentStep === 1 && "Please search for a landmark or use your current location."}
-              {currentStep === 2 && "Select the appropriate type of infrastructure."}
+              {currentStep === 1 &&
+                "Please search for a landmark or use your current location."}
+              {currentStep === 2 &&
+                "Select the appropriate type of infrastructure."}
               {currentStep === 3 && "Answer the required fields."}
             </SheetDescription>
             <SheetClose onClick={handleClose} />
           </SheetHeader>
 
           {currentStep === 1 && (
-            <LocationForm 
-              sethasSetLocation={setHasSetLocation} 
-              locationData={locationData} 
+            <LocationForm
+              setHasSetLocation={setHasSetLocation}
+              locationData={locationData}
               setLocationData={setLocationData}
             />
           )}
@@ -98,16 +126,17 @@ const MultiStepForm = ({ open, onClose }) => {
           {currentStep === 3 && (
             <DetailsForm
               onClose={handleClose}
-              onSubmit={methods.handleSubmit((data) => {
-                console.log("Final Submission Data:", data);
-                handleClose();
-              })}
+              onSubmit={methods.handleSubmit(onSubmit)}
             />
           )}
 
           <div className="flex justify-between mt-4">
             {currentStep > 1 && (
-              <Button variant="default" type="button" onClick={handlePreviousStep}>
+              <Button
+                variant="default"
+                type="button"
+                onClick={handlePreviousStep}
+              >
                 Back
               </Button>
             )}
@@ -125,10 +154,7 @@ const MultiStepForm = ({ open, onClose }) => {
               <Button
                 variant="default"
                 type="button"
-                onClick={methods.handleSubmit((data) => {
-                  console.log("Submitting report:", data);
-                  handleClose();
-                })}
+                onClick={methods.handleSubmit(onSubmit)}
               >
                 Submit
               </Button>
