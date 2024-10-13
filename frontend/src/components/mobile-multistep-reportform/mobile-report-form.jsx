@@ -5,14 +5,7 @@ import { z } from "zod";
 import LocationForm from "./forms/location-form";
 import InfraTypeForm from "./forms/infratype-form";
 import DetailsForm from "./forms/details-form";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetClose,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -22,9 +15,7 @@ const detailsSchema = z.object({
   contactNumber: z.string().min(1, "Contact Number is required."),
   description: z.string().min(1, "Description is required."),
   email: z.string().email("Invalid email address.").optional(),
-  file: z
-    .any()
-    .refine((files) => files?.length == 1, "Image is required.")
+  file: z.any(), // Handle file uploads if necessary
 });
 
 const MultiStepForm = ({ open, onClose }) => {
@@ -39,16 +30,12 @@ const MultiStepForm = ({ open, onClose }) => {
       description: "",
       file: "",
     },
-    resolver: zodResolver(detailsSchema), // Integrate Zod validation
+    resolver: zodResolver(detailsSchema),
   });
 
-  const [currentStep, setCurrentStep] = useState(3);
+  const [currentStep, setCurrentStep] = useState(1);
   const [hasSetLocation, setHasSetLocation] = useState(false);
-  const [locationData, setLocationData] = useState({
-    address: "",
-    latitude: "",
-    longitude: "",
-  });
+  const [locationData, setLocationData] = useState({ address: "", latitude: "", longitude: "" });
   const [infraType, setInfraType] = useState("");
 
   const handleNextStep = () => {
@@ -65,9 +52,9 @@ const MultiStepForm = ({ open, onClose }) => {
 
   const onSubmit = (data) => {
     const submitData = {
-      address: data.address,
-      latitude: data.latitude,
-      longitude: data.longitude,
+      address: locationData.address,
+      latitude: locationData.latitude,
+      longitude: locationData.longitude,
       infraType: infraType,
       fullName: data.fullName,
       contactNumber: data.contactNumber,
@@ -99,10 +86,8 @@ const MultiStepForm = ({ open, onClose }) => {
               {currentStep === 3 && "Provide Report Details"}
             </SheetTitle>
             <SheetDescription className="mb-2">
-              {currentStep === 1 &&
-                "Please search for a landmark or use your current location."}
-              {currentStep === 2 &&
-                "Select the appropriate type of infrastructure."}
+              {currentStep === 1 && "Please search for a landmark or use your current location."}
+              {currentStep === 2 && "Select the appropriate type of infrastructure."}
               {currentStep === 3 && "Answer the required fields."}
             </SheetDescription>
             <SheetClose onClick={handleClose} />
@@ -119,24 +104,17 @@ const MultiStepForm = ({ open, onClose }) => {
             <InfraTypeForm
               infraType={infraType}
               setInfraType={setInfraType}
-              onClose={handleClose}
-              onNext={handleNextStep}
             />
           )}
           {currentStep === 3 && (
             <DetailsForm
-              onClose={handleClose}
               onSubmit={methods.handleSubmit(onSubmit)}
             />
           )}
 
           <div className="flex justify-between mt-4">
             {currentStep > 1 && (
-              <Button
-                variant="default"
-                type="button"
-                onClick={handlePreviousStep}
-              >
+              <Button variant="default" type="button" onClick={handlePreviousStep}>
                 Back
               </Button>
             )}
@@ -145,17 +123,16 @@ const MultiStepForm = ({ open, onClose }) => {
                 variant="default"
                 type="button"
                 onClick={handleNextStep}
-                disabled={currentStep === 1 && !hasSetLocation}
+                disabled={
+                  (currentStep === 1 && !hasSetLocation) ||
+                  (currentStep === 2 && !infraType) // Disable if no infraType selected
+                }
               >
                 Next
               </Button>
             )}
             {currentStep === 3 && (
-              <Button
-                variant="default"
-                type="button"
-                onClick={methods.handleSubmit(onSubmit)}
-              >
+              <Button variant="default" type="button" onClick={methods.handleSubmit(onSubmit)}>
                 Submit
               </Button>
             )}

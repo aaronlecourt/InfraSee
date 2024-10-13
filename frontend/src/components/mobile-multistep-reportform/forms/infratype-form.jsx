@@ -11,11 +11,11 @@ const InfraTypeForm = ({ infraType, setInfraType }) => {
   const { setValue } = useFormContext();
 
   const iconMapping = {
-    "Power and Energy": <Zap size={20} className='text-muted-foreground'/>,
-    "Water and Waste": <Droplet size={20} className='text-muted-foreground'/>,
-    "Transportation": <Car size={20} className='text-muted-foreground'/>,
-    "Telecommunications": <Wifi size={20} className='text-muted-foreground'/>,
-    "Commercial": <Building size={20} className='text-muted-foreground'/>,
+    "Power and Energy": <Zap size={20} className='text-muted-foreground' />,
+    "Water and Waste": <Droplet size={20} className='text-muted-foreground' />,
+    "Transportation": <Car size={20} className='text-muted-foreground' />,
+    "Telecommunications": <Wifi size={20} className='text-muted-foreground' />,
+    "Commercial": <Building size={20} className='text-muted-foreground' />,
   };
 
   const descriptionMapping = {

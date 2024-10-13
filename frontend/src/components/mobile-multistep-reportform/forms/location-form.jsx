@@ -1,19 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { LocateFixed } from "lucide-react";
+import { LocateFixed, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { MapPin } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 
-const LocationForm = ({ setHasSetLocation = () => {}, locationData, setLocationData }) => {
-  const { address, latitude, longitude } = locationData;
-  const [predictions, setPredictions] = useState([]);
+const LocationForm = ({ setHasSetLocation, locationData, setLocationData }) => {
   const { setValue } = useFormContext();
   const inputRef = useRef(null);
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const markerRef = useRef(null);
+  const [predictions, setPredictions] = useState([]);
 
   const baguioBounds = {
     north: 16.4450,
@@ -27,16 +25,10 @@ const LocationForm = ({ setHasSetLocation = () => {}, locationData, setLocationD
   }, []);
 
   useEffect(() => {
-    if (latitude && longitude) {
-      updateMap(latitude, longitude);
+    if (locationData.latitude && locationData.longitude) {
+      updateMap(locationData.latitude, locationData.longitude);
     }
-  }, [latitude, longitude]);
-
-  useEffect(() => {
-    if (address) {
-      inputRef.current.value = address;
-    }
-  }, [address]);
+  }, [locationData]);
 
   const handleCurrentLocationClick = () => {
     if (navigator.geolocation) {
@@ -113,7 +105,6 @@ const LocationForm = ({ setHasSetLocation = () => {}, locationData, setLocationD
     if (value) {
       fetchPredictions(value);
     } else {
-      clearLocation();
       setPredictions([]);
     }
   };
@@ -203,15 +194,8 @@ const LocationForm = ({ setHasSetLocation = () => {}, locationData, setLocationD
       markerRef.current = new google.maps.Marker({
         position: { lat, lng },
         map: mapInstance.current,
-        title: address,
+        title: locationData.address,
       });
-    }
-  };
-
-  const clearLocation = () => {
-    setLocationData({ address: "Current Location", latitude: null, longitude: null });
-    if (markerRef.current) {
-      markerRef.current.setMap(null);
     }
   };
 
