@@ -75,7 +75,7 @@ const getModeratorArchivedReports = asyncHandler(async (req, res) => {
       throw new Error("Access denied: User is not a moderator.");
     }
 
-    // Fetch reports assigned to the moderator
+    // Fetch archived reports assigned to the moderator
     const reports = await Report.find({
       report_mod: userId,
       is_archived: true,
@@ -83,14 +83,14 @@ const getModeratorArchivedReports = asyncHandler(async (req, res) => {
       .populate("report_mod", "name")
       .populate("report_status", "stat_name");
 
-    // Check if reports were found
+
     if (!reports || reports.length === 0) {
-      return res.status(404).json({ message: "No reports found for this moderator." });
+      return res.status(200).json([]);
     }
 
-    res.json(reports);
+    res.json(reports); 
   } catch (error) {
-    console.error(`Error fetching moderator reports: ${error.message}`);
+    console.error(`Error fetching moderator archived reports: ${error.message}`);
 
     if (error.name === "CastError") {
       res.status(400).json({ message: "Invalid report or user ID format." });
@@ -101,6 +101,7 @@ const getModeratorArchivedReports = asyncHandler(async (req, res) => {
     }
   }
 });
+
 
 
 const archiveReport = asyncHandler(async (req, res) => {
