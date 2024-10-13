@@ -14,10 +14,10 @@ const LocationForm = ({ setHasSetLocation, locationData, setLocationData }) => {
   const [predictions, setPredictions] = useState([]);
 
   const baguioBounds = {
-    north: 16.4450,
-    south: 16.3250,
-    east: 120.6340,
-    west: 120.4650,
+    north: 16.445,
+    south: 16.325,
+    east: 120.634,
+    west: 120.465,
   };
 
   useEffect(() => {
@@ -27,8 +27,12 @@ const LocationForm = ({ setHasSetLocation, locationData, setLocationData }) => {
   useEffect(() => {
     if (locationData.latitude && locationData.longitude) {
       updateMap(locationData.latitude, locationData.longitude);
+      setValue("address", locationData.address); // Set the address in the form
+      if (inputRef.current) {
+        inputRef.current.value = locationData.address; // Directly set the input value
+      }
     }
-  }, [locationData]);
+  }, [locationData, setValue]);
 
   const handleCurrentLocationClick = () => {
     if (navigator.geolocation) {
@@ -37,7 +41,9 @@ const LocationForm = ({ setHasSetLocation, locationData, setLocationData }) => {
           const { latitude, longitude, accuracy } = position.coords;
 
           if (accuracy > 100) {
-            toast.error("Location accuracy is too low. Please check your device settings.");
+            toast.error(
+              "Location accuracy is too low. Please check your device settings."
+            );
           } else {
             try {
               const fullAddress = await reverseGeocode(latitude, longitude);
@@ -54,7 +60,9 @@ const LocationForm = ({ setHasSetLocation, locationData, setLocationData }) => {
         },
         (error) => {
           console.error("Geolocation error:", error);
-          toast.error("Unable to retrieve your location. Please check your device settings.");
+          toast.error(
+            "Unable to retrieve your location. Please check your device settings."
+          );
         }
       );
     } else {
@@ -111,7 +119,9 @@ const LocationForm = ({ setHasSetLocation, locationData, setLocationData }) => {
 
   const selectPrediction = (prediction) => {
     const { place_id } = prediction;
-    const service = new google.maps.places.PlacesService(document.createElement("div"));
+    const service = new google.maps.places.PlacesService(
+      document.createElement("div")
+    );
     service.getDetails({ placeId: place_id }, (place, status) => {
       if (status === google.maps.places.PlacesServiceStatus.OK) {
         const { lat, lng } = place.geometry.location.toJSON();
@@ -170,9 +180,18 @@ const LocationForm = ({ setHasSetLocation, locationData, setLocationData }) => {
             return;
           }
 
-          setLocationData({ address: fullAddress, latitude: lat, longitude: lng });
+          setLocationData({
+            address: fullAddress,
+            latitude: lat,
+            longitude: lng,
+          });
           updateMap(lat, lng);
+
+          // Update the input field with the full address
           setValue("address", fullAddress);
+          if (inputRef.current) {
+            inputRef.current.value = fullAddress; // Directly update the input field value
+          }
           setValue("latitude", lat);
           setValue("longitude", lng);
           setHasSetLocation(true);

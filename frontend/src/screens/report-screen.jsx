@@ -8,7 +8,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { ReportCounter } from "@/components/elements/report-counter";
@@ -108,22 +108,19 @@ function ReportScreen() {
             </div>
           </div>
 
-          <div className="absolute z-50 top-56 left-5 right-5 rounded-lg max-w-xs bg-white p-3 border">
-            <h1 className="text-base font-bold">Make a Report</h1>
-            <p className="text-xs text-muted-foreground font-medium mb-3 leading-4">
-              Click the button below to start your report.
-            </p>
+          <div className="absolute z-50 bottom-5 left-5 right-5 rounded-lg border gap-y-3 flex flex-col">
             <Button
-              className="w-full h-auto"
+              className="flex gap-x-2 border sm:max-w-xs"
               onClick={handleOpenMultiStepForm} // Open the MultiStepForm
             >
-              Open Multi-Step Report Form
+              <Plus size={15}/>File Report
             </Button>
-          </div>
-
-          <div className="absolute z-50 bottom-5 left-5 right-5">
             <ReportCounter data={data} />
           </div>
+
+          {/* <div className="absolute z-50 bottom-5 left-5 right-5">
+            <ReportCounter data={data} />
+          </div> */}
 
           {/* MultiStepForm instance */}
           {isMultiStepFormOpen && (

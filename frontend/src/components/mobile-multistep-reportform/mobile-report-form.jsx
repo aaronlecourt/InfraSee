@@ -16,19 +16,34 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-// Define the validation schema using Zod
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+
 const detailsSchema = z.object({
-    fullName: z.string().min(1, "Full Name is required."),
-    contactNumber: z.string().min(1, "Contact Number is required."),
-    description: z.string().min(1, "Description is required."),
-    email: z.string().email("Invalid email address.").optional(),
-    file: z
-      .instanceof(File, { message: "File is required." })
-      .refine((file) => file.type === "image/png" || file.type === "image/jpeg", {
-        message: "Only PNG and JPG files are allowed.",
-      }),
-  });
-  
+  fullName: z
+    .string()
+    .min(1, "Full Name is required.")
+    .min(5, "Full Name is too short.")
+    .max(50, "Full Name must not exceed 50 characters."),
+  contactNumber: z
+    .string()
+    .min(1, "Contact Number is required.")
+    .length(11, "Contact Number must be 11 digits long.")
+    .regex(/^09\d{9}$/, "Contact Number must start with 09."),
+  description: z
+    .string()
+    .min(1, "Description is required.")
+    .min(25, "Description too short.")
+    .max(150, "Description must not exceed 150 characters."),
+  file: z
+    .instanceof(File, { message: "File is required." })
+    .refine((file) => file.size <= MAX_FILE_SIZE, {
+      message: "File size must not exceed 2 MB.",
+    })
+    .refine((file) => file.type === "image/png" || file.type === "image/jpeg", {
+      message: "Only PNG and JPG files are allowed.",
+    }),
+  fileUrl: z.string().url(),
+});
 
 const MultiStepForm = ({ open, onClose }) => {
   const methods = useForm({
@@ -41,11 +56,13 @@ const MultiStepForm = ({ open, onClose }) => {
       contactNumber: "",
       description: "",
       file: null,
+      fileUrl: "",
+      status: "66d25911baae7f52f54793f6",
     },
     resolver: zodResolver(detailsSchema),
   });
 
-  const [currentStep, setCurrentStep] = useState(3);
+  const [currentStep, setCurrentStep] = useState(1);
   const [hasSetLocation, setHasSetLocation] = useState(false);
   const [locationData, setLocationData] = useState({
     address: "",
@@ -53,10 +70,15 @@ const MultiStepForm = ({ open, onClose }) => {
     longitude: "",
   });
   const [infraType, setInfraType] = useState("");
+  const [imagePreview, setImagePreview] = useState(null);
 
   const handleNextStep = () => {
     if (currentStep === 1 && !hasSetLocation) {
       toast.error("Please set a location before proceeding.");
+      return;
+    }
+    if (currentStep === 2 && !infraType) {
+      toast.error("Please select an infrastructure type.");
       return;
     }
     setCurrentStep((prevStep) => prevStep + 1);
@@ -67,6 +89,11 @@ const MultiStepForm = ({ open, onClose }) => {
   };
 
   const onSubmit = (data) => {
+    if (!data.file) {
+      toast.error("Please upload a file before submitting.");
+      return;
+    }
+
     const submitData = {
       address: locationData.address,
       latitude: locationData.latitude,
@@ -76,10 +103,13 @@ const MultiStepForm = ({ open, onClose }) => {
       contactNumber: data.contactNumber,
       description: data.description,
       file: data.file,
+      fileUrl: data.fileUrl,
+      status: "66d25911baae7f52f54793f6",
     };
+
     console.log("Submitting report:", submitData);
     handleClose();
-    toast.success("Report submitted successfully!");
+    toast.success("Report submitted successfully!", { duration: 3000 });
   };
 
   const handleClose = () => {
@@ -97,16 +127,18 @@ const MultiStepForm = ({ open, onClose }) => {
         <SheetContent className="p-5 rounded-t-xl" side="bottom">
           <SheetHeader className="mt-2 px-0">
             <SheetTitle className="font-bold">
-              {currentStep === 1 && "Set Location"}
-              {currentStep === 2 && "Select Infrastructure Type"}
-              {currentStep === 3 && "Provide Report Details"}
+              {currentStep === 1
+                ? "Set Location"
+                : currentStep === 2
+                ? "Select Infrastructure Type"
+                : "Provide Report Details"}
             </SheetTitle>
             <SheetDescription className="mb-2">
-              {currentStep === 1 &&
-                "Please search for a landmark or use your current location."}
-              {currentStep === 2 &&
-                "Select the appropriate type of infrastructure."}
-              {currentStep === 3 && "Answer the required fields."}
+              {currentStep === 1
+                ? "Please search for a landmark or use your current location."
+                : currentStep === 2
+                ? "Select the appropriate type of infrastructure."
+                : "Answer the required fields."}
             </SheetDescription>
             <SheetClose onClick={handleClose} />
           </SheetHeader>
@@ -122,7 +154,11 @@ const MultiStepForm = ({ open, onClose }) => {
             <InfraTypeForm infraType={infraType} setInfraType={setInfraType} />
           )}
           {currentStep === 3 && (
-            <DetailsForm onSubmit={methods.handleSubmit(onSubmit)} />
+            <DetailsForm
+              onSubmit={methods.handleSubmit(onSubmit)}
+              imagePreview={imagePreview}
+              setImagePreview={setImagePreview}
+            />
           )}
 
           <div className="flex justify-between mt-4">
@@ -142,8 +178,8 @@ const MultiStepForm = ({ open, onClose }) => {
                 onClick={handleNextStep}
                 disabled={
                   (currentStep === 1 && !hasSetLocation) ||
-                  (currentStep === 2 && !infraType) // Disable if no infraType selected
-                }
+                  (currentStep === 2 && !infraType)
+                } // Disable Next if no location or infraType is selected
               >
                 Next
               </Button>
