@@ -194,7 +194,8 @@ const ModeratorDashboardScreen = () => {
               ) : (
                 <Overview
                   goToUnassignedTab={goToUnassignedTab}
-                  data={reports.filter(
+                  dataReports={reports}
+                  unassignedData={reports.filter(
                     (report) => report.report_status.stat_name === "Unassigned"
                   )}
                   userInfo={userInfo}

@@ -14,14 +14,14 @@ import {
 } from "@/components/ui/card";
 import Maps from "./maps";
 
-export function Overview({ goToUnassignedTab, data, userInfo }) {
+export function Overview({ goToUnassignedTab, dataReports, unassignedData, userInfo }) {
   const loggedModerator_id = userInfo._id;
   return (
     <div className="h-full flex flex-col">
-      <ReportCounter data={data} />
+      <ReportCounter data={dataReports} />
       <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 h-full">
         <div className="border rounded-md col-span-1 sm:col-span-2 min-h-[30rem]">
-          <Maps userInfo={loggedModerator_id} data={data} />
+          <Maps userInfo={loggedModerator_id} data={dataReports} />
         </div>
         <div className="col-span-1 sm:col-span-1">
           <Card className="flex flex-col h-full min-h-[30rem]">
@@ -36,7 +36,7 @@ export function Overview({ goToUnassignedTab, data, userInfo }) {
 
             <CardContent className="flex-1 w-full overflow-hidden">
               <ScrollArea className="h-full px-5">
-                <ReportList data={data} />
+                <ReportList data={unassignedData} />
               </ScrollArea>
             </CardContent>
 
