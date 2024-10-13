@@ -5,18 +5,30 @@ import { z } from "zod";
 import LocationForm from "./forms/location-form";
 import InfraTypeForm from "./forms/infratype-form";
 import DetailsForm from "./forms/details-form";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetClose,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 // Define the validation schema using Zod
 const detailsSchema = z.object({
-  fullName: z.string().min(1, "Full Name is required."),
-  contactNumber: z.string().min(1, "Contact Number is required."),
-  description: z.string().min(1, "Description is required."),
-  email: z.string().email("Invalid email address.").optional(),
-  file: z.any(), // Handle file uploads if necessary
-});
+    fullName: z.string().min(1, "Full Name is required."),
+    contactNumber: z.string().min(1, "Contact Number is required."),
+    description: z.string().min(1, "Description is required."),
+    email: z.string().email("Invalid email address.").optional(),
+    file: z
+      .instanceof(File, { message: "File is required." })
+      .refine((file) => file.type === "image/png" || file.type === "image/jpeg", {
+        message: "Only PNG and JPG files are allowed.",
+      }),
+  });
+  
 
 const MultiStepForm = ({ open, onClose }) => {
   const methods = useForm({
@@ -28,14 +40,18 @@ const MultiStepForm = ({ open, onClose }) => {
       fullName: "",
       contactNumber: "",
       description: "",
-      file: "",
+      file: null,
     },
     resolver: zodResolver(detailsSchema),
   });
 
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(3);
   const [hasSetLocation, setHasSetLocation] = useState(false);
-  const [locationData, setLocationData] = useState({ address: "", latitude: "", longitude: "" });
+  const [locationData, setLocationData] = useState({
+    address: "",
+    latitude: "",
+    longitude: "",
+  });
   const [infraType, setInfraType] = useState("");
 
   const handleNextStep = () => {
@@ -86,8 +102,10 @@ const MultiStepForm = ({ open, onClose }) => {
               {currentStep === 3 && "Provide Report Details"}
             </SheetTitle>
             <SheetDescription className="mb-2">
-              {currentStep === 1 && "Please search for a landmark or use your current location."}
-              {currentStep === 2 && "Select the appropriate type of infrastructure."}
+              {currentStep === 1 &&
+                "Please search for a landmark or use your current location."}
+              {currentStep === 2 &&
+                "Select the appropriate type of infrastructure."}
               {currentStep === 3 && "Answer the required fields."}
             </SheetDescription>
             <SheetClose onClick={handleClose} />
@@ -101,20 +119,19 @@ const MultiStepForm = ({ open, onClose }) => {
             />
           )}
           {currentStep === 2 && (
-            <InfraTypeForm
-              infraType={infraType}
-              setInfraType={setInfraType}
-            />
+            <InfraTypeForm infraType={infraType} setInfraType={setInfraType} />
           )}
           {currentStep === 3 && (
-            <DetailsForm
-              onSubmit={methods.handleSubmit(onSubmit)}
-            />
+            <DetailsForm onSubmit={methods.handleSubmit(onSubmit)} />
           )}
 
           <div className="flex justify-between mt-4">
             {currentStep > 1 && (
-              <Button variant="default" type="button" onClick={handlePreviousStep}>
+              <Button
+                variant="default"
+                type="button"
+                onClick={handlePreviousStep}
+              >
                 Back
               </Button>
             )}
@@ -132,7 +149,11 @@ const MultiStepForm = ({ open, onClose }) => {
               </Button>
             )}
             {currentStep === 3 && (
-              <Button variant="default" type="button" onClick={methods.handleSubmit(onSubmit)}>
+              <Button
+                variant="default"
+                type="button"
+                onClick={methods.handleSubmit(onSubmit)}
+              >
                 Submit
               </Button>
             )}

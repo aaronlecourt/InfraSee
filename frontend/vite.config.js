@@ -24,6 +24,10 @@ export default defineConfig({
     sourcemap: false, 
   },
   optimizeDeps: {
-    include: ["@googlemaps/markerclusterer"],
-  },
+    include: [
+      "@googlemaps/markerclusterer",
+      "@cloudinary/url-gen",
+      "react-dropzone"
+    ],
+  }  
 });
