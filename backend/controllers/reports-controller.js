@@ -15,9 +15,10 @@ const createReport = asyncHandler(async (req, res) => {
       report_img,
       report_status,
       report_mod,
+      report_time_resolved
     } = req.body;
 
-    if (!report_address || !latitude || !longitude || !infraType || !report_by || !report_contactNum || !report_desc || !report_img) {
+    if (!report_address || !latitude || !longitude || !infraType || !report_by || !report_contactNum || !report_desc || !report_img || !report_status) {
       res.status(400);
       throw new Error("All fields are required.");
     }
@@ -33,11 +34,17 @@ const createReport = asyncHandler(async (req, res) => {
       report_img,
       report_status,
       report_mod,
+      report_time_resolved,
     });
 
     const savedReport = await report.save();
 
-    res.status(201).json({ message: "Report created successfully", report: savedReport });
+    // Populate report_status after saving
+    const populatedReport = await Report.findById(savedReport._id)
+      .populate("report_mod", "name")
+      .populate("report_status", "stat_name");
+
+    res.status(201).json({ message: "Report created successfully", report: populatedReport });
   } catch (error) {
     console.error(`Error creating report: ${error.message}`);
 
@@ -48,7 +55,6 @@ const createReport = asyncHandler(async (req, res) => {
     }
   }
 });
-
 
 const getReports = asyncHandler(async (req, res) => {
   try {

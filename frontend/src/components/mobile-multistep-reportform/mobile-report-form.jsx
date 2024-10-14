@@ -53,7 +53,8 @@ const MultiStepForm = ({ open, onClose }) => {
       report_desc: "",
       report_img: "",
       report_status: "66d25911baae7f52f54793f6",
-      report_mod: undefined,
+      report_mod: null,
+      report_time_resolved: null,
     },
     resolver: zodResolver(detailsSchema),
   });
@@ -101,7 +102,8 @@ const MultiStepForm = ({ open, onClose }) => {
       report_desc: data.report_desc,
       report_img: data.report_img,
       report_status: "66d25911baae7f52f54793f6",
-      report_mod: undefined,
+      report_mod: null,
+      report_time_resolved: null,
     };
 
     try {
