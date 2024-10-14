@@ -27,6 +27,10 @@ const fetchReports = async () => {
   return response.data;
 };
 
+const fetchUnassigned = async () => {
+  const response = await axios.get("/api/reports/unassigned");
+  return response.data;
+};
 const fetchArchives = async () => {
   const response = await axios.get("/api/reports/moderator/archived/reports");
   return response.data;
@@ -37,9 +41,10 @@ const ModeratorDashboardScreen = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [reports, setReports] = useState([]);
   const [archives, setArchives] = useState([]);
+  const [unassigned, setUnassigned] = useState([]);
   const [loadingReports, setLoadingReports] = useState(true);
   const [loadingArchives, setLoadingArchives] = useState(true);
-
+  const [loadingUnassigned, setLoadingUnassigned] = useState(true);
 
   // Fetch data
   const loadReports = async () => {
@@ -51,6 +56,18 @@ const ModeratorDashboardScreen = () => {
       console.error("Failed to fetch reports", error);
     } finally {
       setLoadingReports(false);
+    }
+  };
+
+  const loadUnassigned = async () => {
+    setLoadingUnassigned(true);
+    try {
+      const data = await fetchUnassigned();
+      setUnassigned(data);
+    } catch (error) {
+      console.error("Failed to fetch unassigned reports", error);
+    } finally {
+      setLoadingUnassigned(false);
     }
   };
 
@@ -70,9 +87,8 @@ const ModeratorDashboardScreen = () => {
   useEffect(() => {
     loadReports();
     loadArchives();
+    loadUnassigned();
   }, []);
-
-  
 
   const goToReportsTab = () => {
     setActiveTab("reports");
@@ -84,7 +100,7 @@ const ModeratorDashboardScreen = () => {
         <Helmet>
           <title>{"InfraSee | Moderator Dashboard"}</title>
         </Helmet>
-        <ModNavbar userInfo={userInfo}/>
+        <ModNavbar userInfo={userInfo} />
         <main className="p-4">
           <h1 className="text-3xl mb-1">Dashboard</h1>
 
@@ -121,7 +137,7 @@ const ModeratorDashboardScreen = () => {
             <TabsContent value="overview" className="h-[calc(100vh-11rem)]">
               {loadingReports ? (
                 <div className="flex justify-center items-center h-full">
-                  <Spinner size="large"/>
+                  <Spinner size="large" />
                 </div>
               ) : (
                 <Overview

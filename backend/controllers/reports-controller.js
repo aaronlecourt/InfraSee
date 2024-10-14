@@ -15,10 +15,20 @@ const createReport = asyncHandler(async (req, res) => {
       report_img,
       report_status,
       report_mod,
-      report_time_resolved
+      report_time_resolved,
     } = req.body;
 
-    if (!report_address || !latitude || !longitude || !infraType || !report_by || !report_contactNum || !report_desc || !report_img || !report_status) {
+    if (
+      !report_address ||
+      !latitude ||
+      !longitude ||
+      !infraType ||
+      !report_by ||
+      !report_contactNum ||
+      !report_desc ||
+      !report_img ||
+      !report_status
+    ) {
       res.status(400);
       throw new Error("All fields are required.");
     }
@@ -44,14 +54,53 @@ const createReport = asyncHandler(async (req, res) => {
       .populate("report_mod", "name")
       .populate("report_status", "stat_name");
 
-    res.status(201).json({ message: "Report created successfully", report: populatedReport });
+    res.status(201).json({
+      message: "Report created successfully",
+      report: populatedReport,
+    });
   } catch (error) {
     console.error(`Error creating report: ${error.message}`);
 
-    if (error.name === 'ValidationError') {
+    if (error.name === "ValidationError") {
       res.status(422).json({ message: error.message });
     } else {
-      res.status(500).json({ message: "Server error. Please try again later." });
+      res
+        .status(500)
+        .json({ message: "Server error. Please try again later." });
+    }
+  }
+});
+
+const getUnassignedReports = asyncHandler(async (req, res) => {
+  try {
+    // Fetch reports that are not assigned to any moderator and are not archived
+    const reports = await Report.find({
+      report_mod: null,
+      is_archived: false,
+    })
+      .populate("report_mod", "name")
+      .populate("report_status", "stat_name");
+
+    // Filter reports to include only those with a status name of "unassigned"
+    const unassignedReports = reports.filter(
+      (report) => report.report_status.stat_name === "Unassigned"
+    );
+
+    // Check if any unassigned reports were found
+    if (unassignedReports.length === 0) {
+      return res.status(404).json({ message: "No unassigned reports found." });
+    }
+
+    res.json(unassignedReports);
+  } catch (error) {
+    console.error(`Error fetching unassigned reports: ${error.message}`);
+
+    if (error.name === "CastError") {
+      res.status(400).json({ message: "Invalid report ID format." });
+    } else {
+      res
+        .status(500)
+        .json({ message: "Server error. Please try again later." });
     }
   }
 });
@@ -95,7 +144,9 @@ const getModeratorReports = asyncHandler(async (req, res) => {
 
     // Check if reports were found
     if (!reports || reports.length === 0) {
-      return res.status(404).json({ message: "No reports found for this moderator." });
+      return res
+        .status(404)
+        .json({ message: "No reports found for this moderator." });
     }
 
     res.json(reports);
@@ -107,11 +158,12 @@ const getModeratorReports = asyncHandler(async (req, res) => {
     } else if (error.name === "ValidationError") {
       res.status(422).json({ message: error.message });
     } else {
-      res.status(500).json({ message: "Server error. Please try again later." });
+      res
+        .status(500)
+        .json({ message: "Server error. Please try again later." });
     }
   }
 });
-
 
 const getModeratorArchivedReports = asyncHandler(async (req, res) => {
   try {
@@ -137,26 +189,27 @@ const getModeratorArchivedReports = asyncHandler(async (req, res) => {
       .populate("report_mod", "name")
       .populate("report_status", "stat_name");
 
-
     if (!reports || reports.length === 0) {
       return res.status(200).json([]);
     }
 
-    res.json(reports); 
+    res.json(reports);
   } catch (error) {
-    console.error(`Error fetching moderator archived reports: ${error.message}`);
+    console.error(
+      `Error fetching moderator archived reports: ${error.message}`
+    );
 
     if (error.name === "CastError") {
       res.status(400).json({ message: "Invalid report or user ID format." });
     } else if (error.name === "ValidationError") {
       res.status(422).json({ message: error.message });
     } else {
-      res.status(500).json({ message: "Server error. Please try again later." });
+      res
+        .status(500)
+        .json({ message: "Server error. Please try again later." });
     }
   }
 });
-
-
 
 const archiveReport = asyncHandler(async (req, res) => {
   try {
@@ -220,14 +273,15 @@ const restoreReport = asyncHandler(async (req, res) => {
   } catch (error) {
     console.error(`Error restoring report: ${error.message}`);
 
-    if (error.name === 'CastError') {
-      res.status(400).json({ message: 'Invalid report ID format.' });
+    if (error.name === "CastError") {
+      res.status(400).json({ message: "Invalid report ID format." });
     } else {
-      res.status(500).json({ message: 'Server error. Please try again later.' });
+      res
+        .status(500)
+        .json({ message: "Server error. Please try again later." });
     }
   }
 });
-
 
 const deleteReport = asyncHandler(async (req, res) => {
   try {
@@ -245,10 +299,12 @@ const deleteReport = asyncHandler(async (req, res) => {
   } catch (error) {
     console.error(`Error deleting report: ${error.message}`);
 
-    if (error.name === 'CastError') {
-      res.status(400).json({ message: 'Invalid report ID format.' });
+    if (error.name === "CastError") {
+      res.status(400).json({ message: "Invalid report ID format." });
     } else {
-      res.status(500).json({ message: 'Server error. Please try again later.' });
+      res
+        .status(500)
+        .json({ message: "Server error. Please try again later." });
     }
   }
 });
@@ -274,23 +330,25 @@ const updateReportStatus = asyncHandler(async (req, res) => {
   } catch (error) {
     console.error(`Error updating report status: ${error.message}`);
 
-    if (error.name === 'CastError') {
-      res.status(400).json({ message: 'Invalid report ID format.' });
+    if (error.name === "CastError") {
+      res.status(400).json({ message: "Invalid report ID format." });
     } else {
-      res.status(500).json({ message: 'Server error. Please try again later.' });
+      res
+        .status(500)
+        .json({ message: "Server error. Please try again later." });
     }
   }
 });
 
-
-export { 
+export {
   createReport,
-  getReports, 
-  getModeratorReports, 
+  getReports,
+  getModeratorReports,
   getModeratorArchivedReports,
-  archiveReport, 
+  archiveReport,
   getArchivedReports,
   restoreReport,
   deleteReport,
   updateReportStatus,
- };
+  getUnassignedReports,
+};
