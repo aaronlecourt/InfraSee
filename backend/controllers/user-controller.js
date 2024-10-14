@@ -65,6 +65,18 @@ const moderatorUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email }).populate('infra_type', 'infra_name');
 
+  if (!user) {
+    res.status(401);
+    throw new Error("Invalid email or password");
+  }
+
+  // Check if the account is deactivated
+  if (user.isDeactivated) {
+    res.status(403);
+    throw new Error("Account is deactivated");
+  }
+
+  // Check if the password matches
   if (user && (await user.matchPassword(password))) {
     if (!user.isModerator) {
       res.status(403);
@@ -87,6 +99,7 @@ const moderatorUser = asyncHandler(async (req, res) => {
     throw new Error("Invalid email or password");
   }
 });
+
 
 
 // @desc    Register a new user
@@ -118,6 +131,7 @@ const registerUser = asyncHandler(async (req, res) => {
     isAdmin,
     isModerator,
     infra_type,
+    isDeactivated: false,
     createdAt: new Date(),
   });
 
@@ -138,6 +152,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error("Invalid user data");
   }
 });
+
 
 
 // @desc    Delete a user

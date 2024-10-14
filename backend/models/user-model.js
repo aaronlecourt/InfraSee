@@ -43,6 +43,10 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isDeactivated: {
+      type: Boolean,
+      default: false,
+    },
     resetPasswordToken: {
       type: String,
       default: null,
@@ -56,6 +60,7 @@ const userSchema = mongoose.Schema(
     timestamps: true,
   }
 );
+
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
