@@ -14,8 +14,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { io } from "socket.io-client";
 import { Spinner } from "@/components/ui/spinner";
-import { Settings, LogOut, RefreshCcw } from "lucide-react";
+import { Settings, LogOut, RefreshCcw, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useDispatch, useSelector } from "react-redux";
@@ -32,6 +33,7 @@ import { columnsModReports } from "@/components/data-table/columns/columnsModRep
 import { columnsModArchives } from "@/components/data-table/columns/columnsModArchives";
 import { Button } from "@/components/ui/button";
 import { SkeletonTable } from "@/components/elements/skeletontable";
+import { Badge } from "@/components/ui/badge";
 const fetchReports = async () => {
   const response = await axios.get("/api/reports/moderator/reports");
   return response.data;
@@ -53,12 +55,27 @@ const ModeratorDashboardScreen = () => {
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
 
+  useEffect(() => {
+    const socket = io("http://localhost:5000");
+
+    socket.on("reportChange", (change) => {
+      console.log("Received report change:", change);
+      loadReports();
+      loadArchives();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   // Fetch data
   const loadReports = async () => {
     setLoadingReports(true);
     try {
       const data = await fetchReports();
       setReports(data);
+      console.log(reports);
     } catch (error) {
       console.error("Failed to fetch reports", error);
     } finally {
@@ -98,10 +115,11 @@ const ModeratorDashboardScreen = () => {
     }
   };
 
-  const goToReportsTab = () => {
-    setActiveTab("reports");
+  const goToUnassignedTab = () => {
+    setActiveTab("unassigned");
   };
 
+  console.log(reports);
   return (
     <HelmetProvider>
       <div>
@@ -115,7 +133,15 @@ const ModeratorDashboardScreen = () => {
           >
             <img src="/infrasee_black.png" alt="Infrasee Logomark" />
           </div>
-          <div className="relative">
+          <div className="relative flex items-center gap-x-5">
+            {/* NOTIFICATIONS, ONLY DISPLAY BADGE WHEN THERE IS NOTIF, THIS 
+            NAVBAR INSTANCE IS SEPARATE FROM THE NAVBAR INSTANCE UNDER SETTINGS PAGE*/}
+            <div className="relative inline-block">
+              <Bell size={23} />
+              <Badge className="absolute top-0 right-0 bg-destructive w-4 h-4 text-center translate-x-1/2 -translate-y-1/2">
+                0
+              </Badge>
+            </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Avatar className="h-8 w-8 hover:ring-4 ring-slate-300 cursor-pointer">
@@ -151,14 +177,15 @@ const ModeratorDashboardScreen = () => {
         </header>
         <main className="p-4">
           <h1 className="text-3xl mb-1">Dashboard</h1>
-
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="flex items-center gap-2">
               <TabsList className="h-auto">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="unassigned">Unassigned</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
-                <TabsTrigger value="archives">Archives</TabsTrigger>
-                <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                {/* Change archive to hidden */}
+                <TabsTrigger value="archives">Hidden Reports</TabsTrigger>
+                {/* <TabsTrigger value="analytics">Analytics</TabsTrigger> */}
               </TabsList>
               {/* Refresh Icon */}
               <TooltipProvider>
@@ -185,13 +212,29 @@ const ModeratorDashboardScreen = () => {
             <TabsContent value="overview" className="h-[calc(100vh-11rem)]">
               {loadingReports ? (
                 <div className="flex justify-center items-center h-full">
-                  <Spinner size="large"/>
+                  <Spinner size="large" />
                 </div>
               ) : (
                 <Overview
-                  goToReportsTab={goToReportsTab}
-                  data={reports}
+                  goToUnassignedTab={goToUnassignedTab}
+                  dataReports={reports}
+                  unassignedData={reports.filter(
+                    (report) => report.report_status.stat_name === "Unassigned"
+                  )}
                   userInfo={userInfo}
+                />
+              )}
+            </TabsContent>
+            <TabsContent value="unassigned" className="h-[calc(100vh-11rem)]">
+              {loadingReports ? (
+                <SkeletonTable columns={columnsModReports} /> // Use the SkeletonTable here
+              ) : (
+                <Reports
+                  data={reports.filter(
+                    (report) => report.report_status.stat_name === "Unassigned"
+                  )}
+                  columns={columnsModReports}
+                  activeTab={activeTab}
                 />
               )}
             </TabsContent>
@@ -200,7 +243,9 @@ const ModeratorDashboardScreen = () => {
                 <SkeletonTable columns={columnsModReports} /> // Use the SkeletonTable here
               ) : (
                 <Reports
-                  data={reports}
+                  data={reports.filter(
+                    (report) => report.report_status.stat_name !== "Unassigned"
+                  )}
                   columns={columnsModReports}
                   activeTab={activeTab}
                 />

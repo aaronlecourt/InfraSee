@@ -124,6 +124,7 @@ const getModeratorArchivedReports = asyncHandler(async (req, res) => {
     }
 
     // Fetch archived reports assigned to the moderator
+    // Fetch archived reports assigned to the moderator
     const reports = await Report.find({
       report_mod: userId,
       is_archived: true,
