@@ -39,12 +39,12 @@ const getModeratorReports = asyncHandler(async (req, res) => {
       .populate("report_mod", "name")
       .populate("report_status", "stat_name");
 
-    // Check if reports were found
+    // Return an empty array if no reports are found, but with status 200
     if (!reports || reports.length === 0) {
-      return res.status(404).json({ message: "No reports found for this moderator." });
+      return res.status(200).json([]); // Return empty array with 200 OK
     }
 
-    res.json(reports);
+    res.json(reports); // Send the reports as the response
   } catch (error) {
     console.error(`Error fetching moderator reports: ${error.message}`);
 
@@ -57,6 +57,7 @@ const getModeratorReports = asyncHandler(async (req, res) => {
     }
   }
 });
+
 
 
 const getModeratorArchivedReports = asyncHandler(async (req, res) => {

@@ -7,7 +7,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Eye, EyeOff } from 'lucide-react';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'; // Adjust path as necessary
-import { useResetPasswordMutation } from '@/slices/users-api-slice';
+import { useChangePasswordMutation } from '@/slices/users-api-slice';
 
 // Validation schema
 const passwordSchema = z
@@ -34,21 +34,33 @@ export function ModSecurity() {
   });
 
   const { control, handleSubmit, reset, formState: { errors } } = methods;
-  const [resetPass] = useResetPasswordMutation();
+  const [changePassword] = useChangePasswordMutation();
   const [newPasswordVisible, setNewPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [currentPasswordVisible, setCurrentPasswordVisible] = useState(false);
 
   const onSubmit = async (data) => {
     try {
-      await resetPass(data).unwrap();
+      await changePassword({
+        currentPassword: data.currentPassword, 
+        newPassword: data.newPassword,
+      }).unwrap();
+  
       toast.success("Password updated successfully!");
       reset();
     } catch (error) {
       console.error("Error updating password:", error);
-      toast.error("Failed to update password.");
+      
+      if (error.status === 400) {
+        toast.error(error.data.message || "Current password is incorrect.");
+      } else if (error.status === 404) {
+        toast.error("User not found.");
+      } else {
+        toast.error("Failed to update password.");
+      }
     }
   };
+  
 
   return (
     <FormProvider {...methods}>

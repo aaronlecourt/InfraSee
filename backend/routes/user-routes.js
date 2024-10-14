@@ -12,6 +12,7 @@ import {
   verifyOtp,
   requestPasswordReset,
   resetPassword,
+  changePassword,
   getModerators,
   checkEmailExists,
 } from "../controllers/user-controller.js";
@@ -33,6 +34,7 @@ router
 router.route("/verify-otp").post(verifyOtp);
 router.route("/password-reset/request").post(requestPasswordReset);
 router.route("/password-reset").post(resetPassword);
+router.route("/change-password").put(protect, changePassword);
 router.route("/moderators").get(getModerators);
 router.route("/check-email/:email").get(checkEmailExists);
 
