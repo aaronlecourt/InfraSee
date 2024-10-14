@@ -2,6 +2,54 @@ import asyncHandler from "express-async-handler";
 import Report from "../models/reports-model.js";
 import User from "../models/user-model.js";
 
+const createReport = asyncHandler(async (req, res) => {
+  try {
+    const {
+      report_address,
+      latitude,
+      longitude,
+      infraType,
+      report_by,
+      report_contactNum,
+      report_desc,
+      report_img,
+      report_status,
+      report_mod,
+    } = req.body;
+
+    if (!report_address || !latitude || !longitude || !infraType || !report_by || !report_contactNum || !report_desc || !report_img) {
+      res.status(400);
+      throw new Error("All fields are required.");
+    }
+
+    const report = new Report({
+      report_address,
+      latitude,
+      longitude,
+      infraType,
+      report_by,
+      report_contactNum,
+      report_desc,
+      report_img,
+      report_status,
+      report_mod,
+    });
+
+    const savedReport = await report.save();
+
+    res.status(201).json({ message: "Report created successfully", report: savedReport });
+  } catch (error) {
+    console.error(`Error creating report: ${error.message}`);
+
+    if (error.name === 'ValidationError') {
+      res.status(422).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: "Server error. Please try again later." });
+    }
+  }
+});
+
+
 const getReports = asyncHandler(async (req, res) => {
   try {
     const reports = await Report.find({ is_archived: false })
@@ -230,6 +278,7 @@ const updateReportStatus = asyncHandler(async (req, res) => {
 
 
 export { 
+  createReport,
   getReports, 
   getModeratorReports, 
   getModeratorArchivedReports,

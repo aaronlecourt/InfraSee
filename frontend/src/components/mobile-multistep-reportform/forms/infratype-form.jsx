@@ -45,7 +45,7 @@ const InfraTypeForm = ({ infraType, setInfraType }) => {
 
   const handleValueChange = (value) => {
     setInfraType(value);
-    setValue("infraType", value); // Update form value on change
+    setValue("infraType", value);
   };
 
   return (

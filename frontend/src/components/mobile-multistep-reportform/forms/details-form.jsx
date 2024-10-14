@@ -20,6 +20,7 @@ const DetailsForm = ({ onClose, imagePreview, setImagePreview }) => {
     formState: { errors },
     setValue,
     trigger,
+    setError, // Import setError to handle custom error messages
   } = useFormContext();
   
   const [descriptionLength, setDescriptionLength] = useState(0);
@@ -28,12 +29,14 @@ const DetailsForm = ({ onClose, imagePreview, setImagePreview }) => {
     const file = acceptedFiles[0];
 
     if (file) {
+      // Validate file size
       if (file.size > MAX_FILE_SIZE) {
-        console.error("File size exceeds the limit of 2 MB.");
+        setError("file", { type: "manual", message: "File size exceeds the limit of 2 MB." });
         return;
       }
+      // Validate file type
       if (!["image/jpeg", "image/png"].includes(file.type)) {
-        console.error("Only JPG and PNG files are allowed.");
+        setError("file", { type: "manual", message: "Only JPG and PNG files are allowed." });
         return;
       }
 
@@ -41,7 +44,7 @@ const DetailsForm = ({ onClose, imagePreview, setImagePreview }) => {
       setImagePreview(previewUrl);
       setValue("file", file); // Keep the file instance
 
-      await trigger("file");
+      await trigger("file"); // Trigger validation for the file input
 
       const formData = new FormData();
       formData.append("file", file);
@@ -58,12 +61,13 @@ const DetailsForm = ({ onClose, imagePreview, setImagePreview }) => {
 
         const data = await response.json();
         if (data.secure_url) {
-          setValue("fileUrl", data.secure_url); // Store the uploaded URL in the form
+          setValue("report_img", data.secure_url); // Store the uploaded URL in the form
         } else {
           throw new Error("Upload failed");
         }
       } catch (error) {
         console.error("Error uploading file:", error);
+        setError("file", { type: "manual", message: "Error uploading file." });
       }
     }
   };
@@ -109,20 +113,20 @@ const DetailsForm = ({ onClose, imagePreview, setImagePreview }) => {
 
       {/* Other Fields */}
       <div className="flex flex-col h-full">
-        {/* Full Name Field */}
+        {/* Report By Field */}
         <FormItem className="flex-grow">
           <FormLabel className="font-bold">Full Name</FormLabel>
           <FormControl>
             <Controller
-              name="fullName"
+              name="report_by" // Updated field name
               control={control}
               render={({ field }) => (
                 <Input type="text" placeholder="Enter your name" {...field} />
               )}
             />
           </FormControl>
-          {errors.fullName && (
-            <FormMessage>{errors.fullName.message}</FormMessage>
+          {errors.report_by && (
+            <FormMessage>{errors.report_by.message}</FormMessage>
           )}
         </FormItem>
 
@@ -131,7 +135,7 @@ const DetailsForm = ({ onClose, imagePreview, setImagePreview }) => {
           <FormLabel className="font-bold">Contact Number</FormLabel>
           <FormControl>
             <Controller
-              name="contactNumber"
+              name="report_contactNum" // Updated field name
               control={control}
               render={({ field }) => (
                 <Input
@@ -142,8 +146,8 @@ const DetailsForm = ({ onClose, imagePreview, setImagePreview }) => {
               )}
             />
           </FormControl>
-          {errors.contactNumber && (
-            <FormMessage>{errors.contactNumber.message}</FormMessage>
+          {errors.report_contactNum && (
+            <FormMessage>{errors.report_contactNum.message}</FormMessage>
           )}
         </FormItem>
 
@@ -152,7 +156,7 @@ const DetailsForm = ({ onClose, imagePreview, setImagePreview }) => {
           <FormLabel className="font-bold">Description</FormLabel>
           <FormControl>
             <Controller
-              name="description"
+              name="report_desc" // Updated field name
               control={control}
               render={({ field }) => (
                 <Textarea
@@ -169,8 +173,8 @@ const DetailsForm = ({ onClose, imagePreview, setImagePreview }) => {
             />
           </FormControl>
           <div className="flex justify-between text-xs font-normal text-muted-foreground mt-1">
-            {errors.description && (
-              <FormMessage>{errors.description.message}</FormMessage>
+            {errors.report_desc && (
+              <FormMessage>{errors.report_desc.message}</FormMessage>
             )}
             {descriptionLength} / 150
           </div>

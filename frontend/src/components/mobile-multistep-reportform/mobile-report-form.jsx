@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import axios from "axios";
 import LocationForm from "./forms/location-form";
 import InfraTypeForm from "./forms/infratype-form";
 import DetailsForm from "./forms/details-form";
@@ -16,48 +17,43 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
-
 const detailsSchema = z.object({
-  fullName: z
+  report_by: z
     .string()
     .min(1, "Full Name is required.")
     .min(5, "Full Name is too short.")
     .max(50, "Full Name must not exceed 50 characters."),
-  contactNumber: z
+  report_contactNum: z
     .string()
     .min(1, "Contact Number is required.")
     .length(11, "Contact Number must be 11 digits long.")
     .regex(/^09\d{9}$/, "Contact Number must start with 09."),
-  description: z
+  report_desc: z
     .string()
     .min(1, "Description is required.")
     .min(25, "Description too short.")
     .max(150, "Description must not exceed 150 characters."),
-  file: z
-    .instanceof(File, { message: "File is required." })
-    .refine((file) => file.size <= MAX_FILE_SIZE, {
-      message: "File size must not exceed 2 MB.",
-    })
-    .refine((file) => file.type === "image/png" || file.type === "image/jpeg", {
-      message: "Only PNG and JPG files are allowed.",
+  report_img: z
+    .string()
+    .url()
+    .refine((value) => value.length > 0, {
+      message: "Image URL is required.",
     }),
-  fileUrl: z.string().url(),
 });
 
 const MultiStepForm = ({ open, onClose }) => {
   const methods = useForm({
     defaultValues: {
-      address: "",
+      report_address: "",
       latitude: "",
       longitude: "",
       infraType: "",
-      fullName: "",
-      contactNumber: "",
-      description: "",
-      file: null,
-      fileUrl: "",
-      status: "66d25911baae7f52f54793f6",
+      report_by: "",
+      report_contactNum: "",
+      report_desc: "",
+      report_img: "",
+      report_status: "66d25911baae7f52f54793f6",
+      report_mod: undefined,
     },
     resolver: zodResolver(detailsSchema),
   });
@@ -71,6 +67,7 @@ const MultiStepForm = ({ open, onClose }) => {
   });
   const [infraType, setInfraType] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleNextStep = () => {
     if (currentStep === 1 && !hasSetLocation) {
@@ -88,28 +85,50 @@ const MultiStepForm = ({ open, onClose }) => {
     setCurrentStep((prevStep) => prevStep - 1);
   };
 
-  const onSubmit = (data) => {
-    if (!data.file) {
-      toast.error("Please upload a file before submitting.");
+  const onSubmit = async (data) => {
+    if (!data.report_img) {
+      toast.error("Please provide a valid image URL.");
       return;
     }
 
     const submitData = {
-      address: locationData.address,
+      report_address: locationData.address,
       latitude: locationData.latitude,
       longitude: locationData.longitude,
       infraType: infraType,
-      fullName: data.fullName,
-      contactNumber: data.contactNumber,
-      description: data.description,
-      file: data.file,
-      fileUrl: data.fileUrl,
-      status: "66d25911baae7f52f54793f6",
+      report_by: data.report_by,
+      report_contactNum: data.report_contactNum,
+      report_desc: data.report_desc,
+      report_img: data.report_img,
+      report_status: "66d25911baae7f52f54793f6",
+      report_mod: undefined,
     };
 
-    console.log("Submitting report:", submitData);
-    handleClose();
-    toast.success("Report submitted successfully!", { duration: 3000 });
+    try {
+      setIsUploading(true);
+      const response = await axios.post("/api/reports/create", submitData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.status === 201) {
+        toast.success("Report submitted successfully!", { duration: 3000 });
+        methods.reset();
+        setHasSetLocation(false);
+        setLocationData({ address: "", latitude: "", longitude: "" });
+        setInfraType("");
+        setCurrentStep(1);
+        handleClose();
+      } else {
+        toast.error(`Error: ${response.data.message}`);
+      }
+    } catch (error) {
+      console.error("Error submitting report:", error);
+      toast.error("An error occurred while submitting the report.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleClose = () => {
@@ -179,7 +198,7 @@ const MultiStepForm = ({ open, onClose }) => {
                 disabled={
                   (currentStep === 1 && !hasSetLocation) ||
                   (currentStep === 2 && !infraType)
-                } // Disable Next if no location or infraType is selected
+                }
               >
                 Next
               </Button>
@@ -189,8 +208,9 @@ const MultiStepForm = ({ open, onClose }) => {
                 variant="default"
                 type="button"
                 onClick={methods.handleSubmit(onSubmit)}
+                disabled={isUploading}
               >
-                Submit
+                {isUploading ? "Submitting..." : "Submit"}
               </Button>
             )}
           </div>

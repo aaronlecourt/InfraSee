@@ -7,6 +7,7 @@ import {
     getArchivedReports,
     restoreReport,
     deleteReport,
+    createReport,
     updateReportStatus,
  } from "../controllers/reports-controller.js";
 import { protect } from "../middleware/auth-middleware.js";
@@ -14,6 +15,7 @@ import { protect } from "../middleware/auth-middleware.js";
 const router = express.Router();
 
 router.route('/').get(getReports);
+router.post("/create", createReport);
 router.route('/moderator/reports').get(protect, getModeratorReports);
 router.route('/moderator/archived/reports').get(protect, getModeratorArchivedReports);
 router.route('/archived/reports').get(protect, getArchivedReports);

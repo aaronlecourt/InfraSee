@@ -27,7 +27,7 @@ const LocationForm = ({ setHasSetLocation, locationData, setLocationData }) => {
   useEffect(() => {
     if (locationData.latitude && locationData.longitude) {
       updateMap(locationData.latitude, locationData.longitude);
-      setValue("address", locationData.address); // Set the address in the form
+      setValue("report_address", locationData.address); // Set the address in the form
       if (inputRef.current) {
         inputRef.current.value = locationData.address; // Directly set the input value
       }
@@ -47,7 +47,7 @@ const LocationForm = ({ setHasSetLocation, locationData, setLocationData }) => {
           } else {
             try {
               const fullAddress = await reverseGeocode(latitude, longitude);
-              setValue("address", fullAddress);
+              setValue("report_address", fullAddress);
               setValue("latitude", latitude);
               setValue("longitude", longitude);
               setLocationData({ address: fullAddress, latitude, longitude });
@@ -145,7 +145,7 @@ const LocationForm = ({ setHasSetLocation, locationData, setLocationData }) => {
           longitude: lng,
         });
         updateMap(lat, lng);
-        setValue("address", combinedAddress);
+        setValue("report_address", combinedAddress);
         setValue("latitude", lat);
         setValue("longitude", lng);
         setHasSetLocation(true);
@@ -188,7 +188,7 @@ const LocationForm = ({ setHasSetLocation, locationData, setLocationData }) => {
           updateMap(lat, lng);
 
           // Update the input field with the full address
-          setValue("address", fullAddress);
+          setValue("report_address", fullAddress);
           if (inputRef.current) {
             inputRef.current.value = fullAddress; // Directly update the input field value
           }

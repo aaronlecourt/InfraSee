@@ -1,17 +1,18 @@
 import mongoose from "mongoose";
 import User from "./user-model.js";
 import Status from "./status-model.js";
+import InfrastructureType from "./infrastructureType-model.js";
 
 const reportSchema = mongoose.Schema(
   {
     report_mod: {
       type: mongoose.Schema.Types.ObjectId,
       ref: User,
-      required: true,
+      required: false,
     },
     report_img: {
       type: String,
-      required: true,
+      required: false,
     },
     report_desc: {
       type: String,
@@ -21,9 +22,14 @@ const reportSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    report_contactNum: {
+      type: String,
+      required: true,
+    },
     report_status: {
       type: mongoose.Schema.Types.ObjectId,
       ref: Status,
+      default: "66d25911baae7f52f54793f6",
     },
     report_address: {
       type: String,
@@ -37,8 +43,10 @@ const reportSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    account_num: {
-      type: String,
+    infraType: { // Add this line
+      type: mongoose.Schema.Types.ObjectId,
+      ref: InfrastructureType,
+      required: true,
     },
     is_archived: {
       type: Boolean,
