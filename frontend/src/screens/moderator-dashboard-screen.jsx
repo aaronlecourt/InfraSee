@@ -14,9 +14,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { io } from 'socket.io-client';
+import { io } from "socket.io-client";
 import { Spinner } from "@/components/ui/spinner";
-import { Settings, LogOut, RefreshCcw } from "lucide-react";
+import { Settings, LogOut, RefreshCcw, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useDispatch, useSelector } from "react-redux";
@@ -33,7 +33,7 @@ import { columnsModReports } from "@/components/data-table/columns/columnsModRep
 import { columnsModArchives } from "@/components/data-table/columns/columnsModArchives";
 import { Button } from "@/components/ui/button";
 import { SkeletonTable } from "@/components/elements/skeletontable";
-
+import { Badge } from "@/components/ui/badge";
 const fetchReports = async () => {
   const response = await axios.get("/api/reports/moderator/reports");
   return response.data;
@@ -60,7 +60,7 @@ const ModeratorDashboardScreen = () => {
 
     socket.on("reportChange", (change) => {
       console.log("Received report change:", change);
-      loadReports(); 
+      loadReports();
       loadArchives();
     });
 
@@ -133,7 +133,15 @@ const ModeratorDashboardScreen = () => {
           >
             <img src="/infrasee_black.png" alt="Infrasee Logomark" />
           </div>
-          <div className="relative">
+          <div className="relative flex items-center gap-x-5">
+            {/* NOTIFICATIONS, ONLY DISPLAY BADGE WHEN THERE IS NOTIF, THIS 
+            NAVBAR INSTANCE IS SEPARATE FROM THE NAVBAR INSTANCE UNDER SETTINGS PAGE*/}
+            <div className="relative inline-block">
+              <Bell size={23} />
+              <Badge className="absolute top-0 right-0 bg-destructive w-4 h-4 text-center translate-x-1/2 -translate-y-1/2">
+                0
+              </Badge>
+            </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Avatar className="h-8 w-8 hover:ring-4 ring-slate-300 cursor-pointer">
@@ -169,7 +177,6 @@ const ModeratorDashboardScreen = () => {
         </header>
         <main className="p-4">
           <h1 className="text-3xl mb-1">Dashboard</h1>
-
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="flex items-center gap-2">
               <TabsList className="h-auto">
