@@ -82,7 +82,6 @@ const setupChangeStream = (collectionName, eventName) => {
 const db = mongoose.connection;
 
 db.once('open', () => {
-  console.log('MongoDB connected');
 
   // Setup change streams for multiple collections
   setupChangeStream('reports', 'reportChange');
