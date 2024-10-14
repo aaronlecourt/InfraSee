@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuShortcut,
-} from "@/components/ui/dropdown-menu";
+import ModNavbar from "@/components/elements/mod-navbar/navbar";
+
+
 import { Settings, LogOut, LucideLayoutDashboard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -89,51 +81,7 @@ function SettingsScreen() {
         <Helmet>
           <title>{"InfraSee | Settings"}</title>
         </Helmet>
-        <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400">
-          <div
-            className="w-[6rem] mt-1 cursor-pointer"
-            onClick={handleLogoClick}
-          >
-            <img src="/infrasee_black.png" alt="Infrasee Logomark" />
-          </div>
-          <div className="relative">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Avatar className="h-8 w-8 hover:ring-4 ring-slate-300 cursor-pointer">
-                  <AvatarFallback className="text-white bg-slate-950">
-                    M
-                  </AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 mr-3">
-                {userInfo && (
-                  <DropdownMenuLabel>
-                    <p>{userInfo.name}</p>
-                    <small className="text-gray-500 font-normal">
-                      {userInfo.email}
-                    </small>
-                  </DropdownMenuLabel>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    onClick={() => navigate("/moderator/dashboard")}
-                  >
-                    <LucideLayoutDashboard className="mr-2 h-4 w-4" />
-                    <span>Go to Dashboard</span>
-                  </DropdownMenuItem>
-
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Logout</span>
-                    <DropdownMenuShortcut>⌘+L</DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </header>
+        <ModNavbar userInfo={userInfo}/>
       </div>
       <main className="p-4">
         <h1 className="text-3xl mb-1">Settings</h1>
