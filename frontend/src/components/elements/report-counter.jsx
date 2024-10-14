@@ -8,7 +8,7 @@ export function ReportCounter({ data }) {
       resolved: 0,
       dismissed: 0,
       pending: 0,
-      unresolved: 0,
+      unassigned: 0,
     };
 
     reports.forEach((report) => {
@@ -23,8 +23,8 @@ export function ReportCounter({ data }) {
         counts.dismissed++;
       } else if (status === "Pending") {
         counts.pending++;
-      } else if (status === "Unresolved") {
-        counts.unresolved++;
+      } else if (status === "Unassigned") {
+        counts.unassigned++;
       } else {
         console.warn(`Unexpected report status: ${status}`);
       }
@@ -37,7 +37,7 @@ export function ReportCounter({ data }) {
   const statusCounts = getStatusCounts(data);
 
   // Destructure status counts for easier use
-  const { total, inprogress, resolved, dismissed, pending } = statusCounts;
+  const { total, inprogress, resolved, dismissed, pending, unassigned } = statusCounts;
 
   return (
     <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
@@ -69,12 +69,12 @@ export function ReportCounter({ data }) {
         </small>
       </div>
       <div className="border rounded-md p-2 flex justify-between sm:flex-col sm:p-3 items-center sm:items-start bg-white">
-        <p className="text-xs sm:text-sm text-wrap">Dismissed Reports</p>
+        <p className="text-xs sm:text-sm text-wrap">Unassigned Reports</p>
         <h1 className="text-lg text-gray-300 sm:text-primary sm:text-3xl">
-          {dismissed}
+          {unassigned}
         </h1>
         <small className="text-xs sm:font-normal text-gray-500 hidden sm:block sm:text-xs">
-          False or unreliable reports
+          Reports currently handled by no one
         </small>
       </div>
       <div className="border rounded-md p-2 flex justify-between sm:flex-col sm:p-3 items-center sm:items-start bg-white">
