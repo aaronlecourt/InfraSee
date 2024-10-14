@@ -34,7 +34,7 @@ function ReportScreen() {
     };
 
     fetchData();
-  }, []);
+  }, [setData, isMultiStepFormOpen]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 640);

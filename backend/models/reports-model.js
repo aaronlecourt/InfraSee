@@ -8,11 +8,12 @@ const reportSchema = mongoose.Schema(
     report_mod: {
       type: mongoose.Schema.Types.ObjectId,
       ref: User,
-      required: false,
+      default: null,
+      nullable: true,
     },
     report_img: {
       type: String,
-      required: false,
+      required: true,
     },
     report_desc: {
       type: String,
@@ -43,7 +44,7 @@ const reportSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    infraType: { // Add this line
+    infraType: {
       type: mongoose.Schema.Types.ObjectId,
       ref: InfrastructureType,
       required: true,

@@ -40,6 +40,13 @@ const PublicMaps = ({ data }) => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
+  const truncateDescription = (description) => {
+    const words = description.split(" ");
+    return words.length > 4
+      ? words.slice(0, 10).join(" ") + "..."
+      : description;
+  };
+
   const handleMapClick = async (event) => {
     if (event?.latLng) {
       const { lat, lng } = event.latLng.toJSON();
@@ -75,7 +82,12 @@ const PublicMaps = ({ data }) => {
       google.maps.importLibrary("places"),
     ]);
     const autocomplete = new Autocomplete(inputRef.current);
-    autocomplete.setFields(["place_id", "geometry", "name", "formatted_address"]);
+    autocomplete.setFields([
+      "place_id",
+      "geometry",
+      "name",
+      "formatted_address",
+    ]);
     const bounds = new google.maps.LatLngBounds(
       new google.maps.LatLng(benguetBounds.south, benguetBounds.west),
       new google.maps.LatLng(benguetBounds.north, benguetBounds.east)
@@ -113,29 +125,31 @@ const PublicMaps = ({ data }) => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude, accuracy } = position.coords;
-  
-          // Log latitude, longitude, and accuracy
-          console.log("Latitude:", latitude);
-          console.log("Longitude:", longitude);
-          console.log("Accuracy:", accuracy);
-  
+
           if (accuracy > 100) {
-            toast.error("Location accuracy is too low. Manually search location or use a mobile device instead.");
+            toast.error(
+              "Location accuracy is too low. Manually search location or use a mobile device instead."
+            );
           } else {
-            setSelectedLocation({ lat: latitude, lng: longitude, address: "Current Location" });
+            setSelectedLocation({
+              lat: latitude,
+              lng: longitude,
+              address: "Current Location",
+            });
             setActiveMarker("selected");
             adjustMap(latitude, longitude);
           }
         },
         (error) => {
-          toast.error("Unable to retrieve your location. Please check your device settings.");
+          toast.error(
+            "Unable to retrieve your location. Please check your device settings."
+          );
         }
       );
     } else {
       toast.error("Geolocation is not supported by this browser.");
     }
   };
-  
 
   useEffect(() => {
     initAutocomplete();
@@ -172,7 +186,6 @@ const PublicMaps = ({ data }) => {
             </Button>
           </div>
         </div>
-
         <Map
           onLoad={onMapLoad}
           defaultZoom={14}
@@ -221,46 +234,56 @@ const PublicMaps = ({ data }) => {
                     key={report._id}
                     position={reportLocation}
                     options={{
-                      maxWidth: 300,
+                      maxWidth: 350,
                       disableAutoPan: false,
                     }}
                     onCloseClick={() => setActiveMarker(null)}
                   >
                     <div className="m-0 p-0">
                       <div className="w-full">
-                        <div className="text-base leading-none font-bold mb-1">
+                        <div className="flex-col flex sm:flex-row justify-between gap-1 sm:gap-2 items-start">
+                          <div className="text-[0.95rem] leading-none font-bold mb-1">
+                            {truncateDescription(report.report_desc)}
+                          </div>
+                          <div className="px-2 font-medium text-xs rounded-sm py-1 bg-black text-white">
+                            {report.report_status.stat_name}
+                          </div>
+                        </div>
+                        <div className="font-medium text-[0.7rem] bg-muted border-t border-l border-r border-gray-300 p-1 mt-1">
+                          {formatDate(report.createdAt)}
+                        </div>
+                        <div className="font-medium text-[0.7rem] border p-1 mb-1">
                           {report.report_desc}
                         </div>
-                        <div className="flex justify-between items-center">
-                          <p>{report.report_by}</p>
-                          <span>{report.account_num || "-"}</span>
+
+                        <div className="flex gap-2">
+                          <div className="flex font-medium text-[0.7rem] p-1">
+                            {report.report_address}
+                          </div>
+                          <div className="font-medium text-[0.7rem] text-muted-foreground p-1">
+                            <p>LAT:{report.latitude}</p>
+                            <p>LNG:{report.longitude}</p>
+                          </div>
                         </div>
-                        <p className="border-t mt-2 pt-2">
-                          <strong>Reported on:</strong>{" "}
-                          {formatDate(report.createdAt)}
-                        </p>
                       </div>
                       <div className="mt-3">
                         <img
                           src={report.report_img}
                           alt={report.report_desc}
-                          className="rounded-md border w-full"
+                          className="rounded-md border max-h-[200px] w-full object-contain"
                         />
-                        <p>{report.report_address}</p>
                       </div>
-                      <div className="flex items-center mt-3 justify-between">
-                        <div className="font-bold">
-                          {report.report_mod.name}
+                      {report.report_mod && (
+                        <div className="font-medium text-[0.7rem] bg-muted border border-gray-300 p-1 mt-2">
+                          Handled By: {report.report_mod.name}
                         </div>
-                        <div className="px-2 font-medium text-xs rounded-sm py-1 bg-black text-white">
-                          {report.report_status.stat_name}
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </InfoWindow>
                 )
               );
             })}
+
           {selectedLocation && activeMarker === "selected" && (
             <>
               <AdvancedMarker
@@ -303,5 +326,3 @@ const PublicMaps = ({ data }) => {
 };
 
 export default PublicMaps;
-
-
