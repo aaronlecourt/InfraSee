@@ -44,6 +44,7 @@ const detailsSchema = z.object({
 const MultiStepForm = ({ open, onClose }) => {
   const methods = useForm({
     defaultValues: {
+      is_new: false,
       report_address: "",
       latitude: "",
       longitude: "",
@@ -93,6 +94,7 @@ const MultiStepForm = ({ open, onClose }) => {
     }
 
     const submitData = {
+      is_new: false,
       report_address: locationData.address,
       latitude: locationData.latitude,
       longitude: locationData.longitude,

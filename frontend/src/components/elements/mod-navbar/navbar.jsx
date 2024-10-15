@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
@@ -23,17 +23,18 @@ const ModNavbar = ({ userInfo }) => {
   const navigate = useNavigate();
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
-  
-  // Dummy notifications data
+
   const [notifications, setNotifications] = useState([
-    { id: 1, message: "New report submitted.", time: "2 mins ago" },
-    { id: 2, message: "User JohnDoe commented on your report.", time: "5 mins ago" },
-    { id: 3, message: "System maintenance scheduled for tonight.", time: "1 hour ago" },
-    { id: 4, message: "New report submitted.", time: "2 mins ago" },
-    { id: 5, message: "User JohnDoe commented on your report.", time: "5 mins ago" },
-    { id: 6, message: "System maintenance scheduled for tonight.", time: "1 hour ago" },
+    { id: 1, message: "New report submitted.", time: "2024-10-14T10:21:42.729+00:00" },
+    { id: 2, message: "User JohnDoe commented on your report.", time: "2024-10-14T11:20:42.729+00:00" },
+    { id: 3, message: "System maintenance scheduled for tonight.", time: "2024-10-14T11:31:42.729+00:00" },
+    { id: 4, message: "New report submitted.", time: "2024-10-14T10:31:42.729+00:00" },
+    { id: 5, message: "User JaneDoe commented on your report.", time: "2024-10-14T11:00:42.729+00:00" },
+    { id: 6, message: "System maintenance scheduled for yesterday.", time: "2024-10-13T14:15:42.729+00:00" },
   ]);
+
   const [showNotifications, setShowNotifications] = useState(false);
+  const dropdownRef = useRef(null);
 
   const handleLogoClick = () => {
     navigate("/");
@@ -53,26 +54,58 @@ const ModNavbar = ({ userInfo }) => {
     setShowNotifications((prev) => !prev);
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownRef]);
+
+  const formatDateTime = (isoDate) => {
+    const date = new Date(isoDate);
+    const options = { 
+      year: 'numeric', 
+      month: 'short', 
+      day: '2-digit', 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      hour12: true 
+    };
+    const formattedDate = date.toLocaleString('en-US', options);
+    
+    // Transform to "MMM DD YYYY hh:mm AM/PM"
+    const [month, dayYear, time] = formattedDate.split(", ");
+    const [year] = dayYear.split(" ");
+    return `${month} ${dayYear} ${time}`;
+  };
+
   return (
     <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400">
       <div className="w-[6rem] mt-1 cursor-pointer" onClick={handleLogoClick}>
         <img src="/infrasee_black.png" alt="Infrasee Logomark" />
       </div>
-      <div className="flex items-center gap-6">
-        <div className="relative">
-          <Button variant="ghost" onClick={toggleNotifications} className="flex items-center px-1">
-            <Bell size={21} />
+      <div className="flex items-center gap-3">
+        <div className="relative" ref={dropdownRef}>
+          <Button variant="outline" onClick={toggleNotifications} className="flex items-center h-8 w-8 p-0 rounded-full">
+            <Bell size={18} />
             {notifications.length > 0 && (
-              <Badge variant="destructive" className="absolute top-1 -right-2">{notifications.length}</Badge>
+              <Badge variant="destructive" className="absolute -top-1 -right-2">{notifications.length}</Badge>
             )}
           </Button>
           {showNotifications && (
-            <div className="absolute right-0 z-10 max-h-48 w-48 bg-white border rounded-md overflow-y-auto">
+            <div className="absolute right-0 z-10 max-h-[350px] w-48 bg-white border rounded-md overflow-y-auto cursor-default">
               <ul className="p-1">
                 {notifications.map((notif) => (
                   <li key={notif.id} className="p-2 hover:bg-gray-100 text-xs font-medium border-b">
                     <span>{notif.message}</span>
-                    <div className="text-[0.7rem] text-gray-500">{notif.time}</div>
+                    <div className="text-[0.7rem] text-gray-500">{formatDateTime(notif.time)}</div>
                   </li>
                 ))}
               </ul>
@@ -94,7 +127,6 @@ const ModNavbar = ({ userInfo }) => {
                   <small className="text-gray-500 font-normal">{userInfo.email}</small>
                 </DropdownMenuLabel>
               )}
-
               <DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate("/moderator/dashboard")}>

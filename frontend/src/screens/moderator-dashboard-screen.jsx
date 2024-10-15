@@ -1,19 +1,13 @@
 import React, { useState, useEffect } from "react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Spinner } from "@/components/ui/spinner";
-import { RefreshCcw } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+
 import { Overview } from "@/components/elements/overview";
-import { Archives } from "@/components/elements/archives";
+import { HiddenReports } from "@/components/elements/hidden-reports";
+import { Unassigned } from "@/components/elements/unassigned";
 import { Reports } from "@/components/elements/reports";
-import Analytics from "@/components/elements/analytics";
+
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import axios from "axios";
 import { columnsModReports } from "@/components/data-table/columns/columnsModReports";
@@ -21,6 +15,7 @@ import { columnsModArchives } from "@/components/data-table/columns/columnsModAr
 import { Button } from "@/components/ui/button";
 import { SkeletonTable } from "@/components/elements/skeletontable";
 import ModNavbar from "@/components/elements/mod-navbar/navbar";
+import { columnsModUnassigned } from "@/components/data-table/columns/columnsModUnassigned";
 
 const fetchReports = async () => {
   const response = await axios.get("/api/reports/moderator/reports");
@@ -31,6 +26,7 @@ const fetchUnassigned = async () => {
   const response = await axios.get("/api/reports/unassigned");
   return response.data;
 };
+
 const fetchArchives = async () => {
   const response = await axios.get("/api/reports/moderator/archived/reports");
   return response.data;
@@ -40,8 +36,8 @@ const ModeratorDashboardScreen = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const [activeTab, setActiveTab] = useState("overview");
   const [reports, setReports] = useState([]);
-  const [archives, setArchives] = useState([]);
   const [unassigned, setUnassigned] = useState([]);
+  const [archives, setArchives] = useState([]);
   const [loadingReports, setLoadingReports] = useState(true);
   const [loadingArchives, setLoadingArchives] = useState(true);
   const [loadingUnassigned, setLoadingUnassigned] = useState(true);
@@ -86,13 +82,16 @@ const ModeratorDashboardScreen = () => {
   // Initial load
   useEffect(() => {
     loadReports();
-    loadArchives();
     loadUnassigned();
+    loadArchives();
   }, []);
 
   const goToReportsTab = () => {
     setActiveTab("reports");
   };
+
+  // Combine reports and unassigned reports for the Overview
+  const combinedReports = [...reports, ...unassigned];
 
   return (
     <HelmetProvider>
@@ -102,54 +101,39 @@ const ModeratorDashboardScreen = () => {
         </Helmet>
         <ModNavbar userInfo={userInfo} />
         <main className="p-4">
-          <h1 className="text-3xl mb-1">Dashboard</h1>
+          <h1 className="text-3xl">Dashboard</h1>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="flex items-center gap-2">
               <TabsList className="h-auto">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
-                <TabsTrigger value="archives">Archives</TabsTrigger>
-                <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                <TabsTrigger value="unassigned">Unassigned</TabsTrigger>
+                <TabsTrigger value="hidden">Hidden</TabsTrigger>
               </TabsList>
-              {/* Refresh Icon */}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="filter"
-                      onClick={() => {
-                        loadReports();
-                        loadArchives();
-                      }}
-                    >
-                      <RefreshCcw size={15} />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Refresh</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
             </div>
-            {/* Overview Tab */}
+
+            {/* OVERVIEW */}
             <TabsContent value="overview" className="h-[calc(100vh-11rem)]">
-              {loadingReports ? (
+              {loadingReports || loadingUnassigned ? (
                 <div className="flex justify-center items-center h-full">
                   <Spinner size="large" />
                 </div>
               ) : (
                 <Overview
                   goToReportsTab={goToReportsTab}
-                  data={reports}
+                  data={combinedReports}
                   userInfo={userInfo}
                 />
               )}
             </TabsContent>
+
+            {/* MODERATOR REPORTS 
+                Shows reports that are GRABBED by the moderator
+            */}
             <TabsContent value="reports" className="h-[calc(100vh-11rem)]">
               {loadingReports ? (
-                <SkeletonTable columns={columnsModReports} /> // Use the SkeletonTable here
+                <SkeletonTable columns={columnsModReports} />
               ) : (
                 <Reports
                   data={reports}
@@ -158,20 +142,32 @@ const ModeratorDashboardScreen = () => {
                 />
               )}
             </TabsContent>
-            <TabsContent value="archives" className="h-[calc(100vh-11rem)]">
+
+            {/* UNASSIGNED REPORTS 
+                Shows unassigned reports based on infrastructure type
+                e.g BAWADI will only see unassigned water infra related reports
+            */}
+            <TabsContent value="unassigned" className="h-[calc(100vh-11rem)]">
+              <Unassigned
+                data={unassigned}
+                columns={columnsModUnassigned}
+                activeTab={activeTab}
+              />
+            </TabsContent>
+
+            {/* ARCHIVES/HIDDEN 
+                Contains reports that are hidden to the public view.
+            */}
+            <TabsContent value="hidden" className="h-[calc(100vh-11rem)]">
               {loadingArchives ? (
-                <SkeletonTable columns={columnsModArchives} /> // Use the SkeletonTable here
+                <SkeletonTable columns={columnsModArchives} />
               ) : (
-                <Archives
+                <HiddenReports
                   data={archives}
                   columns={columnsModArchives}
                   activeTab={activeTab}
                 />
               )}
-            </TabsContent>
-            {/* Analytics Tab */}
-            <TabsContent value="analytics" className="h-[calc(100vh-11rem)]">
-              <Analytics />
             </TabsContent>
           </Tabs>
         </main>

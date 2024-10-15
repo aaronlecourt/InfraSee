@@ -71,12 +71,65 @@ const createReport = asyncHandler(async (req, res) => {
   }
 });
 
+const updateOnAccept = asyncHandler(async (req, res) => {
+  try {
+    const reportId = req.params.id;
+    const userId = req.user._id;
+
+    const report = await Report.findByIdAndUpdate(
+      reportId,
+      {
+        report_mod: userId,
+        report_status: "66d258f9baae7f52f54793f4",
+        is_new: true,
+      },
+      { new: true }
+    )
+      .populate("report_mod", "name")
+      .populate("report_status", "stat_name");
+
+    if (!report) {
+      res.status(404);
+      throw new Error("Report not found.");
+    }
+
+    res.json({ message: "Report updated successfully", report });
+  } catch (error) {
+    console.error(`Error updating report: ${error.message}`);
+
+    if (error.name === "CastError") {
+      res.status(400).json({ message: "Invalid report ID format." });
+    } else {
+      res
+        .status(500)
+        .json({ message: "Server error. Please try again later." });
+    }
+  }
+});
+
 const getUnassignedReports = asyncHandler(async (req, res) => {
   try {
-    // Fetch reports that are not assigned to any moderator and are not archived
+    const userId = req.user._id;
+
+    // Check if user ID is present
+    if (!userId) {
+      res.status(400);
+      throw new Error("User ID is missing in the request.");
+    }
+
+    // Fetch the user to get the assigned infrastructure type
+    const user = await User.findById(userId).select("infra_type");
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const assignedInfraType = user.infra_type;
+
+    // Fetch reports that are not assigned to any moderator, not archived, and match the user's infrastructure type
     const reports = await Report.find({
       report_mod: null,
       is_archived: false,
+      infraType: assignedInfraType, // Filter by user's infrastructure type
     })
       .populate("report_mod", "name")
       .populate("report_status", "stat_name");
@@ -96,7 +149,7 @@ const getUnassignedReports = asyncHandler(async (req, res) => {
     console.error(`Error fetching unassigned reports: ${error.message}`);
 
     if (error.name === "CastError") {
-      res.status(400).json({ message: "Invalid report ID format." });
+      res.status(400).json({ message: "Invalid report or user ID format." });
     } else {
       res
         .status(500)
@@ -340,6 +393,34 @@ const updateReportStatus = asyncHandler(async (req, res) => {
   }
 });
 
+const markReportAsSeen = asyncHandler(async (req, res) => {
+  try {
+    const reportId = req.params.id;
+    console.log(`Attempting to mark report as seen with ID: ${reportId}`);
+
+    const report = await Report.findByIdAndUpdate(
+      reportId,
+      { is_new: false },
+      { new: true }
+    ).populate("report_mod", "name").populate("report_status", "stat_name");
+
+    if (!report) {
+      res.status(404);
+      throw new Error("Report not found.");
+    }
+
+    res.json({ message: "Report marked as seen successfully", report });
+  } catch (error) {
+    if (error.name === "CastError") {
+      console.error(`Invalid report ID format: ${reportId}`);
+      res.status(400).json({ message: "Invalid report ID format." });
+    } else {
+      console.error(`Error marking report as seen: ${error.message}`);
+      res.status(500).json({ message: "Server error. Please try again later." });
+    }
+  }
+});
+
 export {
   createReport,
   getReports,
@@ -351,4 +432,6 @@ export {
   deleteReport,
   updateReportStatus,
   getUnassignedReports,
+  updateOnAccept,
+  markReportAsSeen
 };

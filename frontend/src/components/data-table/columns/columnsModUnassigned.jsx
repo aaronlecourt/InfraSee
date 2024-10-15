@@ -1,39 +1,21 @@
 import { DataTableColumnHeader } from "../DataTableColumnHeader";
-import { ModReportDataTableRowActions } from "../ModReportDataTableRowActions";
-import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-// Helper function to format date using date-fns
+import { toast } from "sonner";
+
 const formatDate = (dateString) => {
   const date = new Date(dateString);
   return format(date, 'MMMM dd, yyyy'); // Corrected to use 'mm' for minutes and 'ss' for seconds
 };
 
-export const columnsModReports = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-        className="translate-y-0.5"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-        className="translate-y-0.5"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+const handleAccept = (data) => {
+  // ASK FOR Confitm SET report_mod to the logged in user id, SET TO PENDING, SEND SMS AND MARK is_new TO true (para new pending)
+  console.log(data)
+}
+
+export const columnsModUnassigned = [
   {
     accessorKey: "is_new",
     title: "",
@@ -59,8 +41,8 @@ export const columnsModReports = [
     cell: ({ row }) => (
       <div className="">{row.getValue("report_by")}</div>
     ),
-    enableSorting: true,
-    enableHiding: true,
+    enableSorting: false,
+    enableHiding: false,
   },
   {
     accessorKey: "report_desc",
@@ -71,8 +53,8 @@ export const columnsModReports = [
     cell: ({ row }) => (
       <div className="">"{row.getValue("report_desc")}"</div>
     ),
-    enableSorting: true,
-    enableHiding: true,
+    enableSorting: false,
+    enableHiding: false,
   },
   {
     accessorKey: "report_status",
@@ -83,8 +65,8 @@ export const columnsModReports = [
     cell: ({ row }) => (
       <div className="">{row.getValue("report_status")?.stat_name || "Unknown"}</div> // Access the stat_name field from the populated data
     ),
-    enableSorting: true,
-    enableHiding: true,
+    enableSorting: false,
+    enableHiding: false,
   },
   {
     accessorKey: "report_address",
@@ -95,8 +77,8 @@ export const columnsModReports = [
     cell: ({ row }) => (
       <div className="">{row.getValue("report_address")}</div>
     ),
-    enableSorting: true,
-    enableHiding: true,
+    enableSorting: false,
+    enableHiding: false,
   },
   {
     accessorKey: "createdAt",
@@ -107,11 +89,7 @@ export const columnsModReports = [
     cell: ({ row }) => (
       <div className="">{formatDate(row.getValue("createdAt"))}</div>
     ),
-    enableSorting: true,
-    enableHiding: true,
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => <ModReportDataTableRowActions row={row} />,
-  },
+    enableSorting: false,
+    enableHiding: false,
+  },  
 ];

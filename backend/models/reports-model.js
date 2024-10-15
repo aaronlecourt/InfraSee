@@ -5,6 +5,10 @@ import InfrastructureType from "./infrastructureType-model.js";
 
 const reportSchema = mongoose.Schema(
   {
+    is_new: {
+      type: Boolean,
+      default: true
+    },
     report_mod: {
       type: mongoose.Schema.Types.ObjectId,
       ref: User,
