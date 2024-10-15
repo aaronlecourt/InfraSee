@@ -30,7 +30,7 @@ import { DataTableToolbar } from "../data-table/DataTableToolbar";
 import { ReportDetailsDialog } from "../elements/report-details-modal";
 import { ConfirmAssignDialog } from "../elements/confirm-assign-modal";
 
-export function DataTable({ columns, data, activeTab }) {
+export function DataTable({ columns, data, activeTab, userInfo }) {
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState({});
   const [columnFilters, setColumnFilters] = useState([]);
@@ -152,7 +152,8 @@ export function DataTable({ columns, data, activeTab }) {
                     );
                   })}
 
-                  <TableCell>
+                  {userInfo === undefined && (
+                    <TableCell>
                     <div className="flex justify-end">
                       <TooltipProvider>
                         <Tooltip>
@@ -178,6 +179,7 @@ export function DataTable({ columns, data, activeTab }) {
                       </TooltipProvider>
                     </div>
                   </TableCell>
+                  )}
 
                   {activeTab === "unassigned" && (
                     <TableCell>

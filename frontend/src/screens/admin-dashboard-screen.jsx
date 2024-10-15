@@ -291,6 +291,7 @@ const AdminDashboardScreen = () => {
             <DataTable
               data={activeButton === "accounts" ? accountsData : reportsData}
               columns={columns}
+              userInfo={userInfo}
             />
           )}
         </div>

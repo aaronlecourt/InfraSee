@@ -71,7 +71,7 @@ export function AdminAccountDataTableRowActions({ row }) {
             onClick={() => setDeleteDialogOpen(true)}
           >
             <Trash2 size={14} />
-            Delete
+            Deactivate
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
