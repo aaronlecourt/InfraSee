@@ -367,12 +367,21 @@ const updateReportStatus = asyncHandler(async (req, res) => {
     const reportId = req.params.id;
     const { report_status } = req.body;
 
-    // Find the report by ID and update the status
-    const report = await Report.findByIdAndUpdate(
-      reportId,
-      { report_status },
-      { new: true } // Return the updated report
-    );
+    const updateData = { 
+      report_status,
+      is_new: true
+    };
+
+    console.log(report_status);
+
+    // Check if the status is '66d25911baae7f52f54793f6'
+    if (report_status === "66d25911baae7f52f54793f6") {
+      await Report.findByIdAndUpdate(reportId, { $unset: { report_mod: "" } });
+    }
+
+    const report = await Report.findByIdAndUpdate(reportId, updateData, {
+      new: true,
+    });
 
     if (!report) {
       res.status(404);
@@ -386,12 +395,11 @@ const updateReportStatus = asyncHandler(async (req, res) => {
     if (error.name === "CastError") {
       res.status(400).json({ message: "Invalid report ID format." });
     } else {
-      res
-        .status(500)
-        .json({ message: "Server error. Please try again later." });
+      res.status(500).json({ message: "Server error. Please try again later." });
     }
   }
 });
+
 
 const markReportAsSeen = asyncHandler(async (req, res) => {
   try {
@@ -402,7 +410,9 @@ const markReportAsSeen = asyncHandler(async (req, res) => {
       reportId,
       { is_new: false },
       { new: true }
-    ).populate("report_mod", "name").populate("report_status", "stat_name");
+    )
+      .populate("report_mod", "name")
+      .populate("report_status", "stat_name");
 
     if (!report) {
       res.status(404);
@@ -416,7 +426,9 @@ const markReportAsSeen = asyncHandler(async (req, res) => {
       res.status(400).json({ message: "Invalid report ID format." });
     } else {
       console.error(`Error marking report as seen: ${error.message}`);
-      res.status(500).json({ message: "Server error. Please try again later." });
+      res
+        .status(500)
+        .json({ message: "Server error. Please try again later." });
     }
   }
 });
@@ -433,5 +445,5 @@ export {
   updateReportStatus,
   getUnassignedReports,
   updateOnAccept,
-  markReportAsSeen
+  markReportAsSeen,
 };
