@@ -208,7 +208,7 @@ export function DataTableToolbar({ table, activeTab }) {
                       className="mr-2 h-4 w-4"
                       aria-hidden="true"
                     />
-                    <p className="hidden md:block">Restore</p>(
+                    <p className="hidden md:block">Unhide</p>(
                     {table.getFilteredSelectedRowModel().rows.length})
                   </Button>
                 )}
@@ -216,7 +216,7 @@ export function DataTableToolbar({ table, activeTab }) {
                 activeTab === "reports" && (
                   <Button variant="outline" size="sm">
                     <ArchiveIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                    <p className="hidden md:block">Archive</p>(
+                    <p className="hidden md:block">Hide</p>(
                     {table.getFilteredSelectedRowModel().rows.length})
                   </Button>
                 )}

@@ -96,7 +96,7 @@ export function DataTable({ columns, data, activeTab, userInfo }) {
     console.log('ID', reportId)
     try {
       await axios.put(`/api/reports/seen/${reportId}`);
-      toast.success("Report marked as seen!");
+      // toast.success("Report marked as seen!");
     } catch (error) {
       console.error("Error marking report as seen:", error);
       toast.error("Failed to mark report as seen. Please try again.");

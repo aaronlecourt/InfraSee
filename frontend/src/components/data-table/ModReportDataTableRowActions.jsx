@@ -19,29 +19,37 @@ export function ModReportDataTableRowActions({ row }) {
   const [isUpdateStatusDialogOpen, setUpdateStatusDialogOpen] = useState(false);
   const [isArchiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [dialogData, setDialogData] = useState(null);
+  const [reportIdToArchive, setReportIdToArchive] = useState(null); // Store the report ID for archiving
 
   const handleUpdateStatus = () => {
     setDialogData(row.original);
     setUpdateStatusDialogOpen(true);
   };
 
+  const openArchiveDialog = () => {
+    setReportIdToArchive(row.original._id); // Set the report ID to archive
+    setArchiveDialogOpen(true); // Open the archive confirmation dialog
+  };
+
   const handleArchive = async () => {
-    const reportId = row.original._id;
-    
+    const reportId = reportIdToArchive; // Get the stored report ID
+
     try {
       const response = await axios.put(`/api/reports/archive/${reportId}`);
       console.log(response.data.message);
-      toast.success("Report archived successfully!");
+      toast.success("Report hid successfully!");
       setArchiveDialogOpen(false);
+      setReportIdToArchive(null); // Clear the stored report ID
     } catch (error) {
-      console.error("Error archiving report:", error);
-      toast.error(error.response?.data?.message || "Failed to archive report.");
+      console.error("Error hiding report:", error);
+      toast.error(error.response?.data?.message || "Failed to hide report.");
     }
   };
 
   const handleCloseDialog = () => {
     setUpdateStatusDialogOpen(false);
     setArchiveDialogOpen(false);
+    setReportIdToArchive(null); // Clear the stored report ID on close
   };
 
   return (
@@ -61,7 +69,7 @@ export function ModReportDataTableRowActions({ row }) {
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className="text-yellow-500 flex gap-2"
-            onClick={handleArchive}
+            onClick={openArchiveDialog} // Open the archive dialog here
           >
             <ArchiveIcon size={14} />
             Hide

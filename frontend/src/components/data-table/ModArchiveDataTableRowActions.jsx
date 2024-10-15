@@ -33,14 +33,14 @@ export function ModArchiveDataTableRowActions({ row }) {
     try {
       const response = await axios.put(`/api/reports/restore/${reportId}`);
       console.log(response.data.message);
-      toast.success("Report restored successfully!"); // Add success toast
+      toast.success("Report unhid successfully!"); // Add success toast
       setRestoreDialogOpen(false);
     } catch (error) {
-      console.error("Error restoring report:", error);
+      console.error("Error unhiding report:", error);
       setErrorMessage(
-        error.response?.data?.message || "Failed to restore report."
+        error.response?.data?.message || "Failed to unhide report."
       );
-      toast.error("Error restoring report."); // Add error toast
+      toast.error("Error unhiding report."); // Add error toast
     }
   };
 
@@ -79,24 +79,24 @@ export function ModArchiveDataTableRowActions({ row }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
-          <DropdownMenuItem onClick={handleShowDetails} className="flex gap-2">
+          {/* <DropdownMenuItem onClick={handleShowDetails} className="flex gap-2">
             <EyeIcon size={14} />
             Show Details
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
           <DropdownMenuItem
             onClick={() => setRestoreDialogOpen(true)}
             className="flex gap-2"
           >
             <ArchiveRestore size={14} />
-            Restore
+            Unhide
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
+          {/* <DropdownMenuSeparator /> */}
+          {/* <DropdownMenuItem
             className="text-red-500 flex gap-2"
             onClick={() => setDeleteDialogOpen(true)}
           >
             <Trash2 size={14} /> Delete
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
         </DropdownMenuContent>
       </DropdownMenu>
 

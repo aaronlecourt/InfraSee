@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import Maps from "./maps";
 
-export function Overview({ goToReportsTab, data, userInfo }) {
+export function Overview({ goToUnassignedTab, data, userInfo, unassigned }) {
   const loggedModerator_id = userInfo._id
   return (
     <div className="h-full flex flex-col">
@@ -27,16 +27,16 @@ export function Overview({ goToReportsTab, data, userInfo }) {
           <Card className="flex flex-col h-full min-h-[30rem]">
             <CardHeader className="flex-none">
               <CardTitle className="text-base font-bold leading-none">
-                Recent Reports
+                Unassigned Reports
               </CardTitle>
               <CardDescription className="text-xs font-normal text-gray-500 leading-none">
-                Below are some of your most recent reports.
+                Below are some reports that are still up for grabs.
               </CardDescription>
             </CardHeader>
 
             <CardContent className="flex-1 w-full overflow-hidden">
               <ScrollArea className="h-full px-5">
-                <ReportList data={data}/>
+                <ReportList data={unassigned}/>
               </ScrollArea>
             </CardContent>
 
@@ -44,9 +44,9 @@ export function Overview({ goToReportsTab, data, userInfo }) {
               <Button
                 variant="link"
                 className="w-full text-gray-500 flex gap-1"
-                onClick={goToReportsTab} // Trigger tab change
+                onClick={goToUnassignedTab} // Trigger tab change
               >
-                <p className="text-xs font-medium">See all reports</p>
+                <p className="text-xs font-medium">See all unassigned reports</p>
                 <ChevronDown size={15} />
               </Button>
             </CardFooter>

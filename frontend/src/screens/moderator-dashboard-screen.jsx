@@ -86,8 +86,8 @@ const ModeratorDashboardScreen = () => {
     loadArchives();
   }, []);
 
-  const goToReportsTab = () => {
-    setActiveTab("reports");
+  const goToUnassignedTab = () => {
+    setActiveTab("unassigned");
   };
 
   // Combine reports and unassigned reports for the Overview
@@ -121,9 +121,10 @@ const ModeratorDashboardScreen = () => {
                 </div>
               ) : (
                 <Overview
-                  goToReportsTab={goToReportsTab}
+                  goToUnassignedTab={goToUnassignedTab}
                   data={combinedReports}
                   userInfo={userInfo}
+                  unassigned={unassigned}
                 />
               )}
             </TabsContent>
