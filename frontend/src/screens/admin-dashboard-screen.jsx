@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { io } from "socket.io-client";
+import socket from "@/utils/socket-connect";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -19,6 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
 // Fetch functions
 const fetchUsers = async () => {
   const response = await axios.get("/api/users/moderators");
@@ -45,30 +46,24 @@ const AdminDashboardScreen = () => {
   const columns =
     activeButton === "accounts" ? columnsAccounts : columnsReports;
 
-  useEffect(() => {
-    const socket = io("http://localhost:5000");
-
-    socket.on("userChange", (change) => {
-      console.log("Received user change:", change);
-      loadAccounts(); 
-    });
-
-    socket.on("reportChange", (change) => {
-      console.log("Received report change:", change);
-      loadReports();
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
+    useEffect(() => {
+      socket.on("userChange", (change) => {
+        console.log("Received user change:", change);
+        loadAccounts();
+      });
+  
+      return () => {
+        socket.off("userChange");
+      };
+    }, []);
+  
 
   const loadAccounts = async () => {
     setLoadingUsers(true);
     try {
       const data = await fetchUsers();
       setAccountsData(data);
-      setAccountsCount(data.length); // Set count here
+      setAccountsCount(data.length); 
     } catch (error) {
       console.error("Failed to fetch users", error);
     } finally {
@@ -81,7 +76,7 @@ const AdminDashboardScreen = () => {
     try {
       const data = await fetchReports();
       setReportsData(data);
-      setReportsCount(data.length); // Set count here
+      setReportsCount(data.length);
     } catch (error) {
       console.error("Failed to fetch reports", error);
     } finally {

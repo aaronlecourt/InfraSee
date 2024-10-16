@@ -34,6 +34,8 @@ import { columnsModArchives } from "@/components/data-table/columns/columnsModAr
 import { Button } from "@/components/ui/button";
 import { SkeletonTable } from "@/components/elements/skeletontable";
 import { Badge } from "@/components/ui/badge";
+import socket from "@/utils/socket-connect";
+
 const fetchReports = async () => {
   const response = await axios.get("/api/reports/moderator/reports");
   return response.data;
@@ -56,16 +58,14 @@ const ModeratorDashboardScreen = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const socket = io("http://localhost:5000");
-
     socket.on("reportChange", (change) => {
       console.log("Received report change:", change);
-      loadReports();
+      loadReports(); 
       loadArchives();
     });
 
     return () => {
-      socket.disconnect();
+      socket.off("reportChange"); 
     };
   }, []);
 
@@ -94,6 +94,7 @@ const ModeratorDashboardScreen = () => {
       setLoadingArchives(false);
     }
   };
+
 
   // Initial load
   useEffect(() => {
