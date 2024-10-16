@@ -49,7 +49,7 @@ const AdminDashboardScreen = () => {
     try {
       const data = await fetchUsers();
       setAccountsData(data);
-      setAccountsCount(data.length); // Set count here
+      setAccountsCount(data.length);
     } catch (error) {
       console.error("Failed to fetch users", error);
     } finally {
@@ -62,7 +62,7 @@ const AdminDashboardScreen = () => {
     try {
       const data = await fetchReports();
       setReportsData(data);
-      setReportsCount(data.length); // Set count here
+      setReportsCount(data.length);
     } catch (error) {
       console.error("Failed to fetch reports", error);
     } finally {

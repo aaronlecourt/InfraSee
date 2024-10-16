@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useForm, FormProvider, Controller } from "react-hook-form";
@@ -22,11 +20,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea"; // Import Textarea component
+import { FormItem, FormLabel, FormMessage } from "@/components/ui/form"; // Import form components
 import { toast } from 'sonner';
 
 // Define your Zod schema
 const schema = z.object({
   status: z.string().nonempty("Status is required"),
+  remarks: z.string().min(1, "Remarks are required").max(150, "Remarks must be at most 150 characters"), // Make remarks required and limit to 150 characters
 });
 
 export function UpdateStatusDialog({ isOpen, onClose, data }) {
@@ -34,11 +35,12 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
   const methods = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      status: data?.report_status?._id || "", // Use _id for default value
+      status: data?.report_status?._id || "",
+      remarks: "", // Default value for remarks
     },
   });
 
-  const { handleSubmit, setValue, control } = methods;
+  const { handleSubmit, setValue, control, formState: { errors } } = methods;
 
   useEffect(() => {
     if (isOpen) {
@@ -65,7 +67,10 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
     console.log("Updated status ID:", formData.status);
     const reportId = data._id; // Assuming data contains the report ID
     try {
-      const response = await axios.put(`/api/reports/status/${reportId}`, { report_status: formData.status });
+      const response = await axios.put(`/api/reports/status/${reportId}`, {
+        report_status: formData.status,
+        status_remark: formData.remarks,
+      });
       console.log(response.data.message);
       toast.success("Report status updated successfully!");
       onClose(); // Close dialog after success
@@ -122,6 +127,26 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                       </Select>
                     )}
                   />
+                  
+                  {/* Textarea for remarks */}
+                  <FormItem>
+                    <FormLabel className="font-bold">Remarks</FormLabel>
+                    <Controller
+                      name="remarks"
+                      control={control}
+                      render={({ field }) => (
+                        <Textarea
+                          {...field}
+                          id="remarks"
+                          placeholder="Enter remarks (required, max 150 characters)"
+                          className="mt-1"
+                          rows="3"
+                        />
+                      )}
+                    />
+                    {errors.remarks && <FormMessage>{errors.remarks.message}</FormMessage>} {/* Display error message for remarks */}
+                  </FormItem>
+                  
                   <Button type="submit" className="mt-4 w-full">
                     Update Status
                   </Button>

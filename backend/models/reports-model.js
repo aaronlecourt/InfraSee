@@ -36,6 +36,11 @@ const reportSchema = mongoose.Schema(
       ref: Status,
       default: "66d25911baae7f52f54793f6",
     },
+    status_remark: {
+      type: String,
+      default: null,
+      nullable: true,
+    },
     report_address: {
       type: String,
       required: true,

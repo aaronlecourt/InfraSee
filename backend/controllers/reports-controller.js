@@ -16,6 +16,7 @@ const createReport = asyncHandler(async (req, res) => {
       report_status,
       report_mod,
       report_time_resolved,
+      status_remark,
     } = req.body;
 
     if (
@@ -27,7 +28,8 @@ const createReport = asyncHandler(async (req, res) => {
       !report_contactNum ||
       !report_desc ||
       !report_img ||
-      !report_status
+      !report_status ||
+      !status_remark
     ) {
       res.status(400);
       throw new Error("All fields are required.");
@@ -45,6 +47,7 @@ const createReport = asyncHandler(async (req, res) => {
       report_status,
       report_mod,
       report_time_resolved,
+      status_remark
     });
 
     const savedReport = await report.save();
@@ -365,10 +368,11 @@ const deleteReport = asyncHandler(async (req, res) => {
 const updateReportStatus = asyncHandler(async (req, res) => {
   try {
     const reportId = req.params.id;
-    const { report_status } = req.body;
+    const { report_status, status_remark } = req.body;
 
     const updateData = { 
       report_status,
+      status_remark,
       is_new: true
     };
 

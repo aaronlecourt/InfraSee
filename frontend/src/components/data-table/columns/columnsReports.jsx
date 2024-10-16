@@ -53,7 +53,7 @@ export const columnsReports = [
       <DataTableColumnHeader column={column} title="Moderator" />
     ),
     cell: ({ row }) => (
-      <div className="">{row.getValue("report_mod")?.name || "N/A"}</div> // Access the 'name' field
+      <div className="">{row.getValue("report_mod")?.name || "Unassigned"}</div> // Access the 'name' field
     ),
     enableSorting: true,
     enableHiding: true,
