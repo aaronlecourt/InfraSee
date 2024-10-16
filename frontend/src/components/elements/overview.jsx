@@ -14,11 +14,11 @@ import {
 } from "@/components/ui/card";
 import Maps from "./maps";
 
-export function Overview({ goToUnassignedTab, data, userInfo, unassigned }) {
+export function Overview({ goToUnassignedTab, data, userInfo, unassigned, activeTab }) {
   const loggedModerator_id = userInfo._id
   return (
     <div className="h-full flex flex-col">
-      <ReportCounter data={data} />
+      <ReportCounter data={data} userInfo={userInfo} activeTab={activeTab}/>
       <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 h-full">
         <div className="border rounded-md col-span-1 sm:col-span-2 min-h-[30rem]">
           <Maps userInfo={loggedModerator_id} data={data}/>

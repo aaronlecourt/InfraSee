@@ -1,14 +1,17 @@
+// ReportCounter.js
 import React from "react";
+import { Badge } from "../ui/badge";
+import { FlameIcon } from "lucide-react";
 
-export function ReportCounter({ data }) {
+export function ReportCounter({ data, userInfo, activeTab }) {
   const getStatusCounts = (reports) => {
     const counts = {
       total: reports.length,
-      inprogress: 0,
-      resolved: 0,
-      dismissed: 0,
-      pending: 0,
-      unassigned: 0,
+      inprogress: { count: 0, new: 0 },
+      resolved: { count: 0, new: 0 },
+      dismissed: { count: 0, new: 0 },
+      pending: { count: 0, new: 0 },
+      unassigned: { count: 0, new: 0 },
     };
 
     reports.forEach((report) => {
@@ -16,15 +19,20 @@ export function ReportCounter({ data }) {
 
       // Increment the count for the corresponding status
       if (status === "In Progress") {
-        counts.inprogress++;
+        counts.inprogress.count++;
+        if (report.is_new) counts.inprogress.new++;
       } else if (status === "Resolved") {
-        counts.resolved++;
+        counts.resolved.count++;
+        if (report.is_new) counts.resolved.new++;
       } else if (status === "Dismissed") {
-        counts.dismissed++;
+        counts.dismissed.count++;
+        if (report.is_new) counts.dismissed.new++;
       } else if (status === "Pending") {
-        counts.pending++;
+        counts.pending.count++;
+        if (report.is_new) counts.pending.new++;
       } else if (status === "Unassigned") {
-        counts.unassigned++;
+        counts.unassigned.count++;
+        if (report.is_new) counts.unassigned.new++;
       } else {
         console.warn(`Unexpected report status: ${status}`);
       }
@@ -41,51 +49,26 @@ export function ReportCounter({ data }) {
 
   return (
     <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
-      <div className="border rounded-md p-2 flex sm:flex-col sm:p-3 items-center sm:items-start bg-white">
-        <p className="text-xs sm:text-sm text-wrap">Total Reports</p>
-        <h1 className="text-lg text-gray-300 sm:text-primary sm:text-3xl">
-          {total}
-        </h1>
-        <small className="text-xs sm:font-normal text-gray-500 hidden sm:block sm:text-xs">
-          All reports made
-        </small>
-      </div>
-      <div className="border rounded-md p-2 flex sm:flex-col sm:p-3 items-center sm:items-start bg-white">
-        <p className="text-xs sm:text-sm text-wrap">In Progress Reports</p>
-        <h1 className="text-lg text-gray-300 sm:text-primary sm:text-3xl">
-          {inprogress}
-        </h1>
-        <small className="text-xs sm:font-normal text-gray-500 hidden sm:block sm:text-xs">
-          Reports already being worked on
-        </small>
-      </div>
-      <div className="border rounded-md p-2 flex sm:flex-col sm:p-3 items-center sm:items-start bg-white">
-        <p className="text-xs sm:text-sm text-wrap">Resolved Reports</p>
-        <h1 className="text-lg text-gray-300 sm:text-primary sm:text-3xl">
-          {resolved}
-        </h1>
-        <small className="text-xs sm:font-normal text-gray-500 hidden sm:block sm:text-xs">
-          Finished or solved reports
-        </small>
-      </div>
-      <div className="border rounded-md p-2 flex sm:flex-col sm:p-3 items-center sm:items-start bg-white">
-        <p className="text-xs sm:text-sm text-wrap">Unassigned Reports</p>
-        <h1 className="text-lg text-gray-300 sm:text-primary sm:text-3xl">
-          {unassigned}
-        </h1>
-        <small className="text-xs sm:font-normal text-gray-500 hidden sm:block sm:text-xs">
-          Reports currently handled by no one
-        </small>
-      </div>
-      <div className="border rounded-md p-2 flex sm:flex-col sm:p-3 items-center sm:items-start bg-white">
-        <p className="text-xs sm:text-sm text-wrap">Pending Reports</p>
-        <h1 className="text-lg text-gray-300 sm:text-primary sm:text-3xl">
-          {pending}
-        </h1>
-        <small className="text-xs sm:font-normal text-gray-500 hidden sm:block sm:text-xs">
-          Pending or unseen reports
-        </small>
-      </div>
+      <Card title="Total Reports" count={total} description="All reports made" badgeCount={userInfo && activeTab === 'overview' ? total : null} />
+      <Card title="In Progress Reports" count={inprogress.count} description="Reports already being worked on" badgeCount={userInfo && activeTab === 'overview' ? inprogress.new : null} />
+      <Card title="Resolved Reports" count={resolved.count} description="Finished or solved reports" badgeCount={userInfo && activeTab === 'overview' ? resolved.new : null} />
+      <Card title="Unassigned Reports" count={unassigned.count} description="Reports currently handled by no one" badgeCount={userInfo && activeTab === 'overview' ? unassigned.new : null} />
+      <Card title="Pending Reports" count={pending.count} description="Pending or unseen reports" badgeCount={userInfo && activeTab === 'overview' ? pending.new : null} />
     </div>
   );
+
+  function Card({ title, count, description, badgeCount }) {
+    return (
+      <div className="relative border rounded-md p-2 flex sm:flex-col sm:p-3 items-center sm:items-start bg-white">
+        {badgeCount !== null && (
+          <Badge className="flex items-center gap-x-1 absolute top-2 right-2 px-2" variant="secondary">
+            {badgeCount}
+          </Badge>
+        )}
+        <p className="text-xs sm:text-sm text-wrap">{title}</p>
+        <h1 className="text-lg text-gray-300 sm:text-primary sm:text-3xl">{count}</h1>
+        <small className="text-xs sm:font-normal text-gray-500 hidden sm:block sm:text-xs">{description}</small>
+      </div>
+    );
+  }
 }

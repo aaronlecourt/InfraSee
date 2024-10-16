@@ -125,6 +125,7 @@ const ModeratorDashboardScreen = () => {
                   data={combinedReports}
                   userInfo={userInfo}
                   unassigned={unassigned}
+                  activeTab={activeTab}
                 />
               )}
             </TabsContent>
