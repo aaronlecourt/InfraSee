@@ -12,15 +12,16 @@ import { LocateFixed } from "lucide-react";
 import { toast } from "sonner";
 
 const PublicMaps = ({ data }) => {
+  console.log(data)
   const initialLocation = { lat: 16.4023, lng: 120.596 }; // Baguio City
   const apiKey = "AIzaSyCq5N2BhjPRx_qLLIwmm6YMftl4oEab9vY"; // Replace with your actual API key
   const mapId = "dc7acc717d908011"; // Your Map ID
 
-  const benguetBounds = {
-    north: 16.569,
-    south: 16.25,
-    east: 120.778,
-    west: 120.396,
+  const baguioBounds = {
+    north: 16.450,
+    south: 16.320,
+    east: 120.650,
+    west: 120.465,
   };
 
   const [activeMarker, setActiveMarker] = useState(null);
@@ -110,7 +111,7 @@ const PublicMaps = ({ data }) => {
           setActiveMarker("selected");
           adjustMap(lat, lng);
         } else {
-          toast.error("Please select a location within Benguet.");
+          toast.error("Please select a location within Baguio.");
         }
       }
     });

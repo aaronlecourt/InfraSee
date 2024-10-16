@@ -14,9 +14,9 @@ const LocationForm = ({ setHasSetLocation, locationData, setLocationData }) => {
   const [predictions, setPredictions] = useState([]);
 
   const baguioBounds = {
-    north: 16.445,
-    south: 16.325,
-    east: 120.634,
+    north: 16.450,
+    south: 16.320,
+    east: 120.650,
     west: 120.465,
   };
 
