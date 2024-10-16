@@ -1,6 +1,7 @@
 import asyncHandler from "express-async-handler";
 import Report from "../models/reports-model.js";
 import User from "../models/user-model.js";
+import InfrastructureType from "../models/infrastructureType-model.js";
 
 const createReport = asyncHandler(async (req, res) => {
   try {
@@ -28,8 +29,7 @@ const createReport = asyncHandler(async (req, res) => {
       !report_contactNum ||
       !report_desc ||
       !report_img ||
-      !report_status ||
-      !status_remark
+      !report_status
     ) {
       res.status(400);
       throw new Error("All fields are required.");
@@ -52,11 +52,13 @@ const createReport = asyncHandler(async (req, res) => {
 
     const savedReport = await report.save();
 
-    // Populate report_status after saving
+    // Populate report_status and infraType after saving
     const populatedReport = await Report.findById(savedReport._id)
       .populate("report_mod", "name")
-      .populate("report_status", "stat_name");
+      .populate("report_status", "stat_name")
+      .populate("infraType", "infra_name"); 
 
+      console.log(populatedReport);
     res.status(201).json({
       message: "Report created successfully",
       report: populatedReport,
@@ -73,6 +75,7 @@ const createReport = asyncHandler(async (req, res) => {
     }
   }
 });
+
 
 const updateOnAccept = asyncHandler(async (req, res) => {
   try {
@@ -135,7 +138,8 @@ const getUnassignedReports = asyncHandler(async (req, res) => {
       infraType: assignedInfraType, // Filter by user's infrastructure type
     })
       .populate("report_mod", "name")
-      .populate("report_status", "stat_name");
+      .populate("report_status", "stat_name")
+      .populate("infraType", "infra_name"); 
 
     // Filter reports to include only those with a status name of "unassigned"
     const unassignedReports = reports.filter(
@@ -165,7 +169,8 @@ const getReports = asyncHandler(async (req, res) => {
   try {
     const reports = await Report.find({ is_archived: false })
       .populate("report_mod", "name")
-      .populate("report_status", "stat_name");
+      .populate("report_status", "stat_name")
+      .populate("infraType", "infra_name"); 
 
     res.json(reports);
   } catch (error) {
@@ -196,7 +201,8 @@ const getModeratorReports = asyncHandler(async (req, res) => {
       is_archived: false,
     })
       .populate("report_mod", "name")
-      .populate("report_status", "stat_name");
+      .populate("report_status", "stat_name")
+      .populate("infraType", "infra_name"); 
 
     // Check if reports were found
     if (!reports || reports.length === 0) {
@@ -243,7 +249,8 @@ const getModeratorArchivedReports = asyncHandler(async (req, res) => {
       is_archived: true,
     })
       .populate("report_mod", "name")
-      .populate("report_status", "stat_name");
+      .populate("report_status", "stat_name")
+      .populate("infraType", "infra_name"); 
 
     if (!reports || reports.length === 0) {
       return res.status(200).json([]);
@@ -300,7 +307,8 @@ const getArchivedReports = asyncHandler(async (req, res) => {
   try {
     const reports = await Report.find({ is_archived: true })
       .populate("report_mod", "name")
-      .populate("report_status", "stat_name");
+      .populate("report_status", "stat_name")
+      .populate("infraType", "infra_name"); 
 
     res.json(reports);
   } catch (error) {
@@ -416,7 +424,8 @@ const markReportAsSeen = asyncHandler(async (req, res) => {
       { new: true }
     )
       .populate("report_mod", "name")
-      .populate("report_status", "stat_name");
+      .populate("report_status", "stat_name")
+      .populate("infraType", "infra_name"); 
 
     if (!report) {
       res.status(404);

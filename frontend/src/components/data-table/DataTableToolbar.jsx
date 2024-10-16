@@ -139,7 +139,7 @@ export function DataTableToolbar({ table, activeTab }) {
               />
             )}
             {table.getColumn("report_mod") && (
-              <div className="flex gap-x-2">
+            <div className="flex gap-x-2">
                 <DataTableFacetedFilter
                   column={table.getColumn("report_mod")}
                   title="Moderator"

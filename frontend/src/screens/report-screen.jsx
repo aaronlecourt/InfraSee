@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { ReportCounter } from "@/components/elements/report-counter";
 import axios from "axios";
-import PublicMaps from "@/components/elements/publicmaps";
+import PublicMaps from "@/components/elements/public-maps/publicmaps";
 import MultiStepForm from "@/components/mobile-multistep-reportform/mobile-report-form"; // Import the MultiStepForm
 
 function ReportScreen() {
@@ -108,9 +108,9 @@ function ReportScreen() {
             </div>
           </div>
 
-          <div className="absolute z-50 bottom-5 left-5 right-5 rounded-lg border gap-y-3 flex flex-col">
+          <div className="absolute z-50 bottom-5 left-5 right-5 rounded-lg gap-y-3 flex flex-col">
             <Button
-              className="flex gap-x-2 border sm:max-w-xs"
+              className="flex gap-x-2 sm:max-w-xs"
               onClick={handleOpenMultiStepForm} // Open the MultiStepForm
             >
               <Plus size={15}/>File Report
