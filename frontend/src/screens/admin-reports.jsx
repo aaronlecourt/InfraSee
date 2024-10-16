@@ -44,6 +44,17 @@ const AdminReportsScreen = () => {
   const [loading, setLoading] = useState(true);
   const columns = activeButton === "reports" ? columnsReports : columnsAccounts;
 
+  useEffect(() => {
+    socket.on("reportChange", (change) => {
+      console.log("Received report change:", change);
+      loadReports();
+    });
+
+    return () => {
+      socket.off("reportChange");
+    };
+  }, []);
+
   const loadAccounts = async () => {
     setLoadingUsers(true);
     try {

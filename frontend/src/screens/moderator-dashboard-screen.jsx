@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import socket from "@/utils/socket-connect";
 import { Spinner } from "@/components/ui/spinner";
 import { useSelector } from "react-redux";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -41,6 +42,19 @@ const ModeratorDashboardScreen = () => {
   const [loadingReports, setLoadingReports] = useState(true);
   const [loadingArchives, setLoadingArchives] = useState(true);
   const [loadingUnassigned, setLoadingUnassigned] = useState(true);
+
+  useEffect(() => {
+    socket.on("reportChange", (change) => {
+      console.log("Received report change:", change);
+      loadReports(); 
+      loadArchives();
+      loadUnassigned();
+    });
+
+    return () => {
+      socket.off("reportChange"); 
+    };
+  }, []);
 
   // Fetch data
   const loadReports = async () => {

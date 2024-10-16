@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import socket from "@/utils/socket-connect";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -14,7 +15,12 @@ import { Helmet, HelmetProvider } from "react-helmet-async";
 import { ReportCounter } from "@/components/elements/report-counter";
 import axios from "axios";
 import PublicMaps from "@/components/elements/public-maps/publicmaps";
-import MultiStepForm from "@/components/mobile-multistep-reportform/mobile-report-form"; // Import the MultiStepForm
+import MultiStepForm from "@/components/mobile-multistep-reportform/mobile-report-form";
+
+const fetchReports = async () => {
+  const response = await axios.get("/api/reports/");
+  return response.data;
+};
 
 function ReportScreen() {
   const navigate = useNavigate();
@@ -24,16 +30,27 @@ function ReportScreen() {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [fetchReports] = await Promise.all([axios.get("/api/reports")]);
-        setData(fetchReports.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
+    socket.on("reportChange", (change) => {
+      console.log("Received report change:", change);
+      loadReports();
+    });
 
-    fetchData();
+    return () => {
+      socket.off("reportChange");
+    };
+  }, []);
+
+  const loadReports = async () => {
+    try {
+      const data = await fetchReports();
+      setData(data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    loadReports();
   }, [setData, isMultiStepFormOpen]);
 
   useEffect(() => {
@@ -113,7 +130,8 @@ function ReportScreen() {
               className="flex gap-x-2 sm:max-w-xs"
               onClick={handleOpenMultiStepForm} // Open the MultiStepForm
             >
-              <Plus size={15}/>File Report
+              <Plus size={15} />
+              File Report
             </Button>
             <ReportCounter data={data} />
           </div>
@@ -124,7 +142,10 @@ function ReportScreen() {
 
           {/* MultiStepForm instance */}
           {isMultiStepFormOpen && (
-            <MultiStepForm open={isMultiStepFormOpen} onClose={handleCloseMultiStepForm} />
+            <MultiStepForm
+              open={isMultiStepFormOpen}
+              onClose={handleCloseMultiStepForm}
+            />
           )}
         </div>
       </div>

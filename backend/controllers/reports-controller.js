@@ -47,7 +47,7 @@ const createReport = asyncHandler(async (req, res) => {
       report_status,
       report_mod,
       report_time_resolved,
-      status_remark
+      status_remark,
     });
 
     const savedReport = await report.save();
@@ -56,9 +56,9 @@ const createReport = asyncHandler(async (req, res) => {
     const populatedReport = await Report.findById(savedReport._id)
       .populate("report_mod", "name")
       .populate("report_status", "stat_name")
-      .populate("infraType", "infra_name"); 
+      .populate("infraType", "infra_name");
 
-      console.log(populatedReport);
+    console.log(populatedReport);
     res.status(201).json({
       message: "Report created successfully",
       report: populatedReport,
@@ -75,7 +75,6 @@ const createReport = asyncHandler(async (req, res) => {
     }
   }
 });
-
 
 const updateOnAccept = asyncHandler(async (req, res) => {
   try {
@@ -135,22 +134,22 @@ const getUnassignedReports = asyncHandler(async (req, res) => {
     const reports = await Report.find({
       report_mod: null,
       is_archived: false,
-      infraType: assignedInfraType, // Filter by user's infrastructure type
+      infraType: assignedInfraType,
     })
       .populate("report_mod", "name")
       .populate("report_status", "stat_name")
-      .populate("infraType", "infra_name"); 
+      .populate("infraType", "infra_name");
 
-    // Filter reports to include only those with a status name of "unassigned"
+    if (!reports || reports.length === 0) {
+      return res.status(200).json([]); // Return empty array with 200 OK
+    }
+
+    // Filter reports to include only those with a status name of "Unassigned"
     const unassignedReports = reports.filter(
       (report) => report.report_status.stat_name === "Unassigned"
     );
 
-    // Check if any unassigned reports were found
-    if (unassignedReports.length === 0) {
-      return res.status(404).json({ message: "No unassigned reports found." });
-    }
-
+    // Return the reports, even if empty
     res.json(unassignedReports);
   } catch (error) {
     console.error(`Error fetching unassigned reports: ${error.message}`);
@@ -170,7 +169,7 @@ const getReports = asyncHandler(async (req, res) => {
     const reports = await Report.find({ is_archived: false })
       .populate("report_mod", "name")
       .populate("report_status", "stat_name")
-      .populate("infraType", "infra_name"); 
+      .populate("infraType", "infra_name");
 
     res.json(reports);
   } catch (error) {
@@ -201,17 +200,14 @@ const getModeratorReports = asyncHandler(async (req, res) => {
       is_archived: false,
     })
       .populate("report_mod", "name")
-      .populate("report_status", "stat_name")
-      .populate("infraType", "infra_name"); 
+      .populate("report_status", "stat_name");
 
-    // Check if reports were found
+    // Return an empty array if no reports are found, but with status 200
     if (!reports || reports.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No reports found for this moderator." });
+      return res.status(200).json([]); // Return empty array with 200 OK
     }
 
-    res.json(reports);
+    res.json(reports); // Send the reports as the response
   } catch (error) {
     console.error(`Error fetching moderator reports: ${error.message}`);
 
@@ -250,7 +246,7 @@ const getModeratorArchivedReports = asyncHandler(async (req, res) => {
     })
       .populate("report_mod", "name")
       .populate("report_status", "stat_name")
-      .populate("infraType", "infra_name"); 
+      .populate("infraType", "infra_name");
 
     if (!reports || reports.length === 0) {
       return res.status(200).json([]);
@@ -308,7 +304,7 @@ const getArchivedReports = asyncHandler(async (req, res) => {
     const reports = await Report.find({ is_archived: true })
       .populate("report_mod", "name")
       .populate("report_status", "stat_name")
-      .populate("infraType", "infra_name"); 
+      .populate("infraType", "infra_name");
 
     res.json(reports);
   } catch (error) {
@@ -378,10 +374,10 @@ const updateReportStatus = asyncHandler(async (req, res) => {
     const reportId = req.params.id;
     const { report_status, status_remark } = req.body;
 
-    const updateData = { 
+    const updateData = {
       report_status,
       status_remark,
-      is_new: true
+      is_new: true,
     };
 
     console.log(report_status);
@@ -407,11 +403,12 @@ const updateReportStatus = asyncHandler(async (req, res) => {
     if (error.name === "CastError") {
       res.status(400).json({ message: "Invalid report ID format." });
     } else {
-      res.status(500).json({ message: "Server error. Please try again later." });
+      res
+        .status(500)
+        .json({ message: "Server error. Please try again later." });
     }
   }
 });
-
 
 const markReportAsSeen = asyncHandler(async (req, res) => {
   try {
@@ -425,7 +422,7 @@ const markReportAsSeen = asyncHandler(async (req, res) => {
     )
       .populate("report_mod", "name")
       .populate("report_status", "stat_name")
-      .populate("infraType", "infra_name"); 
+      .populate("infraType", "infra_name");
 
     if (!report) {
       res.status(404);

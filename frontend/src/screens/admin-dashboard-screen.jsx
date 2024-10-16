@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import socket from "@/utils/socket-connect";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -43,6 +44,17 @@ const AdminDashboardScreen = () => {
   const [loadingUsers, setLoadingUsers] = useState(true);
   const columns =
     activeButton === "accounts" ? columnsAccounts : columnsReports;
+
+  useEffect(() => {
+    socket.on("userChange", (change) => {
+      console.log("Received user change:", change);
+      loadAccounts();
+    });
+
+    return () => {
+      socket.off("userChange");
+    };
+  }, []);
 
   const loadAccounts = async () => {
     setLoadingUsers(true);
