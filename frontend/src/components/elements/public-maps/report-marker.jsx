@@ -13,6 +13,7 @@ const statusIcons = {
 
 export const ReportMarker = ({ report, onClick, setMarkerRef, isActive, onClose }) => {
   const [infoWindowVisible, setInfoWindowVisible] = useState(false);
+  const [isHovered, setIsHovered] = useState(false); // State to track hover status
 
   const formatDate = (dateString) => {
     const options = {
@@ -49,12 +50,18 @@ export const ReportMarker = ({ report, onClick, setMarkerRef, isActive, onClose 
         anchorPoint={AdvancedMarkerAnchorPoint.CENTER}
         ref={ref}
         onClick={handleClick}
+        onMouseEnter={() => setIsHovered(true)} // Set hover state to true
+        onMouseLeave={() => setIsHovered(false)} // Reset hover state
       >
         <img 
           src={statusIcons[report.report_status.stat_name] || "/pins/pins_-06.png"} 
           alt={report.report_status.stat_name} 
           className="marker-icon" 
-          style={{ height: '2.5rem' }}
+          style={{ 
+            height: isHovered ? '3rem' : '2.5rem',
+            transform: isHovered ? 'translateY(-0.5rem)' : 'translateY(0)',
+            transition: 'height 0.3s ease, transform 0.3s ease' // Smooth transition
+          }}
         />
       </AdvancedMarker>
 
