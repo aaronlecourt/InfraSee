@@ -90,8 +90,8 @@ const PublicMaps = ({ data }) => {
       "formatted_address",
     ]);
     const bounds = new google.maps.LatLngBounds(
-      new google.maps.LatLng(benguetBounds.south, benguetBounds.west),
-      new google.maps.LatLng(benguetBounds.north, benguetBounds.east)
+      new google.maps.LatLng(baguioBounds.south, baguioBounds.west),
+      new google.maps.LatLng(baguioBounds.north, baguioBounds.east)
     );
     autocomplete.setBounds(bounds);
     autocomplete.setOptions({ strictBounds: true });
@@ -101,10 +101,10 @@ const PublicMaps = ({ data }) => {
       if (place.geometry) {
         const { lat, lng } = place.geometry.location.toJSON();
         if (
-          lat >= benguetBounds.south &&
-          lat <= benguetBounds.north &&
-          lng >= benguetBounds.west &&
-          lng <= benguetBounds.east
+          lat >= baguioBounds.south &&
+          lat <= baguioBounds.north &&
+          lng >= baguioBounds.west &&
+          lng <= baguioBounds.east
         ) {
           setSelectedLocation({ lat, lng, address: place.formatted_address });
           setSearchTerm(place.name);
@@ -195,7 +195,7 @@ const PublicMaps = ({ data }) => {
           disableDefaultUI={true}
           options={{
             restriction: {
-              latLngBounds: benguetBounds,
+              latLngBounds: baguioBounds,
               strictBounds: true,
             },
           }}
