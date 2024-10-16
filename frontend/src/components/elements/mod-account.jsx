@@ -21,6 +21,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { UserRoundXIcon } from "lucide-react";
+import {
+  Dialog,
+  DialogPortal,
+  DialogOverlay,
+  DialogClose,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 // Validation schema
 const formSchema = z.object({
@@ -34,17 +47,17 @@ const formSchema = z.object({
 
 export function ModAccount({ user }) {
   const [infrastructureTypes, setInfrastructureTypes] = useState([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: user?.name || "",
       email: user?.email || "",
-      infrastructureType: user?.infra_type?._id || "", // Use _id as value
+      infrastructureType: user?.infra_type?._id || "",
     },
   });
 
   const { handleSubmit, control, setValue, reset, watch } = form;
-  const selectedInfrastructureType = watch("infrastructureType");
 
   // Fetch infrastructure types from the API
   useEffect(() => {
@@ -66,7 +79,7 @@ export function ModAccount({ user }) {
       reset({
         name: user.name,
         email: user.email,
-        infrastructureType: user.infra_type?._id || "", // Use _id here
+        infrastructureType: user.infra_type?._id || "",
       });
     }
   }, [user, reset]);
@@ -89,13 +102,25 @@ export function ModAccount({ user }) {
     }
   };
 
+  const handleDeactivate = async () => {
+    try {
+      await axios.delete("/api/deactivate-account");
+      toast.success("Account deactivated successfully!");
+      setIsDialogOpen(false);
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message || "An error occurred during deactivation.";
+      toast.error(errorMessage);
+    }
+  };
+
   // Find the selected infrastructure name
   const getInfraName = (value) => {
     return infrastructureTypes.find((type) => type._id === value)?.infra_name;
   };
 
   return (
-    <div className="">
+    <div>
       <h1 className="text-xl font-bold mb-2">Account</h1>
       <p className="text-gray-500 text-sm mb-4">
         Update your account settings here.
@@ -103,10 +128,7 @@ export function ModAccount({ user }) {
       <hr className="mb-4" />
 
       <Form {...form}>
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="space-y-4 md:w-1/2 w-full"
-        >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:w-1/2 w-full">
           <FormField
             control={control}
             name="name"
@@ -193,9 +215,39 @@ export function ModAccount({ user }) {
           <Button type="submit" className="w-full mt-4">
             Update Account
           </Button>
+          
+          {/* Moved DialogTrigger inside Dialog */}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex gap-x-2 w-full text-destructive font-semibold">
+                <UserRoundXIcon size={15} />
+                Deactivate Account
+              </Button>
+            </DialogTrigger>
+
+            {/* Confirmation Dialog */}
+            <DialogPortal>
+              <DialogOverlay />
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Account Deactivation</DialogTitle>
+                  <DialogDescription>
+                    Account deactivation and reactivation is requested via email to i.iirs.infrasee@gmail.com. Deactivating your account removes your login privileges but does not remove any records made under your account.
+                  </DialogDescription>
+                </DialogHeader>
+                {/* <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DialogClose>
+                  <Button variant="destructive" onClick={handleDeactivate}>
+                    Deactivate Account
+                  </Button>
+                </DialogFooter> */}
+              </DialogContent>
+            </DialogPortal>
+          </Dialog>
         </form>
       </Form>
     </div>
   );
 }
-

@@ -98,7 +98,7 @@ function SettingsScreen() {
           <div className="col-span-1 lg:col-span-1 lg:p-2">
             <TabsList className="flex flex-row lg:flex-col h-full gap-y-2">
               <TabsTrigger value="account">Account</TabsTrigger>
-              <TabsTrigger value="report_form">Report Form</TabsTrigger>
+              {/* <TabsTrigger value="report_form">Report Form</TabsTrigger> */}
               <TabsTrigger value="security">Security</TabsTrigger>
             </TabsList>
           </div>
