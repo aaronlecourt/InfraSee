@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import socket from "@/utils/socket-connect";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
