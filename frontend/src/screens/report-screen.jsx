@@ -16,7 +16,7 @@ import { ReportCounter } from "@/components/elements/report-counter";
 import axios from "axios";
 import PublicMaps from "@/components/elements/public-maps/publicmaps";
 import MultiStepForm from "@/components/mobile-multistep-reportform/mobile-report-form";
-
+import { DatePickerWithRange } from "@/components/elements/public-maps/datepickerwithrange";
 // Mapping of status to PNG paths
 const statusIcons = {
   "Unassigned": "/pins/pins_-04.png",
@@ -148,7 +148,7 @@ function ReportScreen() {
           </div>
 
           <div className="absolute z-50 bottom-5 left-5 right-5 flex flex-col items-start gap-2">
-            <div className="flex gap-2 items-center">
+            <div className="flex flex-col sm:flex-row gap-2 items-start">
               <Button
                 variant="default"
                 className="flex gap-x-2 sm:max-w-xs"
@@ -157,6 +157,7 @@ function ReportScreen() {
                 <PenBoxIcon size={15} />
                 File Report
               </Button>
+              <DatePickerWithRange/>
             </div>
             <div className="flex gap-2 flex-wrap items-center">
               {["All", "Pending", "Resolved", "In Progress", "Dismissed", "Unassigned"].map(status => (
