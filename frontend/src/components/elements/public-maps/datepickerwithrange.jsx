@@ -25,14 +25,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export function DatePickerWithRange({ className }) {
+export function DatePickerWithRange({ className, onDateSelect }) {
   const [date, setDate] = useState(undefined);
   const [selectedRangeLabel, setSelectedRangeLabel] = useState("Today");
 
   const handleDateSelect = (range, label) => {
-    setDate(range);
-    setSelectedRangeLabel(label);
-    console.log("Selected dates:", range);
+    if (range && range.from && range.to) {
+      setDate(range);
+      setSelectedRangeLabel(label);
+      onDateSelect(range); // Call parent with the selected range
+    //   console.log("Selected dates:", range);
+    }
   };
 
   const today = new Date();
@@ -113,7 +116,9 @@ export function DatePickerWithRange({ className }) {
               defaultMonth={today}
               selected={date}
               onSelect={(range) => {
-                handleDateSelect(range, "Custom");
+                if (range.from && range.to) {
+                  handleDateSelect(range, "Custom");
+                }
               }}
               numberOfMonths={2}
               modifiers={{

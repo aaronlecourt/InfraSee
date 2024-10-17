@@ -17,14 +17,13 @@ import axios from "axios";
 import PublicMaps from "@/components/elements/public-maps/publicmaps";
 import MultiStepForm from "@/components/mobile-multistep-reportform/mobile-report-form";
 import { DatePickerWithRange } from "@/components/elements/public-maps/datepickerwithrange";
-// Mapping of status to PNG paths
+
 const statusIcons = {
   "Unassigned": "/pins/pins_-04.png",
   "In Progress": "/pins/pins_-02.png",
   "Resolved": "/pins/pins_-03.png",
   "Pending": "/pins/pins_-01.png",
   "Dismissed": "/pins/pins_-05.png",
-  // No icon for "All"
 };
 
 const fetchReports = async () => {
@@ -40,12 +39,10 @@ function ReportScreen() {
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
   const [data, setData] = useState([]);
+  const [dateRange, setDateRange] = useState({ from: null, to: null });
 
   useEffect(() => {
-    socket.on("reportChange", () => {
-      loadReports();
-    });
-
+    socket.on("reportChange", loadReports);
     return () => {
       socket.off("reportChange");
     };
@@ -94,9 +91,52 @@ function ReportScreen() {
     setSelectedStatus(status);
   };
 
+  const handleDateRangeChange = (range) => {
+    console.log("Received range:", range);
+    if (range && range.from && range.to) {
+      // Create date objects
+      const fromDate = new Date(range.from);
+      const toDate = new Date(range.to);
+      
+      // Set fromDate to start of the day (00:00:00.000)
+      fromDate.setUTCHours(0, 0, 0, 0);
+      
+      // Set toDate to end of the day (23:59:59.999)
+      toDate.setUTCHours(23, 59, 59, 999);
+      
+      // Convert to ISO string format
+      const fromISO = fromDate.toISOString();
+      const toISO = toDate.toISOString();
+      
+      setDateRange({ from: fromISO, to: toISO });
+      console.log("Date range set to:", { from: fromISO, to: toISO });
+    } else {
+      setDateRange({ from: null, to: null });
+      console.log("Invalid range provided. Resetting date range.");
+    }
+  };
+  
   const filteredData = data.filter(report => {
-    if (selectedStatus === "All") return true; 
-    return report.report_status.stat_name === selectedStatus; 
+    const reportDate = new Date(report.createdAt);
+    const { from, to } = dateRange;
+
+    // Normalize reportDate to just the date (UTC 00:00:00)
+    const normalizedReportDate = new Date(reportDate.setHours(0, 0, 0, 0));
+
+    // Normalize the date range to just the date
+    const fromDate = from ? new Date(from).setHours(0, 0, 0, 0) : null;
+    const toDate = to ? new Date(to).setHours(0, 0, 0, 0) : null;
+
+    // Check if the normalizedReportDate falls within the selected date range
+    const isInDateRange = 
+      (fromDate === null || normalizedReportDate >= fromDate) && 
+      (toDate === null || normalizedReportDate <= toDate);
+
+    // Determine if the report status matches the selected status
+    const isStatusMatch = selectedStatus === "All" || report.report_status.stat_name === selectedStatus;
+
+    // Return true if both conditions are met
+    return isInDateRange && isStatusMatch;
   });
 
   return (
@@ -108,10 +148,7 @@ function ReportScreen() {
         <div className="relative h-full">
           <PublicMaps data={filteredData} className="absolute inset-0 z-0" />
           <div className="absolute top-0 z-50 w-full h-fit p-3 flex items-center justify-between border-b border-muted-foreground bg-white">
-            <div
-              className="w-[6rem] mt-1 cursor-pointer"
-              onClick={handleLogoClick}
-            >
+            <div className="w-[6rem] mt-1 cursor-pointer" onClick={handleLogoClick}>
               <img src="/infrasee-logo.svg" alt="Infrasee Logomark" />
             </div>
             <nav className="hidden sm:flex">
@@ -119,15 +156,10 @@ function ReportScreen() {
                 Contact Us
               </Button>
             </nav>
-
             <div className="sm:hidden">
               <Sheet open={isNavbarSheetOpen} onOpenChange={setNavbarSheetOpen}>
                 <SheetTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setNavbarSheetOpen(true)}
-                  >
+                  <Button variant="outline" size="icon" onClick={() => setNavbarSheetOpen(true)}>
                     <Menu className="h-6 w-6" />
                     <span className="sr-only">Open Menu</span>
                   </Button>
@@ -146,18 +178,13 @@ function ReportScreen() {
               </Sheet>
             </div>
           </div>
-
           <div className="absolute z-50 bottom-5 left-5 right-5 flex flex-col items-start gap-2">
             <div className="flex flex-col sm:flex-row gap-2 items-start">
-              <Button
-                variant="default"
-                className="flex gap-x-2 sm:max-w-xs"
-                onClick={handleOpenMultiStepForm}
-              >
+              <Button variant="default" className="flex gap-x-2 sm:max-w-xs" onClick={handleOpenMultiStepForm}>
                 <PenBoxIcon size={15} />
                 File Report
               </Button>
-              <DatePickerWithRange/>
+              <DatePickerWithRange onDateSelect={handleDateRangeChange} />
             </div>
             <div className="flex gap-2 flex-wrap items-center">
               {["All", "Pending", "Resolved", "In Progress", "Dismissed", "Unassigned"].map(status => (
@@ -173,9 +200,7 @@ function ReportScreen() {
                       <span className="sm:block hidden">{status}</span>
                     </>
                   )}
-                  {status === "All" && (
-                    <span>{status}</span>
-                  )}
+                  {status === "All" && <span>{status}</span>}
                 </Button>
               ))}
               <Button
@@ -183,27 +208,15 @@ function ReportScreen() {
                 onClick={toggleReportCounter}
                 className="flex items-center justify-center w-5 h-5 p-0 rounded-full"
               >
-                {!showReportCounter ? (
-                  <ChevronUp size={18} />
-                ) : (
-                  <ChevronDown size={18} />
-                )}
+                {!showReportCounter ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
               </Button>
             </div>
-            <div
-              className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                showReportCounter ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
-              }`}
-            >
-              {showReportCounter && <ReportCounter data={data} />} {/* Pass all report data */}
+            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showReportCounter ? "max-h-40 opacity-100" : "max-h-0 opacity-0"}`}>
+              {showReportCounter && <ReportCounter data={data} />}
             </div>
           </div>
-
           {isMultiStepFormOpen && (
-            <MultiStepForm
-              open={isMultiStepFormOpen}
-              onClose={handleCloseMultiStepForm}
-            />
+            <MultiStepForm open={isMultiStepFormOpen} onClose={handleCloseMultiStepForm} />
           )}
         </div>
       </div>
