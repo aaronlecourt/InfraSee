@@ -168,8 +168,8 @@ function ReportScreen() {
                 >
                   {status !== "All" && (
                     <>
-                    <img src={statusIcons[status]} alt={status} className="h-4" />
-                    <span className="sm:block hidden">{status}</span>
+                      <img src={statusIcons[status]} alt={status} className="h-4" />
+                      <span className="sm:block hidden">{status}</span>
                     </>
                   )}
                   {status === "All" && (
@@ -194,7 +194,7 @@ function ReportScreen() {
                 showReportCounter ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
               }`}
             >
-              {showReportCounter && <ReportCounter data={filteredData} />}
+              {showReportCounter && <ReportCounter data={data} />} {/* Pass all report data */}
             </div>
           </div>
 
