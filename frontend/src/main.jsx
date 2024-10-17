@@ -16,8 +16,10 @@ import ContactUsScreen from "./screens/contact-us-screen.jsx";
 import AdminLoginScreen from "./screens/admin-login-screen.jsx";
 import ReportScreen from "./screens/report-screen.jsx";
 import PrivateRoute from "./components/private-route.jsx";
+import SubModeratorRoute from "./components/sub-moderator-route.jsx";
 import SettingsScreen from "./screens/settings-screen.jsx";
 import ModeratorLoginScreen from "./screens/moderator-login-screen.jsx";
+import SubModeratorDashboardScreen from "./screens/sub-moderator-dashboard-screen.jsx";
 import AdminDashboardScreen from "./screens/admin-dashboard-screen.jsx";
 import ModeratorDashboardScreen from "./screens/moderator-dashboard-screen.jsx";
 import AdminRoute from "./components/admin-route.jsx";
@@ -36,15 +38,23 @@ const router = createBrowserRouter(
       <Route path="/moderator/login" element={<ModeratorLoginScreen />} />
       <Route path="/report" element={<ReportScreen />} />
 
-      {/* Private routes */}
+      {/* Private/Moderator routes */}
       <Route element={<PrivateRoute />}>
         <Route path="/settings" element={<SettingsScreen />} />
       </Route>
+
+      {/* Moderator routes */}
       <Route element={<ModeratorRoute />}>
         <Route
           path="/moderator/dashboard"
           element={<ModeratorDashboardScreen />}
         />
+      </Route>
+
+      {/* Submoderator routes */}
+      <Route element={<SubModeratorRoute />}>
+        <Route path="/submoderator/dashboard" element={<SubModeratorDashboardScreen />} />
+        {/* Add more submoderator-specific routes as needed */}
       </Route>
 
       {/* Admin routes */}

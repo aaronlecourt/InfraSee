@@ -1,11 +1,14 @@
 import express from "express";
 import {
   registerUser,
+  createSubModerator,
   authUser,
   adminUser,
   moderatorUser,
+  subModeratorUser,
   deleteUser,
-  // refreshToken,
+  deactivateModerator,
+  reactivateModerator,
   logoutUser,
   getUserProfile,
   updateUserProfile,
@@ -16,15 +19,18 @@ import {
   checkEmailExists,
 } from "../controllers/user-controller.js";
 import { protect } from "../middleware/auth-middleware.js";
-// import { refreshToken } from "../middleware/refresh-token-middleware.js";
 
 const router = express.Router();
 
 router.route("/").post(registerUser);
+router.route('/:moderatorId/submoderators').post(protect, createSubModerator);
+router.route('/:moderatorId/deactivate').put(protect, deactivateModerator);
+router.route('/:moderatorId/reactivate').put(protect, reactivateModerator);
 router.route("/delete/:id").delete(deleteUser);
 router.route("/auth").post(authUser);
 router.route("/auth/admin").post(adminUser);
 router.route("/auth/moderator").post(moderatorUser);
+router.route("/auth/submoderator").post(subModeratorUser);
 router.route("/logout").post(logoutUser);
 router
   .route("/profile")

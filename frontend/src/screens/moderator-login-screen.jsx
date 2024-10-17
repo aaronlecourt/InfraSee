@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useModeratorLoginMutation } from "../slices/users-api-slice";
+import { useSubModeratorLoginMutation } from "../slices/users-api-slice";
 import { setCredentials } from "../slices/auth-slice";
 import { toast } from "sonner";
 import { useForm, FormProvider } from "react-hook-form";
@@ -63,7 +64,8 @@ const formSchema = z.object({
 function ModeratorLoginScreen() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [login] = useModeratorLoginMutation();
+  const [loginModerator] = useModeratorLoginMutation();
+  const [loginSubModerator] = useSubModeratorLoginMutation();
   const { userInfo } = useSelector((state) => state.auth);
 
   const methods = useForm({
@@ -81,20 +83,47 @@ function ModeratorLoginScreen() {
   const [isTermsDialogOpen, setTermsDialogOpen] = useState(false);
 
   useEffect(() => {
-    if (userInfo && userInfo?.isModerator) {
-      navigate("/moderator/dashboard");
+    if (userInfo) {
+      const path = userInfo.isModerator
+        ? "/moderator/dashboard"
+        : userInfo.isSubModerator
+        ? "/submoderator/dashboard"
+        : null;
+      if (path) {
+        navigate(path);
+      }
     }
   }, [navigate, userInfo]);
 
   const onLoginSubmit = async (data) => {
-    try {
-      const res = await login(data).unwrap();
-      dispatch(setCredentials({ ...res }));
-      navigate("/moderator/dashboard");
-      toast.success("Login successful!");
-    } catch (err) {
-      toast.error(err?.data?.message || err.error);
+    const loginAttempts = [
+      {
+        loginFn: loginModerator,
+        role: "Moderator",
+        path: "/moderator/dashboard",
+      },
+      {
+        loginFn: loginSubModerator,
+        role: "SubModerator",
+        path: "/submoderator/dashboard",
+      },
+    ];
+
+    for (const { loginFn, role, path } of loginAttempts) {
+      try {
+        const res = await loginFn(data).unwrap();
+        dispatch(setCredentials({ ...res }));
+        navigate(path);
+        toast.success(`${role} login successful!`);
+        return;
+      } catch (err) {
+        if (err?.data?.message) {
+          toast.error(err.data.message);
+        }
+      }
     }
+
+    toast.error("Login failed for both roles. Please check your credentials.");
   };
 
   const handleLogoClick = () => {
@@ -272,7 +301,7 @@ function ModeratorLoginScreen() {
                     <DialogContent>
                       <DialogTitle>Terms and Conditions</DialogTitle>
                       <DialogDescription>
-                        <TermsAndConditions/>
+                        <TermsAndConditions />
                       </DialogDescription>
                     </DialogContent>
                   </Dialog>

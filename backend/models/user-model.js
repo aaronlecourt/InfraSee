@@ -41,7 +41,24 @@ const userSchema = mongoose.Schema(
     },
     isModerator: {
       type: Boolean,
-      default: true,
+      default: false,
+    },
+    isSubModerator: {
+      type: Boolean,
+      default: false,
+    },
+    assignedModerator: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    subModerators: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    }],
+    deactivated: {
+      type: Boolean,
+      default: false, 
     },
     resetPasswordToken: {
       type: String,
@@ -57,6 +74,7 @@ const userSchema = mongoose.Schema(
   }
 );
 
+// Middleware to hash password before saving
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     next();
@@ -66,9 +84,38 @@ userSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, salt);
 });
 
+
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
+// Middleware to handle deactivation and reactivation of submoderators
+userSchema.pre('findOneAndUpdate', async function (next) {
+  const update = this.getUpdate();
+
+  // If deactivating the moderator, deactivate all their submoderators
+  if (update.deactivated === true) {
+    const moderatorId = this.getQuery()._id;
+
+    // Deactivate all submoderators assigned to this moderator
+    await mongoose.model('User').updateMany(
+      { assignedModerator: moderatorId, isSubModerator: true },
+      { $set: { deactivated: true } }
+    );
+  } 
+  // If reactivating the moderator, reactivate all their submoderators
+  else if (update.deactivated === false) {
+    const moderatorId = this.getQuery()._id;
+
+    // Reactivate all submoderators assigned to this moderator
+    await mongoose.model('User').updateMany(
+      { assignedModerator: moderatorId, isSubModerator: true, deactivated: true },
+      { $set: { deactivated: false } }
+    );
+  }
+
+  next();
+});
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 

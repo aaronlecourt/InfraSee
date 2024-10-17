@@ -270,6 +270,109 @@ const getModeratorArchivedReports = asyncHandler(async (req, res) => {
   }
 });
 
+const getSubModeratorReports = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    if (!userId) {
+      res.status(400);
+      throw new Error("User ID is missing in the request.");
+    }
+
+    // Find the logged-in user
+    const user = await User.findById(userId);
+    if (!user || !user.isSubModerator) {
+      res.status(403);
+      throw new Error("Access denied: User is not a submoderator.");
+    }
+
+    // Ensure the submoderator has an assigned moderator
+    if (!user.assignedModerator) {
+      res.status(400);
+      throw new Error("Submoderator does not have an assigned moderator.");
+    }
+
+    // Fetch reports assigned to the assigned moderator of this submoderator
+    const reports = await Report.find({
+      report_mod: user.assignedModerator,
+      is_archived: false,
+    })
+      .populate("report_mod", "name")
+      .populate("report_status", "stat_name");
+
+    if (!reports || reports.length === 0) {
+      return res.status(200).json([]); // Return empty array with 200 OK
+    }
+
+    res.json(reports);
+  } catch (error) {
+    console.error(`Error fetching submoderator reports: ${error.message}`);
+
+    if (error.name === "CastError") {
+      res.status(400).json({ message: "Invalid report or user ID format." });
+    } else if (error.name === "ValidationError") {
+      res.status(422).json({ message: error.message });
+    } else {
+      res
+        .status(500)
+        .json({ message: "Server error. Please try again later." });
+    }
+  }
+});
+
+
+const getSubModeratorArchivedReports = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    if (!userId) {
+      res.status(400);
+      throw new Error("User ID is missing in the request.");
+    }
+
+    // Find the logged-in user
+    const user = await User.findById(userId);
+    if (!user || !user.isSubModerator) {
+      res.status(403);
+      throw new Error("Access denied: User is not a submoderator.");
+    }
+
+    // Ensure the submoderator has an assigned moderator
+    if (!user.assignedModerator) {
+      res.status(400);
+      throw new Error("Submoderator does not have an assigned moderator.");
+    }
+
+    // Fetch archived reports assigned to the assigned moderator of this submoderator
+    const archivedReports = await Report.find({
+      report_mod: user.assignedModerator,
+      is_archived: true,
+    })
+      .populate("report_mod", "name")
+      .populate("report_status", "stat_name")
+      .populate("infraType", "infra_name");
+
+    if (!archivedReports || archivedReports.length === 0) {
+      return res.status(200).json([]); // Return empty array with 200 OK
+    }
+
+    res.json(archivedReports);
+  } catch (error) {
+    console.error(`Error fetching submoderator archived reports: ${error.message}`);
+
+    if (error.name === "CastError") {
+      res.status(400).json({ message: "Invalid report or user ID format." });
+    } else if (error.name === "ValidationError") {
+      res.status(422).json({ message: error.message });
+    } else {
+      res
+        .status(500)
+        .json({ message: "Server error. Please try again later." });
+    }
+  }
+});
+
+
 const archiveReport = asyncHandler(async (req, res) => {
   try {
     const reportId = req.params.id;
@@ -448,6 +551,8 @@ export {
   getReports,
   getModeratorReports,
   getModeratorArchivedReports,
+  getSubModeratorReports,
+  getSubModeratorArchivedReports,
   archiveReport,
   getArchivedReports,
   restoreReport,
