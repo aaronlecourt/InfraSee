@@ -30,7 +30,7 @@ export const ReportMarker = ({ report, onClick, setMarkerRef, isActive, onClose 
     <>
       <AdvancedMarker
         position={{ lat: parseFloat(report.latitude), lng: parseFloat(report.longitude) }}
-        anchorPoint={AdvancedMarkerAnchorPoint.CENTER}
+        anchorPoint={AdvancedMarkerAnchorPoint.BOTTOM_CENTER}
         ref={ref}
         onClick={handleClick}
         onMouseEnter={() => setIsHovered(true)}
