@@ -26,19 +26,17 @@ import {
 } from "@/components/ui/select";
 
 export function DatePickerWithRange({ className, onDateSelect }) {
-  const [date, setDate] = useState(undefined);
+  const today = new Date();
+  const [date, setDate] = useState({ from: today, to: today }); // Set default to today
   const [selectedRangeLabel, setSelectedRangeLabel] = useState("Today");
 
   const handleDateSelect = (range, label) => {
     if (range && range.from && range.to) {
       setDate(range);
       setSelectedRangeLabel(label);
-      onDateSelect(range); // Call parent with the selected range
-    //   console.log("Selected dates:", range);
+      onDateSelect(range);
     }
   };
-
-  const today = new Date();
 
   const predefinedRanges = {
     "Today": { from: today, to: today },
@@ -75,7 +73,7 @@ export function DatePickerWithRange({ className, onDateSelect }) {
               )
             ) : (
               <>
-                {format(today, "LLL dd, y")} - {format(new Date(today.getFullYear(), today.getMonth() + 1, today.getDate()), "LLL dd, y")}
+                {format(today, "LLL dd, y")} - {format(today, "LLL dd, y")}
               </>
             )}
           </Button>

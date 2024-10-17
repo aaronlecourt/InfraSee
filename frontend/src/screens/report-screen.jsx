@@ -92,50 +92,29 @@ function ReportScreen() {
   };
 
   const handleDateRangeChange = (range) => {
-    console.log("Received range:", range);
     if (range && range.from && range.to) {
-      // Create date objects
       const fromDate = new Date(range.from);
       const toDate = new Date(range.to);
-      
-      // Set fromDate to start of the day (00:00:00.000)
       fromDate.setUTCHours(0, 0, 0, 0);
-      
-      // Set toDate to end of the day (23:59:59.999)
       toDate.setUTCHours(23, 59, 59, 999);
-      
-      // Convert to ISO string format
       const fromISO = fromDate.toISOString();
       const toISO = toDate.toISOString();
-      
       setDateRange({ from: fromISO, to: toISO });
-      console.log("Date range set to:", { from: fromISO, to: toISO });
     } else {
       setDateRange({ from: null, to: null });
-      console.log("Invalid range provided. Resetting date range.");
     }
   };
   
   const filteredData = data.filter(report => {
     const reportDate = new Date(report.createdAt);
     const { from, to } = dateRange;
-
-    // Normalize reportDate to just the date (UTC 00:00:00)
     const normalizedReportDate = new Date(reportDate.setHours(0, 0, 0, 0));
-
-    // Normalize the date range to just the date
     const fromDate = from ? new Date(from).setHours(0, 0, 0, 0) : null;
     const toDate = to ? new Date(to).setHours(0, 0, 0, 0) : null;
-
-    // Check if the normalizedReportDate falls within the selected date range
     const isInDateRange = 
       (fromDate === null || normalizedReportDate >= fromDate) && 
       (toDate === null || normalizedReportDate <= toDate);
-
-    // Determine if the report status matches the selected status
     const isStatusMatch = selectedStatus === "All" || report.report_status.stat_name === selectedStatus;
-
-    // Return true if both conditions are met
     return isInDateRange && isStatusMatch;
   });
 
