@@ -19,6 +19,7 @@ const PublicMaps = ({ data }) => {
   const [activeMarker, setActiveMarker] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
   const mapRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -54,11 +55,10 @@ const PublicMaps = ({ data }) => {
   };
 
   const adjustMap = (lat, lng) => {
-    console.log(`Panning to location: lat=${lat}, lng=${lng}`); // Log the latitude and longitude
+    console.log(`Panning to location: lat=${lat}, lng=${lng}`);
     if (mapRef.current) {
-      console.log("Map reference is valid.");
       mapRef.current.setCenter({ lat, lng });
-      mapRef.current.setZoom(17); // Set a fixed zoom level for clarity
+      mapRef.current.setZoom(17);
     } else {
       console.error("Map reference is null:", mapRef.current);
     }
@@ -66,6 +66,7 @@ const PublicMaps = ({ data }) => {
 
   const handleMapLoad = (map) => {
     mapRef.current = map;
+    setMapLoaded(true);
     console.log("Map loaded:", map);
   };
 
@@ -96,14 +97,18 @@ const PublicMaps = ({ data }) => {
           </div>
         </div>
         <Map
-          onLoad={handleMapLoad} // Use the separate function for handling map load
+          onLoad={handleMapLoad}
           defaultCenter={initialLocation}
           defaultZoom={14}
           disableDefaultUI={true}
           mapId={mapId}
           onClick={(e) => {
-            const latLng = e.latLng.toJSON();
-            adjustMap(latLng.lat, latLng.lng); // Adjust map to clicked location if needed
+            if (mapLoaded && e.latLng) {
+              const latLng = e.latLng.toJSON();
+              adjustMap(latLng.lat, latLng.lng);
+            } else {
+              console.warn("LatLng is undefined, click might be outside map area.");
+            }
           }}
         >
           <ClusteredReportMarkers
