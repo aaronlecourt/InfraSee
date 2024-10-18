@@ -63,7 +63,20 @@ const adminUser = asyncHandler(async (req, res) => {
 // @access  Public
 const moderatorUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ email }).populate('infra_type', 'infra_name');
+  const user = await User.findOne({ email }).populate(
+    "infra_type",
+    "infra_name"
+  );
+
+  if (!user) {
+    res.status(401);
+    throw new Error("Invalid email or password");
+  }
+
+  if (user.deactivated) {
+    res.status(401);
+    throw new Error("Account is deactivated. Contact support.");
+  }
 
   if (user && (await user.matchPassword(password))) {
     if (!user.isModerator) {
@@ -80,13 +93,64 @@ const moderatorUser = asyncHandler(async (req, res) => {
       email: user.email,
       isAdmin: user.isAdmin,
       isModerator: user.isModerator,
-      infra_type: user.infra_type ? { _id: user.infra_type._id, infra_name: user.infra_type.infra_name } : null,
+      isSubModerator: user.isSubModerator,
+      infra_type: user.infra_type
+        ? { _id: user.infra_type._id, infra_name: user.infra_type.infra_name }
+        : null,
+      assignedModerator: user.assignedModerator,
     });
   } else {
     res.status(401);
     throw new Error("Invalid email or password");
   }
 });
+
+
+// @desc    Auth submoderator & get token
+// @route   POST /api/users/auth/submoderators
+// @access  Public
+const subModeratorUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  // Find the user by email
+  const user = await User.findOne({ email }).populate("infra_type", "infra_name");
+
+  // Check if user exists and is a submoderator
+  if (!user || !user.isSubModerator) {
+    res.status(401);
+    throw new Error("Invalid email or password");
+  }
+
+  // Check if the account is deactivated
+  if (user.deactivated) {
+    res.status(401);
+    throw new Error("Account is deactivated. Contact support.");
+  }
+
+  // Check the password
+  if (user && (await user.matchPassword(password))) {
+    // Generate token for authenticated submoderator
+    generateToken(res, user._id);
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      isModerator: user.isModerator,
+      isSubModerator: user.isSubModerator,
+      infra_type: user.infra_type
+        ? { _id: user.infra_type._id, infra_name: user.infra_type.infra_name }
+        : null,
+      assignedModerator: user.assignedModerator,
+    });
+  } else {
+    res.status(401);
+    throw new Error("Invalid email or password");
+  }
+});
+
+
 
 
 // @desc    Register a new user
@@ -98,8 +162,10 @@ const registerUser = asyncHandler(async (req, res) => {
     email,
     password,
     isAdmin = false,
-    isModerator,
+    isModerator = true,
     infra_type,
+    isSubModerator = false,
+    assignedModerator,
   } = req.body;
 
   const userExists = await User.findOne({ email });
@@ -118,6 +184,8 @@ const registerUser = asyncHandler(async (req, res) => {
     isAdmin,
     isModerator,
     infra_type,
+    isSubModerator,
+    assignedModerator,
     createdAt: new Date(),
   });
 
@@ -130,8 +198,10 @@ const registerUser = asyncHandler(async (req, res) => {
       email: user.email,
       isAdmin: user.isAdmin,
       isModerator: user.isModerator,
+      isSubModerator: user.isSubModerator,
       infra_type: user.infra_type,
       createdAt: user.createdAt,
+      assignedModerator: user.assignedModerator,
     });
   } else {
     res.status(400);
@@ -139,6 +209,62 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
+
+
+// @desc    Create a new submoderator
+// @route   POST /api/users/submoderators
+// @access  Private (only moderators or admins should access this)
+const createSubModerator = asyncHandler(async (req, res) => {
+  const { name, email, password } = req.body;
+  const assignedModeratorId = req.params.moderatorId;
+
+  // Find the selected moderator by `assignedModeratorId`
+  const moderator = await User.findById(assignedModeratorId);
+
+  if (!moderator || !moderator.isModerator) {
+    return res
+      .status(403)
+      .json({ message: "Access denied: Selected user is not a moderator" });
+  }
+
+  const infra_type = moderator.infra_type;
+
+  // Check if the email is already in use
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    return res
+      .status(400)
+      .json({ message: "That email has already been used. Try again." });
+  }
+
+  // Create the submoderator and assign them to the selected moderator
+  const submoderator = await User.create({
+    name,
+    email,
+    password,
+    infra_type,
+    isSubModerator: true,
+    assignedModerator: assignedModeratorId,
+    subModerators: [],
+  });
+
+  if (submoderator) {
+    // Add the submoderator to the selected moderator's subModerators list
+    await User.findByIdAndUpdate(assignedModeratorId, {
+      $addToSet: { subModerators: submoderator._id },
+    });
+
+    res.status(201).json({
+      _id: submoderator._id,
+      name: submoderator.name,
+      email: submoderator.email,
+      isSubModerator: submoderator.isSubModerator,
+      infra_type: submoderator.infra_type,
+    });
+  } else {
+    res.status(400).json({ message: "Invalid submoderator data" });
+  }
+});
 
 // @desc    Delete a user
 // @route   DELETE /api/users/:id
@@ -159,13 +285,76 @@ const deleteUser = asyncHandler(async (req, res) => {
   } catch (error) {
     console.error(`Error deleting user: ${error.message}`);
 
-    if (error.name === 'CastError') {
-      res.status(400).json({ message: 'Invalid user ID format.' });
+    if (error.name === "CastError") {
+      res.status(400).json({ message: "Invalid user ID format." });
     } else {
-      res.status(500).json({ message: 'Server error. Please try again later.' });
+      res
+        .status(500)
+        .json({ message: "Server error. Please try again later." });
     }
   }
 });
+
+
+// @desc Deactivate a moderator and their submoderators
+// @route PUT /api/moderators/:moderatorId/deactivate
+// @access Private (requires admin or moderator privileges)
+const deactivateModerator = asyncHandler(async (req, res) => {
+  const { moderatorId } = req.params; // ID of the moderator to deactivate
+
+  const moderator = await User.findById(moderatorId);
+
+  if (!moderator || !moderator.isModerator) {
+    return res.status(404).json({ message: "Moderator not found" });
+  }
+
+  if (moderator.deactivated) {
+    return res.status(400).json({ message: "Moderator is already deactivated" });
+  }
+
+  // Deactivate the moderator
+  await User.findByIdAndUpdate(moderatorId, { deactivated: true });
+
+  // Deactivate all submoderators assigned to this moderator
+  await User.updateMany(
+    { assignedModerator: moderatorId, isSubModerator: true },
+    { $set: { deactivated: true } }
+  );
+
+  res.status(200).json({ message: "Moderator and submoderators deactivated successfully" });
+});
+
+
+
+// @desc Reactivate a moderator and their submoderators
+// @route PUT /api/moderators/:moderatorId/reactivate
+// @access Private (requires admin or moderator privileges)
+const reactivateModerator = asyncHandler(async (req, res) => {
+  const { moderatorId } = req.params; // ID of the moderator to reactivate
+
+  const moderator = await User.findById(moderatorId);
+
+  if (!moderator || !moderator.isModerator) {
+    return res.status(404).json({ message: "Moderator not found" });
+  }
+
+  if (!moderator.deactivated) {
+    return res.status(400).json({ message: "Moderator is not deactivated" });
+  }
+
+  // Reactivate the moderator
+  await User.findByIdAndUpdate(moderatorId, { deactivated: false });
+
+  // Reactivate all submoderators assigned to this moderator
+  await User.updateMany(
+    { assignedModerator: moderatorId, isSubModerator: true },
+    { $set: { deactivated: false } }
+  );
+
+  res.status(200).json({ message: "Moderator and submoderators reactivated successfully" });
+});
+
+
 
 
 // @desc    Logout user / clear cookie
@@ -244,12 +433,11 @@ const verifyOtp = asyncHandler(async (req, res) => {
   });
 
   if (user) {
-    res.status(200).json({ message: 'OTP is valid' });
+    res.status(200).json({ message: "OTP is valid" });
   } else {
-    res.status(400).json({ message: 'Invalid or expired OTP' });
+    res.status(400).json({ message: "Invalid or expired OTP" });
   }
 });
-
 
 // @desc    Request password reset
 // @route   POST /api/users/password-reset/request
@@ -267,10 +455,10 @@ const requestPasswordReset = asyncHandler(async (req, res) => {
     await user.save();
     await sendOtpEmail(user, otp);
 
-    res.status(200).json({ message: 'OTP sent to your email' });
+    res.status(200).json({ message: "OTP sent to your email" });
   } else {
     res.status(404);
-    throw new Error('User not found');
+    throw new Error("User not found");
   }
 });
 
@@ -292,13 +480,12 @@ const resetPassword = asyncHandler(async (req, res) => {
     user.resetPasswordExpires = undefined;
 
     await user.save();
-    res.status(200).json({ message: 'Password has been reset successfully' });
+    res.status(200).json({ message: "Password has been reset successfully" });
   } else {
     res.status(400);
-    throw new Error('Invalid or expired OTP');
+    throw new Error("Invalid or expired OTP");
   }
 });
-
 
 // @desc    Get moderators by infrastructure type
 // @route   GET /api/moderators
@@ -306,13 +493,12 @@ const resetPassword = asyncHandler(async (req, res) => {
 const getModerators = asyncHandler(async (req, res) => {
   try {
     const moderators = await User.find({
-      isModerator: true
-    })
-    .populate('infra_type', 'infra_name');
+      isModerator: true,
+    }).populate("infra_type", "infra_name");
     res.json(moderators);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -328,26 +514,28 @@ const checkEmailExists = asyncHandler(async (req, res) => {
     const user = await User.findOne({ email });
 
     if (user) {
-      console.log('Email exists');
+      console.log("Email exists");
       res.json({ exists: true });
     } else {
-      console.log('Email does not exist');
+      console.log("Email does not exist");
       res.json({ exists: false });
     }
   } catch (error) {
-    console.error('Error in checkEmailExists:', error); // Logging
+    console.error("Error in checkEmailExists:", error); // Logging
     res.status(500).json({ message: "Server error" });
   }
 });
-
-
 
 export {
   authUser,
   adminUser,
   moderatorUser,
+  subModeratorUser,
   registerUser,
+  createSubModerator,
   deleteUser,
+  deactivateModerator,
+  reactivateModerator,
   logoutUser,
   getUserProfile,
   updateUserProfile,
