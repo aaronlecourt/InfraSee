@@ -14,7 +14,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetDescription,
-  SheetClose
+  SheetClose,
 } from "@/components/ui/sheet";
 import { ArrowRight } from "lucide-react";
 import { Helmet, HelmetProvider } from "react-helmet-async";
@@ -67,7 +67,9 @@ function HomeScreen() {
               <SheetContent side="top">
                 <SheetHeader>
                   <SheetTitle className="hidden">Menu</SheetTitle>
-                  <SheetDescription className="hidden">Select an option below:</SheetDescription>
+                  <SheetDescription className="hidden">
+                    Select an option below:
+                  </SheetDescription>
                 </SheetHeader>
                 <nav className="grid gap-4">
                   <Button onClick={handleContactClick} variant="ghost">
@@ -81,7 +83,7 @@ function HomeScreen() {
           </div>
         </header>
 
-        <main className="px-10 py-5 flex-col lg:w-2/5 md:px-8">
+        <main className="px-10 py-5 flex-col ">
           <small className="flex items-center">
             <p>Introducing Infrasee</p>
             <ArrowRight size={15} />
@@ -97,33 +99,118 @@ function HomeScreen() {
           <section className="mt-4 bg-white/30 rounded-md p-4">
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="item-1">
-                <AccordionTrigger>How do I make a report?</AccordionTrigger>
+                <AccordionTrigger>How do I report an issue?</AccordionTrigger>
                 <AccordionContent>
-                  Click on the 'Make a Report' button, select the infrastructure
-                  type, choose a moderator, and complete the form.
+                  To report an issue: <br />
+                  <br />
+                  <ul className="list-disc list-inside space-y-2">
+                    <li>
+                      Click the <strong>"Make a Report"</strong> button on the
+                      homepage.
+                    </li>
+                    <li>
+                      Select the type of infrastructure related to your issue.
+                    </li>
+                    <li>
+                      Provide the following details:
+                      <ul className="list-disc list-inside pl-4 space-y-1">
+                        <li>Your name</li>
+                        <li>A description of the problem</li>
+                        <li>Any relevant images</li>
+                        <li>Your contact information</li>
+                      </ul>
+                    </li>
+                  </ul>
+                  <br />
+                  Once submitted, your report will be forwarded to the
+                  appropriate companies in that infrastructure category. The
+                  most suitable company will take responsibility for resolving
+                  the issue. You will receive updates as your issue is being
+                  addressed.
                 </AccordionContent>
               </AccordionItem>
+
               <AccordionItem value="item-2">
-                <AccordionTrigger>Who sees my reports?</AccordionTrigger>
-                <AccordionContent>
-                  Your reports are sent to moderators representing
-                  infrastructure companies like BAWADI or BENECO.
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-3">
-                <AccordionTrigger>Can I receive feedback?</AccordionTrigger>
-                <AccordionContent>
-                  Yes, feedback is provided through status reports, which can be
-                  viewed on the report map markers.
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-4">
                 <AccordionTrigger>
-                  How do I apply as a moderator?
+                  What information do I need to provide?
                 </AccordionTrigger>
                 <AccordionContent>
-                  Send an email to admin@a.infrasee.com with verification from
-                  your company. Accepted applicants will receive login details.
+                  When reporting an issue, please include: <br />
+                  <br />
+                  <ul className="list-disc list-inside space-y-2">
+                    <li>Your name</li>
+                    <li>
+                      A detailed description of the issue (e.g., no power, low
+                      water pressure)
+                    </li>
+                    <li>Your contact information (phone number)</li>
+                    <li>Any relevant photos</li>
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-3">
+                <AccordionTrigger>
+                  Is there a fee to report an issue?
+                </AccordionTrigger>
+                <AccordionContent>
+                  No, reporting an issue through our platform is completely
+                  free.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-4">
+                <AccordionTrigger>
+                  How long does it take to resolve an issue?
+                </AccordionTrigger>
+                <AccordionContent>
+                  The resolution time depends on the nature of the issue and
+                  your location. You’ll receive notifications through your
+                  contact number regarding progress or delays.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-5">
+                <AccordionTrigger>
+                  Will I be notified when the issue is resolved?
+                </AccordionTrigger>
+                <AccordionContent>
+                  Yes, you’ll receive SMS notifications every time the status of
+                  your report changes.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-6">
+                <AccordionTrigger>What do moderators do?</AccordionTrigger>
+                <AccordionContent>
+                  Moderators manage public reports related to their assigned
+                  company. They: <br />
+                  <br />
+                  <ul className="list-disc list-inside space-y-2">
+                    <li>Review incoming reports</li>
+                    <li>Assign reports to the appropriate team</li>
+                    <li>Provide users with updates on their reports</li>
+                    <li>Ensure reports are resolved promptly</li>
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-7">
+                <AccordionTrigger>
+                  How can I apply as a moderator?
+                </AccordionTrigger>
+                <AccordionContent>
+                  If you’re interested in becoming a moderator, please email{" "}
+                  <strong>
+                    <a
+                      href="mailto:admin@a.infrasee.com?subject=Moderator%20Application"
+                      className="text-black-500 underline"
+                    >
+                      admin@a.infrasee.com
+                    </a>
+                  </strong>{" "}
+                  with verification from your company. Successful applicants
+                  will receive login details and further instructions.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
