@@ -5,73 +5,55 @@ import InfrastructureType from "../models/infrastructureType-model.js";
 
 const createReport = asyncHandler(async (req, res) => {
   try {
-    const {
-      report_address,
-      latitude,
-      longitude,
-      infraType,
-      report_by,
-      report_contactNum,
-      report_desc,
-      report_img,
-      report_status,
-      report_mod,
-      report_time_resolved,
-      status_remark,
-    } = req.body;
+    const { report_address, latitude, longitude, infraType, report_by, report_contactNum, report_desc, report_img } = req.body;
 
-    if (
-      !report_address ||
-      !latitude ||
-      !longitude ||
-      !infraType ||
-      !report_by ||
-      !report_contactNum ||
-      !report_desc ||
-      !report_img ||
-      !report_status
-    ) {
-      res.status(400);
-      throw new Error("All fields are required.");
+    // Input validation
+    if (!report_address || !latitude || !longitude || !infraType || !report_by || !report_contactNum || !report_desc || !report_img) {
+      return res.status(400).json({ message: "All fields are required." });
     }
 
+    // Haversine distance function
+    const haversineDistance = (coords1, coords2) => {
+      const toRad = (value) => (value * Math.PI) / 180;
+      const lat1 = coords1[0], lon1 = coords1[1], lat2 = coords2[0], lon2 = coords2[1];
+      const R = 6371e3; // Earth radius in meters
+      const φ1 = toRad(lat1), φ2 = toRad(lat2);
+      const Δφ = toRad(lat2 - lat1), Δλ = toRad(lon2 - lon1);
+
+      const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c; // Distance in meters
+    };
+
+    // Check for existing reports within 10 meters
+    const existingReports = await Report.find({ infraType }).populate('report_status'); // Populate status
+    for (const report of existingReports) {
+      const distance = haversineDistance([latitude, longitude], [report.latitude, report.longitude]);
+      if (distance < 10 && report.report_status.stat_name !== 'Resolved') { // Adjust based on your status naming
+        return res.status(409).json({
+          message: "A similar report has already been reported. ",
+          // existingReport: `Address: ${report.report_address}, Description: ${report.report_desc}, Status: ${report.report_status.stat_name}`,
+        });
+      }
+    }
+
+    // Create and save the new report
     const report = new Report({
-      report_address,
-      latitude,
-      longitude,
-      infraType,
-      report_by,
-      report_contactNum,
-      report_desc,
-      report_img,
-      report_status,
-      report_mod,
-      report_time_resolved,
-      status_remark,
+      report_address, latitude, longitude, infraType, report_by, report_contactNum, report_desc, report_img,
     });
 
     const savedReport = await report.save();
+    return res.status(201).json({ message: "Report created successfully", report: savedReport });
 
-    // Populate report_status and infraType after saving
-    const populatedReport = await Report.findById(savedReport._id)
-      .populate("report_mod", "name")
-      .populate("report_status", "stat_name")
-      .populate("infraType", "infra_name");
-
-    console.log(populatedReport);
-    res.status(201).json({
-      message: "Report created successfully",
-      report: populatedReport,
-    });
   } catch (error) {
     console.error(`Error creating report: ${error.message}`);
 
     if (error.name === "ValidationError") {
-      res.status(422).json({ message: error.message });
+      return res.status(422).json({ message: "Validation error: " + error.message });
+    } else if (error.code === 11000) {
+      return res.status(409).json({ message: "Duplicate report found." });
     } else {
-      res
-        .status(500)
-        .json({ message: "Server error. Please try again later." });
+      return res.status(500).json({ message: "Server error. Please try again later." });
     }
   }
 });

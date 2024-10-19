@@ -17,34 +17,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
+// Schema validation
 const detailsSchema = z.object({
-  report_by: z
-    .string()
-    .min(1, "Full Name is required.")
-    .min(5, "Full Name is too short.")
-    .max(50, "Full Name must not exceed 50 characters."),
+  report_by: z.string().min(1).max(50),
   report_contactNum: z
     .string()
-    .min(1, "Contact Number is required.")
-    .length(11, "Contact Number must be 11 digits long.")
-    .regex(/^09\d{9}$/, "Contact Number must start with 09."),
-  report_desc: z
-    .string()
-    .min(1, "Description is required.")
-    .min(25, "Description too short.")
-    .max(150, "Description must not exceed 150 characters."),
-  report_img: z
-    .string()
-    .url()
-    .refine((value) => value.length > 0, {
-      message: "Image URL is required.",
-    }),
+    .length(11)
+    .regex(/^09\d{9}$/),
+  report_desc: z.string().min(25).max(150),
+  report_img: z.string().url(),
 });
 
 const MultiStepForm = ({ open, onClose }) => {
   const methods = useForm({
     defaultValues: {
-      is_new: false,
       report_address: "",
       latitude: "",
       longitude: "",
@@ -53,10 +39,6 @@ const MultiStepForm = ({ open, onClose }) => {
       report_contactNum: "",
       report_desc: "",
       report_img: "",
-      report_status: "66d25911baae7f52f54793f6",
-      report_mod: null,
-      report_time_resolved: null,
-      status_remark: null
     },
     resolver: zodResolver(detailsSchema),
   });
@@ -69,8 +51,8 @@ const MultiStepForm = ({ open, onClose }) => {
     longitude: "",
   });
   const [infraType, setInfraType] = useState("");
-  const [imagePreview, setImagePreview] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
 
   const handleNextStep = () => {
     if (currentStep === 1 && !hasSetLocation) {
@@ -84,88 +66,67 @@ const MultiStepForm = ({ open, onClose }) => {
     setCurrentStep((prevStep) => prevStep + 1);
   };
 
-  const handlePreviousStep = () => {
-    setCurrentStep((prevStep) => prevStep - 1);
-  };
+  const handlePreviousStep = () => setCurrentStep((prevStep) => prevStep - 1);
 
   const onSubmit = async (data) => {
-    if (!data.report_img) {
-      toast.error("Please provide a valid image URL.");
-      return;
-    }
-
     const submitData = {
-      is_new: false,
       report_address: locationData.address,
       latitude: locationData.latitude,
       longitude: locationData.longitude,
-      infraType: infraType,
+      infraType,
       report_by: data.report_by,
       report_contactNum: data.report_contactNum,
       report_desc: data.report_desc,
       report_img: data.report_img,
-      report_status: "66d25911baae7f52f54793f6",
-      report_mod: null,
-      report_time_resolved: null,
-      status_remark: null,
     };
-
+  
     try {
       setIsUploading(true);
-      const response = await axios.post("/api/reports/create", submitData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
+      const response = await axios.post("/api/reports/create", submitData);
       if (response.status === 201) {
-        toast.success("Report submitted successfully!", { duration: 3000 });
+        toast.success("Report submitted successfully!");
         methods.reset();
         setHasSetLocation(false);
         setLocationData({ address: "", latitude: "", longitude: "" });
         setInfraType("");
         setCurrentStep(1);
-        handleClose();
+        onClose(); // Close the form
       } else {
         toast.error(`Error: ${response.data.message}`);
       }
     } catch (error) {
-      console.error("Error submitting report:", error);
-      toast.error("An error occurred while submitting the report.");
+      
+      let errorMessage = "An unknown error occurred. Please try again later.";
+      if (error.response) {
+        errorMessage = error.response.data.message || "An error occurred.";
+      }
+  
+      toast.error(errorMessage);
     } finally {
       setIsUploading(false);
     }
   };
-
-  const handleClose = () => {
-    onClose();
-    setCurrentStep(1);
-    methods.reset();
-    setHasSetLocation(false);
-    setLocationData({ address: "", latitude: "", longitude: "" });
-    setInfraType("");
-  };
-
+  
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
+    <Sheet open={open} onOpenChange={onClose}>
       <FormProvider {...methods}>
         <SheetContent className="p-5 rounded-t-xl" side="bottom">
-          <SheetHeader className="mt-2 px-0">
-            <SheetTitle className="font-bold">
+          <SheetHeader>
+            <SheetTitle>
               {currentStep === 1
                 ? "Set Location"
                 : currentStep === 2
                 ? "Select Infrastructure Type"
                 : "Provide Report Details"}
             </SheetTitle>
-            <SheetDescription className="mb-2">
+            <SheetDescription>
               {currentStep === 1
-                ? "Please search for a landmark or use your current location."
+                ? "Please set your location."
                 : currentStep === 2
-                ? "Select the appropriate type of infrastructure."
-                : "Answer the required fields."}
+                ? "Select an infrastructure type."
+                : "Fill in the report details."}
             </SheetDescription>
-            <SheetClose onClick={handleClose} />
+            <SheetClose onClick={onClose} />
           </SheetHeader>
 
           {currentStep === 1 && (
@@ -180,39 +141,19 @@ const MultiStepForm = ({ open, onClose }) => {
           )}
           {currentStep === 3 && (
             <DetailsForm
-              onSubmit={methods.handleSubmit(onSubmit)}
-              imagePreview={imagePreview}
-              setImagePreview={setImagePreview}
-            />
+            onSubmit={methods.handleSubmit(onSubmit)}
+            imagePreview={imagePreview}
+            setImagePreview={setImagePreview} // Ensure this is passed
+          />
           )}
 
           <div className="flex justify-between mt-4">
             {currentStep > 1 && (
-              <Button
-                variant="default"
-                type="button"
-                onClick={handlePreviousStep}
-              >
-                Back
-              </Button>
+              <Button onClick={handlePreviousStep}>Back</Button>
             )}
-            {currentStep < 3 && (
-              <Button
-                variant="default"
-                type="button"
-                onClick={handleNextStep}
-                disabled={
-                  (currentStep === 1 && !hasSetLocation) ||
-                  (currentStep === 2 && !infraType)
-                }
-              >
-                Next
-              </Button>
-            )}
+            {currentStep < 3 && <Button onClick={handleNextStep}>Next</Button>}
             {currentStep === 3 && (
               <Button
-                variant="default"
-                type="button"
                 onClick={methods.handleSubmit(onSubmit)}
                 disabled={isUploading}
               >
