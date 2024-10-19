@@ -39,7 +39,12 @@ function ReportScreen() {
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
   const [data, setData] = useState([]);
-  const [dateRange, setDateRange] = useState({ from: null, to: null });
+
+  // Set default date range to today
+  const today = new Date();
+  const fromISO = new Date(today.setUTCHours(0, 0, 0, 0)).toISOString();
+  const toISO = new Date(today.setUTCHours(23, 59, 59, 999)).toISOString();
+  const [dateRange, setDateRange] = useState({ from: fromISO, to: toISO });
 
   useEffect(() => {
     socket.on("reportChange", loadReports);
@@ -161,7 +166,7 @@ function ReportScreen() {
             <div className="flex flex-col sm:flex-row gap-2 items-start">
               <Button variant="default" className="flex gap-x-2 sm:max-w-xs" onClick={handleOpenMultiStepForm}>
                 <PenBoxIcon size={15} />
-                File Report
+                <span className="font-medium">File Report</span>
               </Button>
               <DatePickerWithRange onDateSelect={handleDateRangeChange} />
             </div>
