@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ModNavbar from "@/components/elements/mod-navbar/navbar";
 
-
 import { Settings, LogOut, LucideLayoutDashboard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -20,31 +19,33 @@ import { ModReport } from "@/components/elements/mod-report";
 import { ModAccount } from "@/components/elements/mod-account";
 import axios from "axios";
 
+const fetchUserProfile = async () => {
+  const response = await axios.get("/api/users/profile");
+  return response.data;
+};
+
 function SettingsScreen() {
   const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.auth);
-  const [activeTab, setActiveTab] = useState("account"); // Manage active tab state
+  const [activeTab, setActiveTab] = useState("account");
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
-  const [moderator, setModerator] = useState(null);
-  
-  // Fetch moderators and filter the one matching userInfo.id
-  useEffect(() => {
-    const fetchModerator = async () => {
-      try {
-        const response = await axios.get("/api/users/moderators/");
-        const moderators = response.data;
-        const foundModerator = moderators.find((mod) => mod._id === userInfo._id);
-        setModerator(foundModerator);
-      } catch (error) {
-        console.error("Failed to fetch moderators", error);
-      }
-    };
+  const [user, setUser] = useState(null);
 
+  const loadUserProfile = async () => {
     if (userInfo?._id) {
-      fetchModerator();
+      try {
+        const userProfile = await fetchUserProfile();
+        setUser(userProfile);
+      } catch (error) {
+        console.error("Failed to fetch user profile", error);
+      }
     }
-  }, [userInfo]);
+  };
+
+  if (!user) {
+    loadUserProfile();
+  }
 
   // Handle the keyboard shortcut for logout
   useEffect(() => {
@@ -74,14 +75,14 @@ function SettingsScreen() {
       console.log(err);
     }
   };
-  console.log()
+  console.log();
   return (
     <HelmetProvider>
       <div className="">
         <Helmet>
           <title>{"InfraSee | Settings"}</title>
         </Helmet>
-        <ModNavbar userInfo={userInfo}/>
+        <ModNavbar userInfo={userInfo} />
       </div>
       <main className="p-4">
         <h1 className="text-3xl mb-1">Settings</h1>
@@ -104,13 +105,13 @@ function SettingsScreen() {
           </div>
           <div className="col-span-1 lg:col-span-7 py-2 px-4">
             <TabsContent value="account">
-              <ModAccount user={moderator} />
+              <ModAccount user={user} />
             </TabsContent>
             <TabsContent value="report_form">
-              <ModReport user={moderator} />
+              <ModReport user={user} />
             </TabsContent>
             <TabsContent value="security">
-              <ModSecurity user={moderator} />
+              <ModSecurity user={user} />
             </TabsContent>
           </div>
         </Tabs>

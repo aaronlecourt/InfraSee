@@ -21,6 +21,7 @@ const authUser = asyncHandler(async (req, res) => {
       email: user.email,
       isAdmin: user.isAdmin,
       isModerator: user.isModerator,
+      isSubModerator: user.isSubModerator,
     });
   } else {
     res.status(401);
@@ -51,6 +52,7 @@ const adminUser = asyncHandler(async (req, res) => {
       email: user.email,
       isAdmin: user.isAdmin,
       isModerator: user.isModerator,
+      isSubModerator: user.isSubModerator,
     });
   } else {
     res.status(401);
@@ -129,6 +131,10 @@ const subModeratorUser = asyncHandler(async (req, res) => {
 
   // Check the password
   if (user && (await user.matchPassword(password))) {
+    if (!user.isSubModerator) {
+      res.status(403);
+      throw new Error("Access denied: Not a moderator");
+    }
     // Generate token for authenticated submoderator
     generateToken(res, user._id);
 
@@ -149,7 +155,6 @@ const subModeratorUser = asyncHandler(async (req, res) => {
     throw new Error("Invalid email or password");
   }
 });
-
 
 
 
@@ -399,52 +404,61 @@ const logoutUser = (req, res) => {
 // @route   GET /api/users/profile
 // @access  Private
 const getUserProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id);
+  const user = await User.findById(req.user._id).populate("infra_type", "infra_name");
 
   if (user) {
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      isAdmin: user.isAdmin,
-      isModerator: user.isModerator,
-    });
+    return res.status(200).json(user);
   } else {
     res.status(404);
     throw new Error("User not found");
   }
 });
+
 
 // @desc    Update user profile
 // @route   PUT /api/users/profile
 // @access  Private
 const updateUserProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id);
+  try {
+    const user = await User.findById(req.user._id);
 
-  if (user) {
-    user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
-    user.isAdmin = req.body.isAdmin || user.isAdmin;
-    user.isModerator = req.body.isModerator || isModerator;
-
-    if (req.body.password) {
-      user.password = req.body.password;
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
     }
+
+    // Destructure the request body
+    const { name, email, isAdmin, isModerator, isSubModerator, password } = req.body;
+
+    // Update user properties only if they exist in the request body
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (isAdmin !== undefined) user.isAdmin = isAdmin;
+    if (isModerator !== undefined) user.isModerator = isModerator;
+    if (isSubModerator !== undefined) user.isSubModerator = isSubModerator;
+    if (password) user.password = password;
 
     const updatedUser = await user.save();
 
-    res.json({
-      _id: updatedUser._id,
-      name: updatedUser.name,
-      email: updatedUser.email,
-      isAdmin: updatedUser.isAdmin,
-      isModerator: updatedUser.isModerator,
+    // Respond with success message and updated user information
+    res.status(200).json({
+      message: "User profile updated successfully",
+      user: {
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        isAdmin: updatedUser.isAdmin,
+        isModerator: updatedUser.isModerator,
+        isSubModerator: updatedUser.isSubModerator,
+      },
     });
-  } else {
-    res.status(404);
-    throw new Error("User not found");
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
+
+
 
 // @desc    Verify OTP
 // @route   POST /api/users/verify-otp
@@ -514,20 +528,60 @@ const resetPassword = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Get moderators by infrastructure type
+// @desc    Change user password
+// @route   PUT /api/users/change-password
+// @access  Private
+const changePassword = asyncHandler(async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isMatch = await user.matchPassword(currentPassword);
+    
+    if (!isMatch) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    return res.status(200).json({
+      message: "Password changed successfully",
+    });
+  } catch (error) {
+    console.error("Error changing password:", error);
+    return res.status(500).json({ message: "An error occurred while changing the password" });
+  }
+});
+
+
+// @desc    Get moderators and submoderators by infrastructure type
 // @route   GET /api/moderators
 // @access  Public or Private based on your requirement
 const getModerators = asyncHandler(async (req, res) => {
   try {
+    // Fetch moderators and submoderators in a single query
     const moderators = await User.find({
-      isModerator: true,
-    }).populate("infra_type", "infra_name");
-    res.json(moderators);
+      $or: [
+        { isModerator: true },
+        { isSubModerator: true }
+      ],
+    })
+    .select("name email infra_type")
+    .populate("infra_type", "infra_name"); 
+
+    res.status(200).json(moderators.length ? moderators : []);
   } catch (error) {
-    console.log(error);
+    console.error("Error fetching moderators:", error); 
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 // @desc    Check if email exists
 // @route   GET /api/users/check-email/:email
@@ -569,6 +623,7 @@ export {
   verifyOtp,
   requestPasswordReset,
   resetPassword,
+  changePassword,
   getModerators,
   checkEmailExists,
 };

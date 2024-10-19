@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useUpdateUserMutation } from "@/slices/users-api-slice";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -45,9 +46,27 @@ const formSchema = z.object({
   infrastructureType: z.string().min(1, "Infrastructure type is required."),
 });
 
+const fetchInfrastructureTypes = async () => {
+  const response = await axios.get("/api/infrastructure-types");
+  return response.data;
+};
+
 export function ModAccount({ user }) {
   const [infrastructureTypes, setInfrastructureTypes] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [updateUser, { isLoading, isError, error }] = useUpdateUserMutation();
+
+  const loadInfrastructureType = async () => {
+    try {
+      const data = await fetchInfrastructureTypes();
+      setInfrastructureTypes(data);
+    } catch (error) {
+      toast.error("Failed to load infrastructure types.");
+    }
+  };
+
+  loadInfrastructureType();
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,21 +78,6 @@ export function ModAccount({ user }) {
 
   const { handleSubmit, control, setValue, reset, watch } = form;
 
-  // Fetch infrastructure types from the API
-  useEffect(() => {
-    const fetchInfrastructureTypes = async () => {
-      try {
-        const response = await axios.get("/api/infrastructure-types");
-        setInfrastructureTypes(response.data);
-      } catch (error) {
-        toast.error("Failed to load infrastructure types.");
-      }
-    };
-
-    fetchInfrastructureTypes();
-  }, []);
-
-  // Update form values when user data changes
   useEffect(() => {
     if (user) {
       reset({
@@ -88,16 +92,15 @@ export function ModAccount({ user }) {
     const { name, email, infrastructureType } = data;
 
     try {
-      await axios.put("/api/update-account", {
+      await updateUser({
         name,
         email,
         infra_type: infrastructureType,
-      });
-
+      }).unwrap();
       toast.success("Account updated successfully!");
     } catch (err) {
       const errorMessage =
-        err.response?.data?.message || "An error occurred during the update.";
+        err?.data?.message || "An error occurred during the update.";
       toast.error(errorMessage);
     }
   };
@@ -128,7 +131,10 @@ export function ModAccount({ user }) {
       <hr className="mb-4" />
 
       <Form {...form}>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:w-1/2 w-full">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4 md:w-1/2 w-full"
+        >
           <FormField
             control={control}
             name="name"
@@ -176,20 +182,25 @@ export function ModAccount({ user }) {
             render={({ field }) => (
               <FormItem>
                 <div className="flex justify-between items-center">
-                  <FormLabel className="font-bold">Infrastructure Type</FormLabel>
+                  <FormLabel className="font-bold">
+                    Infrastructure Type
+                  </FormLabel>
                   <FormMessage className="text-right" />
                 </div>
                 <FormControl>
                   <Select
                     value={field.value}
-                    onValueChange={(value) => setValue("infrastructureType", value)}
+                    onValueChange={(value) =>
+                      setValue("infrastructureType", value)
+                    }
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={
                           field.value
                             ? getInfraName(field.value)
-                            : getInfraName(user?.infra_type?._id) || "Select Infrastructure Type"
+                            : getInfraName(user?.infra_type?._id) ||
+                              "Select Infrastructure Type"
                         }
                       />
                     </SelectTrigger>
@@ -212,14 +223,17 @@ export function ModAccount({ user }) {
             )}
           />
 
-          <Button type="submit" className="w-full mt-4">
-            Update Account
+          <Button type="submit" className="w-full mt-4" disabled={isLoading}>
+            {isLoading ? "Updating..." : "Update Account"}
           </Button>
-          
+
           {/* Moved DialogTrigger inside Dialog */}
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline" className="flex gap-x-2 w-full text-destructive font-semibold">
+              <Button
+                variant="outline"
+                className="flex gap-x-2 w-full text-destructive font-semibold"
+              >
                 <UserRoundXIcon size={15} />
                 Deactivate Account
               </Button>
@@ -232,7 +246,10 @@ export function ModAccount({ user }) {
                 <DialogHeader>
                   <DialogTitle>Account Deactivation</DialogTitle>
                   <DialogDescription>
-                    Account deactivation and reactivation is requested via email to i.iirs.infrasee@gmail.com. Deactivating your account removes your login privileges but does not remove any records made under your account.
+                    Account deactivation and reactivation is requested via email
+                    to i.iirs.infrasee@gmail.com. Deactivating your account
+                    removes your login privileges but does not remove any
+                    records made under your account.
                   </DialogDescription>
                 </DialogHeader>
                 {/* <DialogFooter>

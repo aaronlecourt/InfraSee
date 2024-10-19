@@ -1,81 +1,88 @@
-import { apiSlice } from './api-slice';
-const USERS_URL = '/api/users';
+import { apiSlice } from "./api-slice";
+const USERS_URL = "/api/users";
 
 export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (data) => ({
         url: `${USERS_URL}/auth`,
-        method: 'POST',
+        method: "POST",
         body: data,
       }),
     }),
     adminLogin: builder.mutation({
       query: (data) => ({
         url: `${USERS_URL}/auth/admin`,
-        method: 'POST',
+        method: "POST",
         body: data,
       }),
     }),
     moderatorLogin: builder.mutation({
       query: (data) => ({
         url: `${USERS_URL}/auth/moderator`,
-        method: 'POST',
+        method: "POST",
         body: data,
       }),
     }),
     subModeratorLogin: builder.mutation({
       query: (data) => ({
         url: `${USERS_URL}/auth/submoderator`,
-        method: 'POST',
+        method: "POST",
         body: data,
       }),
     }),
     logout: builder.mutation({
       query: () => ({
         url: `${USERS_URL}/logout`,
-        method: 'POST',
+        method: "POST",
       }),
     }),
     register: builder.mutation({
       query: (data) => ({
         url: `${USERS_URL}`,
-        method: 'POST',
+        method: "POST",
         body: data,
       }),
     }),
     updateUser: builder.mutation({
       query: (data) => ({
         url: `${USERS_URL}/profile`,
-        method: 'PUT',
+        method: "PUT",
         body: data,
       }),
     }),
     checkEmail: builder.mutation({
       query: (data) => ({
         url: `${USERS_URL}/check-email/${encodeURIComponent(email)}`,
-        method: 'GET',
+        method: "GET",
         body: data,
       }),
     }),
     verifyOtp: builder.mutation({
       query: (data) => ({
         url: `${USERS_URL}/verify-otp`,
-        method: 'POST',
+        method: "POST",
         body: data,
       }),
     }),
     requestResetPassword: builder.mutation({
       query: (data) => ({
         url: `${USERS_URL}/password-reset/request`,
-        method: 'POST',
+        method: "POST",
         body: data,
       }),
     }),
     resetPassword: builder.mutation({
       query: (data) => ({
         url: `${USERS_URL}/password-reset`,
-        method: 'POST',
+        method: "POST",
+        body: data,
+      }),
+    }),
+    changePassword: builder.mutation({
+      query: (data) => ({
+        url: `${USERS_URL}/change-password`,
+        method: "PUT",
         body: data,
       }),
     }),
@@ -94,4 +101,5 @@ export const {
   useVerifyOtpMutation,
   useRequestResetPasswordMutation,
   useResetPasswordMutation,
+  useChangePasswordMutation,
 } = userApiSlice;
