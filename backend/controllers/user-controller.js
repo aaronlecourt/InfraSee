@@ -565,14 +565,12 @@ const changePassword = asyncHandler(async (req, res) => {
 // @access  Public or Private based on your requirement
 const getModerators = asyncHandler(async (req, res) => {
   try {
-    // Fetch moderators and submoderators in a single query
     const moderators = await User.find({
       $or: [
         { isModerator: true },
         { isSubModerator: true }
       ],
     })
-    .select("name email infra_type")
     .populate("infra_type", "infra_name"); 
 
     res.status(200).json(moderators.length ? moderators : []);
@@ -581,6 +579,7 @@ const getModerators = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 
 // @desc    Check if email exists

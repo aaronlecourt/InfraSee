@@ -1,20 +1,23 @@
 import { DataTableColumnHeader } from "../DataTableColumnHeader";
 import { Checkbox } from "@/components/ui/checkbox";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { ZapIcon, DropletIcon, TrainTrackIcon, SatelliteDish, BuildingIcon } from "lucide-react";
 import { AdminAccountDataTableRowActions } from "../AdminAccountDataTableRowActions";
 
 const infraTypeIcons = {
-  'Power and Energy' : <ZapIcon size={15} color="rgba(0,0,0,0.5)"/>,
-  'Water and Waste' : <DropletIcon size={15} color="rgba(0,0,0,0.5)"/>,
-  'Transportation' : <TrainTrackIcon size={15} color="rgba(0,0,0,0.5)"/>,
-  'Telecommunications' : <SatelliteDish size={15} color="rgba(0,0,0,0.5)"/>,
-  'Commercial' : <BuildingIcon size={15} color="rgba(0,0,0,0.5)"/>
+  'Power and Energy': <ZapIcon size={15} color="rgba(0,0,0,0.5)" />,
+  'Water and Waste': <DropletIcon size={15} color="rgba(0,0,0,0.5)" />,
+  'Transportation': <TrainTrackIcon size={15} color="rgba(0,0,0,0.5)" />,
+  'Telecommunications': <SatelliteDish size={15} color="rgba(0,0,0,0.5)" />,
+  'Commercial': <BuildingIcon size={15} color="rgba(0,0,0,0.5)" />
 };
 
 // Helper function to format date using date-fns
 const formatDate = (dateString) => {
   const date = new Date(dateString);
+  if (!isValid(date)) {
+    return "Invalid date";
+  }
   return format(date, 'MMMM dd, yyyy');
 };
 
@@ -49,9 +52,7 @@ export const columnsAccounts = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Moderator Name" />
     ),
-    cell: ({ row }) => (
-      <div className="">{row.getValue("name")}</div>
-    ),
+    cell: ({ row }) => <div className="">{row.getValue("name")}</div>,
     enableSorting: true,
     enableHiding: true,
   },
@@ -61,9 +62,7 @@ export const columnsAccounts = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Email Address" />
     ),
-    cell: ({ row }) => (
-      <div className="">{row.getValue("email")}</div>
-    ),
+    cell: ({ row }) => <div className="">{row.getValue("email")}</div>,
     enableSorting: true,
     enableHiding: true,
   },

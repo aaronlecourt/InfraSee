@@ -47,6 +47,7 @@ function AdminLoginScreen() {
   const navigate = useNavigate();
   const [login] = useAdminLoginMutation();
   const { userInfo } = useSelector((state) => state.auth);
+  const [loading, setLoading] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -66,13 +67,16 @@ function AdminLoginScreen() {
   }, [navigate, userInfo]);
 
   const onSubmit = async (data) => {
+    setLoading(true);
     try {
       const res = await login(data).unwrap();
       dispatch(setCredentials({ ...res }));
       navigate("/admin/dashboard");
-      toast.success("Login successful!"); // Success notification with Sonner
+      toast.success("Login successful!"); 
     } catch (err) {
-      toast.error(err?.data?.message || err.error); // Error notification with Sonner
+      toast.error(err?.data?.message || err.error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -155,8 +159,8 @@ function AdminLoginScreen() {
                 />
 
                 <div className="flex items-center justify-between">
-                  <Button type="submit" className="w-full">
-                    Sign In
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? "Signing In..." : "Sign In"}
                   </Button>
                 </div>
               </form>

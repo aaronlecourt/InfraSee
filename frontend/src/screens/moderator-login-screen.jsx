@@ -66,6 +66,7 @@ function ModeratorLoginScreen() {
   const navigate = useNavigate();
   const [loginModerator] = useModeratorLoginMutation();
   const [loginSubModerator] = useSubModeratorLoginMutation();
+  const [loading, setLoading] = useState(false);
   const { userInfo } = useSelector((state) => state.auth);
 
   const methods = useForm({
@@ -96,34 +97,30 @@ function ModeratorLoginScreen() {
   }, [navigate, userInfo]);
 
   const onLoginSubmit = async (data) => {
-    const loginAttempts = [
-      {
-        loginFn: loginModerator,
-        role: "Moderator",
-        path: "/moderator/dashboard",
-      },
-      {
-        loginFn: loginSubModerator,
-        role: "SubModerator",
-        path: "/submoderator/dashboard",
-      },
-    ];
-
-    for (const { loginFn, role, path } of loginAttempts) {
+    setLoading(true); // Set loading state to true
+    try {
+      const res = await loginModerator(data).unwrap();
+      dispatch(setCredentials({ ...res }));
+      navigate("/moderator/dashboard");
+      toast.success("Moderator login successful!");
+    } catch (err) {
       try {
-        const res = await loginFn(data).unwrap();
+        const res = await loginSubModerator(data).unwrap();
         dispatch(setCredentials({ ...res }));
-        navigate(path);
-        toast.success(`${role} login successful!`);
-        return;
-      } catch (err) {
-        if (err?.data?.message) {
-          toast.error(err.data.message);
+        navigate("/submoderator/dashboard");
+        toast.success("SubModerator login successful!");
+      } catch (subErr) {
+        if (subErr?.data?.message) {
+          toast.error(subErr.data.message);
+        } else {
+          toast.error(
+            "Login failed for both roles. Please check your credentials."
+          );
         }
       }
+    } finally {
+      setLoading(false); 
     }
-
-    toast.error("Login failed for both roles. Please check your credentials.");
   };
 
   const handleLogoClick = () => {
@@ -269,8 +266,12 @@ function ModeratorLoginScreen() {
                       </Button>
                     </div>
 
-                    <Button type="submit" className="w-full">
-                      Sign In
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={loading}
+                    >
+                      {loading ? "Signing In..." : "Sign In"}
                     </Button>
                   </form>
                 </FormProvider>
