@@ -582,6 +582,23 @@ const getModerators = asyncHandler(async (req, res) => {
 
 
 
+// @desc    Get moderators by infrastructure type
+// @route   GET /api/moderators
+// @access  Public or Private based on your requirement
+const getModeratorList = asyncHandler(async (req, res) => {
+  try {
+    const moderators = await User.find({ isModerator: true })
+      .populate("infra_type", "infra_name");
+
+    res.status(200).json(moderators.length ? moderators : []);
+  } catch (error) {
+    console.error("Error fetching moderators:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+
 // @desc    Check if email exists
 // @route   GET /api/users/check-email/:email
 // @access  Public
@@ -624,5 +641,6 @@ export {
   resetPassword,
   changePassword,
   getModerators,
+  getModeratorList,
   checkEmailExists,
 };

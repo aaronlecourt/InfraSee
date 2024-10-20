@@ -84,14 +84,13 @@ const AdminReportsScreen = () => {
 
   const handleRefresh = async () => {
     if (activeButton === "reports") {
-      await loadAccounts(); // Refresh accounts data
+      await loadAccounts();
     } else {
-      await loadReports(); // Refresh reports data
+      await loadReports();
     }
   };
 
   useEffect(() => {
-    // Load accounts and reports on component mount
     loadAccounts();
     loadReports();
   }, []);

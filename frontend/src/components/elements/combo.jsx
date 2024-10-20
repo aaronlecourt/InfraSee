@@ -27,10 +27,10 @@ export function ComboBoxResponsive({ onSelect }) {
 
     const fetchModerators = async () => {
       try {
-        const response = await axios.get("/api/users/moderators");
+        const response = await axios.get("/api/users/moderators-list");
         const moderators = response.data;
         const categorizedModerators = moderators.reduce((acc, mod) => {
-          const infraId = mod.infra_type._id; // Ensure infra_type has _id
+          const infraId = mod.infra_type._id;
           if (!acc[infraId]) {
             acc[infraId] = [];
           }

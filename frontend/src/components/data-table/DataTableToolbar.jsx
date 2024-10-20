@@ -39,42 +39,67 @@ export function DataTableToolbar({ table, activeTab }) {
     reportStatus: [],
   });
 
+  // Call fetch functions immediately when the component renders
+  const initializeData = async () => {
+    await fetchInfraTypes();
+    await fetchModerators();
+    await fetchStatusOptions();
+  };
+
   const handleDateSelect = ({ from, to }) => {
     setDateRange({ from, to });
     table.getColumn("createdAt")?.setFilterValue([from, to]);
   };
 
-  useEffect(() => {
-    const fetchFilterOptions = async () => {
-      try {
-        const [infraTypeResponse, reportModResponse, reportStatusResponse] =
-          await Promise.all([
-            axios.get("/api/infrastructure-types"),
-            axios.get("/api/users/moderators"),
-            axios.get("/api/status"),
-          ]);
+  // Fetch infrastructure types
+  const fetchInfraTypes = async () => {
+    try {
+      const infraTypeResponse = await axios.get("/api/infrastructure-types");
+      setFilterOptions((prev) => ({
+        ...prev,
+        infraType: infraTypeResponse.data.map((type) => ({
+          label: type.infra_name,
+          value: type.infra_name,
+        })),
+      }));
+    } catch (error) {
+      console.error("Error fetching infrastructure types:", error);
+    }
+  };
 
-        setFilterOptions({
-          infraType: infraTypeResponse.data.map((type) => ({
-            label: type.infra_name,
-            value: type.infra_name,
-          })),
-          reportMod: reportModResponse.data.map((mod) => ({
-            label: mod.name,
-            value: mod.name,
-          })),
-          reportStatus: reportStatusResponse.data.map((status) => ({
-            label: status.stat_name,
-            value: status.stat_name,
-          })),
-        });
-      } catch (error) {
-        console.error("Error fetching filter options:", error);
-      }
-    };
+  // Fetch moderator list
+  const fetchModerators = async () => {
+    try {
+      const reportModResponse = await axios.get("/api/users/moderators-list");
+      setFilterOptions((prev) => ({
+        ...prev,
+        reportMod: reportModResponse.data.map((mod) => ({
+          label: mod.name,
+          value: mod.name,
+        })),
+      }));
+    } catch (error) {
+      console.error("Error fetching moderators:", error);
+    }
+  };
 
-    fetchFilterOptions();
-  }, []);
+  // Fetch status options
+  const fetchStatusOptions = async () => {
+    try {
+      const reportStatusResponse = await axios.get("/api/status");
+      setFilterOptions((prev) => ({
+        ...prev,
+        reportStatus: reportStatusResponse.data.map((status) => ({
+          label: status.stat_name,
+          value: status.stat_name,
+        })),
+      }));
+    } catch (error) {
+      console.error("Error fetching status options:", error);
+    }
+  };
+
+  initializeData();
 
   return (
     <div className="mt-2 flex flex-col gap-2">
@@ -87,7 +112,9 @@ export function DataTableToolbar({ table, activeTab }) {
               value={table.getColumn("report_by")?.getFilterValue() ?? ""}
               className="h-9"
               onChange={(event) => {
-                table.getColumn("report_by")?.setFilterValue(event.target.value);
+                table
+                  .getColumn("report_by")
+                  ?.setFilterValue(event.target.value);
               }}
             />
           )}
@@ -139,7 +166,7 @@ export function DataTableToolbar({ table, activeTab }) {
               />
             )}
             {table.getColumn("report_mod") && (
-            <div className="flex gap-x-2">
+              <div className="flex gap-x-2">
                 <DataTableFacetedFilter
                   column={table.getColumn("report_mod")}
                   title="Moderator"
@@ -224,7 +251,11 @@ export function DataTableToolbar({ table, activeTab }) {
               {table.getColumn("infra_type") && activeTab === undefined && (
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="filter" className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="filter"
+                      className="flex gap-2"
+                    >
                       <Plus size={15} />
                       <p className="hidden md:block">Add Moderator</p>
                     </Button>
