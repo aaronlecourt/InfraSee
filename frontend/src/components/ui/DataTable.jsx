@@ -65,9 +65,14 @@ export function DataTable({ columns, data, activeTab, userInfo }) {
     setShowDetailsDialogOpen(true);
   };
 
-  const handleCloseDialog = () => {
+  const handleCloseDialog = (reportId) => {
     setShowDetailsDialogOpen(false);
     setDialogData(null);
+
+    // Call setAsSeen after closing the dialog
+    if (reportId) {
+      setAsSeen(reportId);
+    }
   };
 
   const handleOpenConfirmDialog = (report) => {
@@ -93,10 +98,10 @@ export function DataTable({ columns, data, activeTab, userInfo }) {
   };
 
   const setAsSeen = async (reportId) => {
-    console.log('ID', reportId)
+    console.log("Setting as seen for ID:", reportId);
     try {
-      await axios.put(`/api/reports/seen/${reportId}`);
-      // toast.success("Report marked as seen!");
+      const response = await axios.put(`/api/reports/seen/${reportId}`);
+      console.log("Response from setting as seen:", response.data);
     } catch (error) {
       console.error("Error marking report as seen:", error);
       toast.error("Failed to mark report as seen. Please try again.");
@@ -154,31 +159,33 @@ export function DataTable({ columns, data, activeTab, userInfo }) {
 
                   {userInfo === undefined && (
                     <TableCell>
-                    <div className="flex justify-end">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={async (event) => {
-                                event.stopPropagation();
-                                await setAsSeen(row.original._id); // Mark the report as seen
-                                setDialogData(row.original);
-                                setShowDetailsDialogOpen(true); // Open details dialog
-                              }}
-                              className="flex items-center"
-                            >
-                              <Eye size={15} className="mr-0" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>View Details</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </TableCell>
+                      <div className="flex justify-end">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  event.preventDefault(); // Prevent default action
+
+                                  // Set dialog data and open the dialog first
+                                  setDialogData(row.original);
+                                  setShowDetailsDialogOpen(true); // Open details dialog
+                                }}
+                                className="flex items-center"
+                              >
+                                <Eye size={15} className="mr-0" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>View Details</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableCell>
                   )}
 
                   {activeTab === "unassigned" && (
@@ -217,7 +224,7 @@ export function DataTable({ columns, data, activeTab, userInfo }) {
 
       <ReportDetailsDialog
         isOpen={isShowDetailsDialogOpen}
-        onClose={handleCloseDialog}
+        onClose={() => handleCloseDialog(dialogData?._id)}
         data={dialogData}
       />
       <ConfirmAssignDialog
