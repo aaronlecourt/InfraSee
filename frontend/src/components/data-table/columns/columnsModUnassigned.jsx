@@ -7,15 +7,21 @@ import { toast } from "sonner";
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return format(date, 'MMMM dd, yyyy'); // Corrected to use 'mm' for minutes and 'ss' for seconds
+  return format(date, 'MMMM dd, yyyy');
 };
 
-const handleAccept = (data) => {
-  // ASK FOR Confitm SET report_mod to the logged in user id, SET TO PENDING, SEND SMS AND MARK is_new TO true (para new pending)
-  console.log(data)
-}
-
 export const columnsModUnassigned = [
+  {
+    accessorKey: "_id", // Keep the accessor for searching
+    title: "",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="" />
+    ),
+    cell: () => null,
+    enableSorting: false,
+    enableHiding: false,
+    enableCellSorting: false,
+  },
   {
     accessorKey: "is_new",
     title: "",
@@ -63,7 +69,7 @@ export const columnsModUnassigned = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => (
-      <div className="">{row.getValue("report_status")?.stat_name || "Unknown"}</div> // Access the stat_name field from the populated data
+      <div className="">{row.getValue("report_status")?.stat_name || "Unknown"}</div>
     ),
     enableSorting: false,
     enableHiding: false,

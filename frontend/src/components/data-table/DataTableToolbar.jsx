@@ -24,15 +24,18 @@ import { CalendarDatePicker } from "../elements/calendar-date-picker";
 import { DataTableViewOptions } from "./DataTableViewOptions";
 import { DataTableFacetedFilter } from "./DataTableFacetedFilter";
 
-export function DataTableToolbar({ table, activeTab }) {
+export function DataTableToolbar({
+  table,
+  activeTab,
+  highlightedId,
+  setHighlightedId,
+}) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
   const [dateRange, setDateRange] = useState({
     from: new Date(new Date().getFullYear(), 0, 1),
     to: new Date(),
   });
-
   const [filterOptions, setFilterOptions] = useState({
     infraType: [],
     reportMod: [],
@@ -44,13 +47,12 @@ export function DataTableToolbar({ table, activeTab }) {
     table.getColumn("createdAt")?.setFilterValue([from, to]);
   };
 
-  // Fetch infrastructure types
   const fetchInfraTypes = async () => {
     try {
-      const infraTypeResponse = await axios.get("/api/infrastructure-types");
+      const response = await axios.get("/api/infrastructure-types");
       setFilterOptions((prev) => ({
         ...prev,
-        infraType: infraTypeResponse.data.map((type) => ({
+        infraType: response.data.map((type) => ({
           label: type.infra_name,
           value: type.infra_name,
         })),
@@ -60,13 +62,12 @@ export function DataTableToolbar({ table, activeTab }) {
     }
   };
 
-  // Fetch moderator list
   const fetchModerators = async () => {
     try {
-      const reportModResponse = await axios.get("/api/users/moderators-list");
+      const response = await axios.get("/api/users/moderators-list");
       setFilterOptions((prev) => ({
         ...prev,
-        reportMod: reportModResponse.data.map((mod) => ({
+        reportMod: response.data.map((mod) => ({
           label: mod.name,
           value: mod.name,
         })),
@@ -76,13 +77,12 @@ export function DataTableToolbar({ table, activeTab }) {
     }
   };
 
-  // Fetch status options
   const fetchStatusOptions = async () => {
     try {
-      const reportStatusResponse = await axios.get("/api/status");
+      const response = await axios.get("/api/status");
       setFilterOptions((prev) => ({
         ...prev,
-        reportStatus: reportStatusResponse.data.map((status) => ({
+        reportStatus: response.data.map((status) => ({
           label: status.stat_name,
           value: status.stat_name,
         })),
@@ -92,23 +92,27 @@ export function DataTableToolbar({ table, activeTab }) {
     }
   };
 
-  // Call fetch functions immediately when the component mounts
   useEffect(() => {
     const initializeData = async () => {
       await fetchInfraTypes();
       await fetchModerators();
       await fetchStatusOptions();
     };
-
     initializeData();
   }, []);
+
+  // Automatically set the filter value for the reporter ID when the component mounts
+  useEffect(() => {
+    if (activeTab === "unassigned" && highlightedId) {
+      table.getColumn("_id")?.setFilterValue(highlightedId);
+    }
+  }, [activeTab, highlightedId, table]);
 
   return (
     <div className="mt-2 flex flex-col gap-2">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-2">
         <div className="col-span-1 flex gap-x-2">
-          {/* MODERATOR SEARCH */}
-          {table.getColumn("report_by") && (
+          {activeTab === "reports" && (
             <Input
               placeholder="Search reporter name..."
               value={table.getColumn("report_by")?.getFilterValue() ?? ""}
@@ -120,7 +124,30 @@ export function DataTableToolbar({ table, activeTab }) {
               }}
             />
           )}
-          {/* ADMIN SEARCH */}
+          {activeTab === "unassigned" && (
+            <>
+              <Input
+                placeholder="Search reporter name..."
+                value={table.getColumn("report_by")?.getFilterValue() ?? ""}
+                className="h-9"
+                onChange={(event) => {
+                  table
+                    .getColumn("report_by")
+                    ?.setFilterValue(event.target.value);
+                }}
+                onFocus={() => {
+                  setHighlightedId();
+                  table.resetColumnFilters();
+                }}
+              />
+              <Input
+                placeholder="Search reporter id..."
+                value={table.getColumn("_id")?.getFilterValue() || ""}
+                className="h-9 hidden"
+                onChange={() => {}}
+              />
+            </>
+          )}
           {table.getColumn("name") && (
             <Input
               placeholder="Search moderator name..."
@@ -131,7 +158,6 @@ export function DataTableToolbar({ table, activeTab }) {
               }}
             />
           )}
-          {/* DESKTOP VIEW/DOWNLOAD */}
           <div className="flex gap-2 sm:hidden">
             <DataTableViewOptions table={table} />
             <Button size="filter" className="flex gap-2">
@@ -141,7 +167,6 @@ export function DataTableToolbar({ table, activeTab }) {
           </div>
         </div>
         <div className="col-span-1">
-          {/* Calendar Picker */}
           <CalendarDatePicker
             date={dateRange}
             onDateSelect={handleDateSelect}
@@ -151,7 +176,6 @@ export function DataTableToolbar({ table, activeTab }) {
       </div>
       <div className="grid grid-cols-1 gap-y-2">
         <div className="col-span-1 flex items-center justify-between">
-          {/* FACETED FILTERS */}
           <div className="flex items-center">
             {table.getColumn("report_by") && !table.getColumn("report_mod") && (
               <DataTableFacetedFilter
@@ -181,7 +205,6 @@ export function DataTableToolbar({ table, activeTab }) {
                 />
               </div>
             )}
-            {/* RESET BUTTON */}
             {isFiltered && (
               <Button
                 variant="ghost"
@@ -193,9 +216,7 @@ export function DataTableToolbar({ table, activeTab }) {
               </Button>
             )}
           </div>
-          {/* VIEW OPTIONS, MULTISELECT ACTIONS */}
           <div className="flex gap-x-2">
-            {/* DESKTOP VIEW/DOWNLOAD */}
             <div className="hidden gap-2 sm:flex">
               <DataTableViewOptions table={table} />
               <Button size="filter" className="flex gap-2">
@@ -204,7 +225,6 @@ export function DataTableToolbar({ table, activeTab }) {
               </Button>
             </div>
             <div className="flex gap-x-2">
-              {/* ADMIN MULTI DELETE */}
               {table.getFilteredSelectedRowModel().rows.length > 0 &&
                 activeTab === undefined && (
                   <Button
@@ -217,7 +237,6 @@ export function DataTableToolbar({ table, activeTab }) {
                     {table.getFilteredSelectedRowModel().rows.length})
                   </Button>
                 )}
-              {/* MOD MULTI ACTION */}
               {table.getFilteredSelectedRowModel().rows.length > 0 &&
                 activeTab === "archives" && (
                   <Button
@@ -249,7 +268,6 @@ export function DataTableToolbar({ table, activeTab }) {
                     {table.getFilteredSelectedRowModel().rows.length})
                   </Button>
                 )}
-              {/* ADD BUTTON HERE */}
               {table.getColumn("infra_type") && activeTab === undefined && (
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>

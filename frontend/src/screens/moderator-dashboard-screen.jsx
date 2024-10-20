@@ -42,17 +42,18 @@ const ModeratorDashboardScreen = () => {
   const [loadingReports, setLoadingReports] = useState(true);
   const [loadingArchives, setLoadingArchives] = useState(true);
   const [loadingUnassigned, setLoadingUnassigned] = useState(true);
+  const [highlightedId, setHighlightedId] = useState();
 
   useEffect(() => {
     socket.on("reportChange", (change) => {
       console.log("Received report change:", change);
-      loadReports(); 
+      loadReports();
       loadArchives();
       loadUnassigned();
     });
 
     return () => {
-      socket.off("reportChange"); 
+      socket.off("reportChange");
     };
   }, []);
 
@@ -140,6 +141,8 @@ const ModeratorDashboardScreen = () => {
                   userInfo={userInfo}
                   unassigned={unassigned}
                   activeTab={activeTab}
+                  highlightedId={highlightedId}
+                  setHighlightedId={setHighlightedId}
                 />
               )}
             </TabsContent>
@@ -168,6 +171,8 @@ const ModeratorDashboardScreen = () => {
                 data={unassigned}
                 columns={columnsModUnassigned}
                 activeTab={activeTab}
+                highlightedId={highlightedId}
+                setHighlightedId={setHighlightedId}
               />
             </TabsContent>
 

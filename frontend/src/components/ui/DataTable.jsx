@@ -30,7 +30,14 @@ import { DataTableToolbar } from "../data-table/DataTableToolbar";
 import { ReportDetailsDialog } from "../elements/report-details-modal";
 import { ConfirmAssignDialog } from "../elements/confirm-assign-modal";
 
-export function DataTable({ columns, data, activeTab, userInfo }) {
+export function DataTable({
+  columns,
+  data,
+  activeTab,
+  userInfo,
+  highlightedId,
+  setHighlightedId,
+}) {
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState({});
   const [columnFilters, setColumnFilters] = useState([]);
@@ -110,9 +117,13 @@ export function DataTable({ columns, data, activeTab, userInfo }) {
 
   return (
     <div className="space-y-4">
-      {!(activeTab === "unassigned") && (
-        <DataTableToolbar table={table} activeTab={activeTab} />
-      )}
+      <DataTableToolbar
+        table={table}
+        activeTab={activeTab}
+        highlightedId={highlightedId}
+        setHighlightedId={setHighlightedId}
+      />
+
       <div className="overflow-y-auto rounded-md border">
         <Table>
           <TableHeader>
