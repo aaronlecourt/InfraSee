@@ -39,13 +39,6 @@ export function DataTableToolbar({ table, activeTab }) {
     reportStatus: [],
   });
 
-  // Call fetch functions immediately when the component renders
-  const initializeData = async () => {
-    await fetchInfraTypes();
-    await fetchModerators();
-    await fetchStatusOptions();
-  };
-
   const handleDateSelect = ({ from, to }) => {
     setDateRange({ from, to });
     table.getColumn("createdAt")?.setFilterValue([from, to]);
@@ -99,7 +92,16 @@ export function DataTableToolbar({ table, activeTab }) {
     }
   };
 
-  initializeData();
+  // Call fetch functions immediately when the component mounts
+  useEffect(() => {
+    const initializeData = async () => {
+      await fetchInfraTypes();
+      await fetchModerators();
+      await fetchStatusOptions();
+    };
+
+    initializeData();
+  }, []);
 
   return (
     <div className="mt-2 flex flex-col gap-2">
