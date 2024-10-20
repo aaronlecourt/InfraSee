@@ -188,36 +188,14 @@ export function ModAccount({ user }) {
                   <FormMessage className="text-right" />
                 </div>
                 <FormControl>
-                  <Select
-                    value={field.value}
-                    onValueChange={(value) =>
-                      setValue("infrastructureType", value)
+                  <Input
+                    value={
+                      getInfraName(user?.infra_type?._id) ||
+                      "No Infrastructure Type"
                     }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue
-                        placeholder={
-                          field.value
-                            ? getInfraName(field.value)
-                            : getInfraName(user?.infra_type?._id) ||
-                              "Select Infrastructure Type"
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {infrastructureTypes.length === 0 ? (
-                        <SelectItem value="notypes" disabled>
-                          No types available
-                        </SelectItem>
-                      ) : (
-                        infrastructureTypes.map((type) => (
-                          <SelectItem key={type._id} value={type._id}>
-                            {type.infra_name}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
+                    readOnly
+                    className="cursor-not-allowed bg-gray-100 text-gray-500" 
+                  />
                 </FormControl>
               </FormItem>
             )}
