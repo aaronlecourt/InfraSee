@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import axios from "axios";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,25 +13,29 @@ import {
 import { AccountDetailsDialog } from "../elements/account-details-modal";
 import { ConfirmDeleteDialog } from "../elements/delete-confirm-modal";
 import { Edit, Eye, Trash2 } from "lucide-react";
+import { useDeactivateModeratorMutation } from "@/slices/users-api-slice";
 
 export function AdminAccountDataTableRowActions({ row }) {
   const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [dialogData, setDialogData] = useState(null);
-  const userId = row.original._id; 
-  
+  const userId = row.original._id;
+
+  // Using the deactivateModerator mutation hook
+  const [deactivateModerator] = useDeactivateModeratorMutation();
+
   const handleShowDetails = () => {
     setDialogData(row.original);
     setShowDetailsDialogOpen(true);
   };
 
-  const handleDelete = async () => {
+  const handleDeactivate = async () => {
     try {
-      await axios.delete(`/api/users/delete/${userId}`);
-      console.log("Account deleted:", dialogData);
+      await deactivateModerator(userId); // Call the mutation with the userId
+      console.log("Account deactivated:", dialogData);
       setDeleteDialogOpen(false);
     } catch (error) {
-      console.error("Error deleting account:", error);
+      console.error("Error deactivating account:", error);
     }
   };
 
@@ -54,18 +57,6 @@ export function AdminAccountDataTableRowActions({ row }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
-          {/* <DropdownMenuItem
-            onClick={() => console.log("Edit")}
-            className="flex gap-2"
-          >
-            <Edit size={14} />
-            Edit Account
-          </DropdownMenuItem> */}
-          {/* <DropdownMenuItem onClick={handleShowDetails} className="flex gap-2">
-            <Eye size={14} />
-            Show Details
-          </DropdownMenuItem> */}
-          {/* <DropdownMenuSeparator /> */}
           <DropdownMenuItem
             className="text-red-600 flex gap-2"
             onClick={() => setDeleteDialogOpen(true)}
@@ -84,7 +75,7 @@ export function AdminAccountDataTableRowActions({ row }) {
       <ConfirmDeleteDialog
         isOpen={isDeleteDialogOpen}
         onClose={handleCloseDialog}
-        onConfirm={handleDelete}
+        onConfirm={handleDeactivate} // Confirm deactivation instead of deletion
       />
     </>
   );

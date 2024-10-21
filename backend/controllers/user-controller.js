@@ -389,6 +389,37 @@ const reactivateModerator = asyncHandler(async (req, res) => {
 
 
 
+// @desc Get all deactivated moderators and submoderators
+// @route GET /api/users/deactivated
+// @access Private (requires admin or moderator privileges)
+const getDeactivatedUsers = asyncHandler(async (req, res) => {
+  try {
+    // Fetch users where `deactivated` is true and either `isModerator` or `isSubModerator` is true
+    const deactivatedUsers = await User.find({
+      deactivated: true,
+      $or: [
+        { isModerator: true },
+        { isSubModerator: true }
+      ]
+    });
+
+    if (!deactivatedUsers || deactivatedUsers.length === 0) {
+      return res.status(404).json({ message: "No deactivated moderators or submoderators found" });
+    }
+
+    return res.status(200).json({
+      message: "Deactivated moderators and submoderators fetched successfully",
+      users: deactivatedUsers,
+    });
+  } catch (error) {
+    console.error(`Error fetching deactivated users: ${error.message}`);
+    return res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+
+
+
 // @desc    Logout user / clear cookie
 // @route   POST /api/users/logout
 // @access  Public
@@ -598,6 +629,21 @@ const getModeratorList = asyncHandler(async (req, res) => {
 });
 
 
+// @desc    Get submoderators by infrastructure type
+// @route   GET /api/submoderators
+// @access  Public or Private based on your requirement
+const getSubModeratorList = asyncHandler(async (req, res) => {
+  try {
+    const subModerators = await User.find({ isSubModerator: true })
+      .populate("infra_type", "infra_name");
+
+    res.status(200).json(subModerators.length ? subModerators : []);
+  } catch (error) {
+    console.error("Error fetching submoderators:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 
 // @desc    Check if email exists
 // @route   GET /api/users/check-email/:email
@@ -633,6 +679,7 @@ export {
   deleteUser,
   deactivateModerator,
   reactivateModerator,
+  getDeactivatedUsers,
   logoutUser,
   getUserProfile,
   updateUserProfile,
@@ -641,6 +688,7 @@ export {
   resetPassword,
   changePassword,
   getModerators,
+  getSubModeratorList,
   getModeratorList,
   checkEmailExists,
 };

@@ -86,6 +86,18 @@ export const userApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    deactivateModerator: builder.mutation({
+      query: (moderatorId) => ({
+        url: `${USERS_URL}/${moderatorId}/deactivate`,
+        method: "PUT",
+      }),
+    }),
+    reactivateModerator: builder.mutation({
+      query: (moderatorId) => ({
+        url: `${USERS_URL}/${moderatorId}/reactivate`,
+        method: "PUT",
+      }),
+    }),
   }),
 });
 
@@ -102,4 +114,6 @@ export const {
   useRequestResetPasswordMutation,
   useResetPasswordMutation,
   useChangePasswordMutation,
+  useDeactivateModeratorMutation,
+  useReactivateModeratorMutation,
 } = userApiSlice;
