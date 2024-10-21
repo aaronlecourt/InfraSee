@@ -112,7 +112,7 @@ export function DataTableToolbar({
     <div className="mt-2 flex flex-col gap-2">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-2">
         <div className="col-span-1 flex gap-x-2">
-          {(activeTab === "reports" || activeTab === "hidden") && (
+          {activeTab === "reports" && (
             <Input
               placeholder="Search reporter name..."
               value={table.getColumn("report_by")?.getFilterValue() ?? ""}
@@ -124,19 +124,6 @@ export function DataTableToolbar({
               }}
             />
           )}
-          {table.getColumn("report_by") && activeTab === undefined && (
-            <Input
-              placeholder="Search reporter name..."
-              value={table.getColumn("report_by")?.getFilterValue() ?? ""}
-              className="h-9"
-              onChange={(event) => {
-                table
-                  .getColumn("report_by")
-                  ?.setFilterValue(event.target.value);
-              }}
-            />
-          )}
-          {/* UNASSIGNED TAB */}
           {activeTab === "unassigned" && (
             <>
               <Input
@@ -161,8 +148,7 @@ export function DataTableToolbar({
               />
             </>
           )}
-          {/* ADMIN ACCOUNTS */}
-          {activeTab === undefined && table.getColumn("name") && (
+          {table.getColumn("name") && (
             <Input
               placeholder="Search moderator name..."
               value={table.getColumn("name")?.getFilterValue() ?? ""}
@@ -191,16 +177,14 @@ export function DataTableToolbar({
       <div className="grid grid-cols-1 gap-y-2">
         <div className="col-span-1 flex items-center justify-between">
           <div className="flex items-center">
-            {/* MOD REPORTS TAB */}
-            {activeTab === "reports" && table.getColumn("report_by") && !table.getColumn("report_mod") && (
+            {table.getColumn("report_by") && !table.getColumn("report_mod") && (
               <DataTableFacetedFilter
                 column={table.getColumn("report_status")}
                 title="Status"
                 options={filterOptions.reportStatus}
               />
             )}
-            {/* ADMIN ACCOUNTS */}
-            {activeTab === undefined && table.getColumn("infra_type") && (
+            {table.getColumn("infra_type") && (
               <DataTableFacetedFilter
                 column={table.getColumn("infra_type")}
                 title="Infrastructure Type"
@@ -233,15 +217,13 @@ export function DataTableToolbar({
             )}
           </div>
           <div className="flex gap-x-2">
-            {activeTab != "unassigned" && activeTab != "hidden" && (
-              <div className="hidden gap-2 sm:flex">
+            <div className="hidden gap-2 sm:flex">
               <DataTableViewOptions table={table} />
               <Button size="filter" className="flex gap-2">
                 <Download size={15} />
                 <p className="hidden md:block">CSV</p>
               </Button>
             </div>
-            )}
             <div className="flex gap-x-2">
               {table.getFilteredSelectedRowModel().rows.length > 0 &&
                 activeTab === undefined && (
