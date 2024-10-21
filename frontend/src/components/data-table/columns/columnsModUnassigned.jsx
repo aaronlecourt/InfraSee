@@ -9,16 +9,14 @@ import { ModUnassignedDataTableRowActions } from "../ModUnassignedDataTableActio
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return format(date, 'MMMM dd, yyyy');
+  return format(date, "MMMM dd, yyyy");
 };
 
 export const columnsModUnassigned = [
   {
     accessorKey: "_id",
     title: "",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="" />
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: () => null,
     enableSorting: false,
     enableHiding: false,
@@ -27,28 +25,30 @@ export const columnsModUnassigned = [
   {
     accessorKey: "is_new",
     title: "",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="" />
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => (
       <div className="">
-        {row.getValue("is_new") && (
-          <Badge variant="outline" className="px-2">New</Badge>
+        {row.getValue("is_new") ? (
+          <Badge variant="outline" className="w-full">
+            Unread
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="w-full">
+            Read
+          </Badge>
         )}
       </div>
     ),
     enableSorting: false,
     enableHiding: false,
-  },  
+  },
   {
     accessorKey: "report_by",
     title: "Reported By",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Reported By" />
     ),
-    cell: ({ row }) => (
-      <div className="">{row.getValue("report_by")}</div>
-    ),
+    cell: ({ row }) => <div className="">{row.getValue("report_by")}</div>,
     enableSorting: false,
     enableHiding: false,
   },
@@ -58,9 +58,7 @@ export const columnsModUnassigned = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Description" />
     ),
-    cell: ({ row }) => (
-      <div className="">"{row.getValue("report_desc")}"</div>
-    ),
+    cell: ({ row }) => <div className="">"{row.getValue("report_desc")}"</div>,
     enableSorting: false,
     enableHiding: false,
   },
@@ -68,10 +66,12 @@ export const columnsModUnassigned = [
     accessorKey: "report_status",
     title: "Status",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Status"/>
+      <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => (
-      <Badge className="px-2" variant="default">{row.getValue("report_status")?.stat_name || "Unknown"}</Badge>
+      <Badge className="px-2" variant="default">
+        {row.getValue("report_status")?.stat_name || "Unknown"}
+      </Badge>
     ),
     enableSorting: false,
     enableHiding: false,
@@ -82,9 +82,7 @@ export const columnsModUnassigned = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Address" />
     ),
-    cell: ({ row }) => (
-      <div className="">{row.getValue("report_address")}</div>
-    ),
+    cell: ({ row }) => <div className="">{row.getValue("report_address")}</div>,
     enableSorting: false,
     enableHiding: false,
   },
@@ -99,7 +97,7 @@ export const columnsModUnassigned = [
     ),
     enableSorting: false,
     enableHiding: false,
-  },  
+  },
   {
     id: "actions",
     cell: ({ row }) => <ModUnassignedDataTableRowActions row={row} />,

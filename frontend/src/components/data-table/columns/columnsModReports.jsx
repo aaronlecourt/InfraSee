@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 // Helper function to format date using date-fns
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return format(date, 'MMMM dd, yyyy'); // Corrected to use 'mm' for minutes and 'ss' for seconds
+  return format(date, "MMMM dd, yyyy"); // Corrected to use 'mm' for minutes and 'ss' for seconds
 };
 
 export const columnsModReports = [
@@ -37,28 +37,30 @@ export const columnsModReports = [
   {
     accessorKey: "is_new",
     title: "",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="" />
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => (
       <div className="whitespace-nowrap">
-        {row.getValue("is_new") && (
-          <Badge variant="outline" className="w-full">New</Badge>
+        {row.getValue("is_new") ? (
+          <Badge variant="outline" className="w-full">
+            Unread
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="w-full">
+            Read
+          </Badge>
         )}
       </div>
     ),
     enableSorting: false,
     enableHiding: false,
-  },  
+  },
   {
     accessorKey: "report_by",
     title: "Reported By",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Reported By" />
     ),
-    cell: ({ row }) => (
-      <div className="">{row.getValue("report_by")}</div>
-    ),
+    cell: ({ row }) => <div className="">{row.getValue("report_by")}</div>,
     enableSorting: true,
     enableHiding: true,
   },
@@ -68,9 +70,7 @@ export const columnsModReports = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Description" />
     ),
-    cell: ({ row }) => (
-      <div className="">"{row.getValue("report_desc")}"</div>
-    ),
+    cell: ({ row }) => <div className="">"{row.getValue("report_desc")}"</div>,
     enableSorting: true,
     enableHiding: true,
   },
@@ -81,7 +81,9 @@ export const columnsModReports = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => (
-      <Badge className="px-2" variant="default">{row.getValue("report_status")?.stat_name || "Unknown"}</Badge>
+      <Badge className="px-2" variant="default">
+        {row.getValue("report_status")?.stat_name || "Unknown"}
+      </Badge>
     ),
     enableSorting: true,
     enableHiding: true,
@@ -92,9 +94,7 @@ export const columnsModReports = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Address" />
     ),
-    cell: ({ row }) => (
-      <div className="">{row.getValue("report_address")}</div>
-    ),
+    cell: ({ row }) => <div className="">{row.getValue("report_address")}</div>,
     enableSorting: true,
     enableHiding: true,
   },
