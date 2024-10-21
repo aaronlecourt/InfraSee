@@ -20,23 +20,42 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea"; // Import Textarea component
-import { FormItem, FormLabel, FormMessage } from "@/components/ui/form"; // Import form components
+import { Textarea } from "@/components/ui/textarea";
+import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from 'sonner';
+import { DateTimePicker } from "./datetimepicker";
 
-// Define your Zod schema
-const schema = z.object({
+// Base validation schema for report status
+const baseSchema = z.object({
   status: z.string().nonempty("Status is required"),
-  remarks: z.string().min(1, "Remarks are required").max(150, "Remarks must be at most 150 characters"), // Make remarks required and limit to 150 characters
+  remarks: z.string().min(1, "Remarks are required").max(150, "Remarks must be at most 150 characters"),
 });
+
+// Function to get validation schema including time_resolved based on status
+const getSchema = (status) => {
+  const dateTimeSchema = status === 'resolved'
+    ? z.object({
+        time_resolved: z.date().optional().refine((date) => date !== null, {
+          message: "Date and time are required when status is resolved.",
+        }),
+      })
+    : z.object({
+        time_resolved: z.date().optional(),
+      });
+
+  return baseSchema.merge(dateTimeSchema);
+};
 
 export function UpdateStatusDialog({ isOpen, onClose, data }) {
   const [statusOptions, setStatusOptions] = useState([]);
+  const [currentStatus, setCurrentStatus] = useState(data?.report_status?._id || "");
+
   const methods = useForm({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(getSchema(currentStatus)),
     defaultValues: {
-      status: data?.report_status?._id || "",
-      remarks: "", // Default value for remarks
+      status: currentStatus,
+      remarks: "",
+      time_resolved: null,
     },
   });
 
@@ -59,21 +78,29 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
 
   useEffect(() => {
     if (data && data.report_status) {
-      setValue("status", data.report_status._id); // Set the _id as the default value
+      setValue("status", data.report_status._id);
+      setCurrentStatus(data.report_status._id);
     }
   }, [data, setValue]);
 
+  useEffect(() => {
+    methods.reset({
+      status: currentStatus,
+      remarks: "",
+      time_resolved: null,
+    });
+  }, [currentStatus, methods]);
+
   const onSubmit = async (formData) => {
-    console.log("Updated status ID:", formData.status);
-    const reportId = data._id; // Assuming data contains the report ID
+    const reportId = data._id;
     try {
       const response = await axios.put(`/api/reports/status/${reportId}`, {
         report_status: formData.status,
         status_remark: formData.remarks,
+        status_time: formData.time_resolved ? formData.time_resolved.toISOString() : null,
       });
-      console.log(response.data.message);
       toast.success("Report status updated successfully!");
-      onClose(); // Close dialog after success
+      onClose();
     } catch (error) {
       console.error("Error updating report status:", error);
       toast.error("Error updating report status.");
@@ -86,17 +113,13 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
         <DialogHeader>
           <DialogTitle>Update Report Status</DialogTitle>
           <DialogDescription>
-            Update the reporter's report status here. An SMS notification is
-            sent to their contact number immediately.
+            Update the reporter's report status here. An SMS notification is sent to their contact number immediately.
           </DialogDescription>
           {data ? (
             <div className="w-full pt-2">
               <FormProvider {...methods}>
                 <form onSubmit={handleSubmit(onSubmit)} className="w-full">
-                  <label
-                    htmlFor="status"
-                    className="hidden text-sm font-medium text-gray-700"
-                  >
+                  <label htmlFor="status" className="hidden text-sm font-medium text-gray-700">
                     Update Status
                   </label>
                   <Controller
@@ -104,8 +127,11 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                     control={control}
                     render={({ field }) => (
                       <Select
-                        onValueChange={field.onChange} // Handle value change
-                        value={field.value} // Set current value
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          setCurrentStatus(value);
+                        }} 
+                        value={field.value} 
                         className="w-full"
                       >
                         <SelectTrigger className="w-full">
@@ -115,11 +141,8 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                           <SelectGroup>
                             <SelectLabel>Status Options</SelectLabel>
                             {statusOptions.map((option) => (
-                              <SelectItem
-                                key={option._id}
-                                value={option._id} // Use _id as the value
-                              >
-                                {option.stat_name} {/* Display stat_name */}
+                              <SelectItem key={option._id} value={option._id}>
+                                {option.stat_name}
                               </SelectItem>
                             ))}
                           </SelectGroup>
@@ -128,7 +151,6 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                     )}
                   />
                   
-                  {/* Textarea for remarks */}
                   <FormItem>
                     <FormLabel className="font-bold">Remarks</FormLabel>
                     <Controller
@@ -144,9 +166,26 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                         />
                       )}
                     />
-                    {errors.remarks && <FormMessage>{errors.remarks.message}</FormMessage>} {/* Display error message for remarks */}
+                    {errors.remarks && <FormMessage>{errors.remarks.message}</FormMessage>}
                   </FormItem>
-                  
+
+                  {currentStatus === '66d25906baae7f52f54793f5' && (
+                    <FormItem>
+                      <FormLabel className="font-bold">Date-Time Resolved</FormLabel>
+                      <Controller
+                        name="time_resolved"
+                        control={control}
+                        render={({ field }) => (
+                          <DateTimePicker
+                            value={field.value}
+                            onChange={(date) => field.onChange(date)} 
+                          />
+                        )}
+                      />
+                      {errors.time_resolved && <FormMessage>{errors.time_resolved.message}</FormMessage>}
+                    </FormItem>
+                  )}
+
                   <Button type="submit" className="mt-4 w-full">
                     Update Status
                   </Button>
