@@ -14,7 +14,7 @@ import { ReportDetailsDialog } from "../elements/report-details-modal";
 import { ConfirmDeleteDialog } from "../elements/delete-confirm-modal";
 import { ConfirmRestoreDialog } from "../elements/restore-confirm-modal";
 import { EyeIcon, ArchiveRestore, Trash2 } from "lucide-react";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 
 export function ModArchiveDataTableRowActions({ row }) {
   const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);
@@ -79,18 +79,19 @@ export function ModArchiveDataTableRowActions({ row }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
-          {/* <DropdownMenuItem onClick={handleShowDetails} className="flex gap-2">
-            <EyeIcon size={14} />
+          <DropdownMenuItem onClick={handleShowDetails} className="flex gap-2">
+            <EyeIcon size={14} className="text-muted-foreground" />
             Show Details
-          </DropdownMenuItem> */}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() => setRestoreDialogOpen(true)}
             className="flex gap-2"
           >
-            <ArchiveRestore size={14} />
+            <ArchiveRestore size={14} className="text-muted-foreground" />
             Unhide
           </DropdownMenuItem>
-          {/* <DropdownMenuSeparator /> */}
+
           {/* <DropdownMenuItem
             className="text-red-500 flex gap-2"
             onClick={() => setDeleteDialogOpen(true)}

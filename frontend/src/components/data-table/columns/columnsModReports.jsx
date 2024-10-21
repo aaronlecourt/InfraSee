@@ -81,7 +81,7 @@ export const columnsModReports = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => (
-      <div className="">{row.getValue("report_status")?.stat_name || "Unknown"}</div> // Access the stat_name field from the populated data
+      <Badge className="px-2" variant="default">{row.getValue("report_status")?.stat_name || "Unknown"}</Badge>
     ),
     enableSorting: true,
     enableHiding: true,

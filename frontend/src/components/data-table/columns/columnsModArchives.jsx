@@ -2,11 +2,11 @@ import { DataTableColumnHeader } from "../DataTableColumnHeader";
 import { ModArchiveDataTableRowActions } from "../ModArchiveDataTableRowActions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
-
+import { Badge } from "@/components/ui/badge";
 // Helper function to format date using date-fns
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return format(date, 'MMMM dd, yyyy'); // Corrected to use 'mm' for minutes and 'ss' for seconds
+  return format(date, "MMMM dd, yyyy"); // Corrected to use 'mm' for minutes and 'ss' for seconds
 };
 
 export const columnsModArchives = [
@@ -40,9 +40,7 @@ export const columnsModArchives = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Reported By" />
     ),
-    cell: ({ row }) => (
-      <div className="">{row.getValue("report_by")}</div>
-    ),
+    cell: ({ row }) => <div className="">{row.getValue("report_by")}</div>,
     enableSorting: true,
     enableHiding: true,
   },
@@ -52,9 +50,7 @@ export const columnsModArchives = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Description" />
     ),
-    cell: ({ row }) => (
-      <div className="">"{row.getValue("report_desc")}"</div>
-    ),
+    cell: ({ row }) => <div className="">"{row.getValue("report_desc")}"</div>,
     enableSorting: true,
     enableHiding: true,
   },
@@ -65,7 +61,9 @@ export const columnsModArchives = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => (
-      <div className="">{row.getValue("report_status")?.stat_name || "Unknown"}</div> // Access the stat_name field from the populated data
+      <Badge className="px-2" variant="default">
+        {row.getValue("report_status")?.stat_name || "Unknown"}
+      </Badge>
     ),
     enableSorting: true,
     enableHiding: true,
@@ -76,17 +74,15 @@ export const columnsModArchives = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Address" />
     ),
-    cell: ({ row }) => (
-      <div className="">{row.getValue("report_address")}</div>
-    ),
+    cell: ({ row }) => <div className="">{row.getValue("report_address")}</div>,
     enableSorting: true,
     enableHiding: true,
   },
   {
     accessorKey: "archived_at",
-    title: "Archived On",
+    title: "Hidden On",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Archived On" />
+      <DataTableColumnHeader column={column} title="Hidden On" />
     ),
     cell: ({ row }) => (
       <div className="">{formatDate(row.getValue("archived_at"))}</div>

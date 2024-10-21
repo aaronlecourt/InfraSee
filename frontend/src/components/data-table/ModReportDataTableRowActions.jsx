@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UpdateStatusDialog } from "../elements/update-status-modal";
 import { ConfirmArchiveDialog } from "../elements/archive-confirm-modal";
-import { ArchiveIcon, Edit } from "lucide-react";
-import { toast } from 'sonner';
+import { ArchiveIcon, Edit, Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
 
 export function ModReportDataTableRowActions({ row }) {
   const [isUpdateStatusDialogOpen, setUpdateStatusDialogOpen] = useState(false);
@@ -56,23 +56,37 @@ export function ModReportDataTableRowActions({ row }) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="flex h-8 w-8 p-0 data-[state=open]:bg-muted">
+          <Button
+            variant="ghost"
+            className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+          >
             <DotsHorizontalIcon className="h-4 w-4" />
             <span className="sr-only">Open menu</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
           <DropdownMenuItem onClick={handleUpdateStatus} className="flex gap-2">
-            <Edit size={14} />
+            <Edit size={14} className="text-muted-foreground"/>
             Update Status
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+          <DropdownMenuItem className="flex gap-2">
+            <Eye size={14} className="text-muted-foreground"/>
+            Mark as Read
+          </DropdownMenuItem>
+          <DropdownMenuItem className="flex gap-2">
+            <EyeOff size={14} className="text-muted-foreground"/>
+            Mark as Unread
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
           <DropdownMenuItem
-            className="text-yellow-500 flex gap-2"
+            className="flex gap-2"
             onClick={openArchiveDialog} // Open the archive dialog here
           >
-            <ArchiveIcon size={14} />
-            Hide
+            <ArchiveIcon size={14} className="text-muted-foreground"/>
+            Hide Report
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

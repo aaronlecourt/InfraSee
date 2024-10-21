@@ -167,38 +167,6 @@ export function DataTable({
                       </TableCell>
                     );
                   })}
-
-                  {userInfo === undefined && (
-                    <TableCell>
-                      <div className="flex justify-end">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  event.preventDefault(); // Prevent default action
-
-                                  // Set dialog data and open the dialog first
-                                  setDialogData(row.original);
-                                  setShowDetailsDialogOpen(true); // Open details dialog
-                                }}
-                                className="flex items-center"
-                              >
-                                <Eye size={15} className="mr-0" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>View Details</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                    </TableCell>
-                  )}
-
                   {activeTab === "unassigned" && (
                     <TableCell>
                       <div className="flex justify-end">
@@ -206,7 +174,7 @@ export function DataTable({
                           variant="outline"
                           size="sm"
                           onClick={(event) => {
-                            event.stopPropagation(); // Prevent row click
+                            event.stopPropagation();
                             handleOpenConfirmDialog(row.original);
                           }}
                           className="flex items-center mr-2"

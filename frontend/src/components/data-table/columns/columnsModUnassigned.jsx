@@ -3,7 +3,9 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { ModUnassignedDataTableRowActions } from "../ModUnassignedDataTableActions";
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
@@ -12,7 +14,7 @@ const formatDate = (dateString) => {
 
 export const columnsModUnassigned = [
   {
-    accessorKey: "_id", // Keep the accessor for searching
+    accessorKey: "_id",
     title: "",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="" />
@@ -29,9 +31,9 @@ export const columnsModUnassigned = [
       <DataTableColumnHeader column={column} title="" />
     ),
     cell: ({ row }) => (
-      <div className="whitespace-nowrap">
+      <div className="">
         {row.getValue("is_new") && (
-          <Badge variant="outline" className="w-full">New</Badge>
+          <Badge variant="outline" className="px-2">New</Badge>
         )}
       </div>
     ),
@@ -66,10 +68,10 @@ export const columnsModUnassigned = [
     accessorKey: "report_status",
     title: "Status",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Status" />
+      <DataTableColumnHeader column={column} title="Status"/>
     ),
     cell: ({ row }) => (
-      <div className="">{row.getValue("report_status")?.stat_name || "Unknown"}</div>
+      <Badge className="px-2" variant="default">{row.getValue("report_status")?.stat_name || "Unknown"}</Badge>
     ),
     enableSorting: false,
     enableHiding: false,
@@ -98,4 +100,8 @@ export const columnsModUnassigned = [
     enableSorting: false,
     enableHiding: false,
   },  
+  {
+    id: "actions",
+    cell: ({ row }) => <ModUnassignedDataTableRowActions row={row} />,
+  },
 ];
