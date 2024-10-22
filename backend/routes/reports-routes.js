@@ -14,6 +14,8 @@ import {
   getUnassignedReports,
   updateOnAccept,
   markReportAsSeen,
+  markAsRead,
+  markAsUnread,
 } from "../controllers/reports-controller.js";
 import { protect } from "../middleware/auth-middleware.js";
 
@@ -32,6 +34,8 @@ router
   .get(protect, getSubModeratorArchivedReports);
 router.route("/archived/reports").get(protect, getArchivedReports);
 router.route("/seen/:id").put(protect, markReportAsSeen);
+router.put("/read/:id", markAsRead);
+router.put("/unread/:id", markAsUnread);
 router.route("/archive/:id").put(archiveReport);
 router.route("/restore/:id").put(restoreReport);
 router.route("/delete/:id").delete(deleteReport);

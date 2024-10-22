@@ -5,31 +5,62 @@ import InfrastructureType from "../models/infrastructureType-model.js";
 
 const createReport = asyncHandler(async (req, res) => {
   try {
-    const { report_address, latitude, longitude, infraType, report_by, report_contactNum, report_desc, report_img } = req.body;
+    const {
+      report_address,
+      latitude,
+      longitude,
+      infraType,
+      report_by,
+      report_contactNum,
+      report_desc,
+      report_img,
+    } = req.body;
 
     // Input validation
-    if (!report_address || !latitude || !longitude || !infraType || !report_by || !report_contactNum || !report_desc || !report_img) {
+    if (
+      !report_address ||
+      !latitude ||
+      !longitude ||
+      !infraType ||
+      !report_by ||
+      !report_contactNum ||
+      !report_desc ||
+      !report_img
+    ) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
     // Haversine distance function
     const haversineDistance = (coords1, coords2) => {
       const toRad = (value) => (value * Math.PI) / 180;
-      const lat1 = coords1[0], lon1 = coords1[1], lat2 = coords2[0], lon2 = coords2[1];
+      const lat1 = coords1[0],
+        lon1 = coords1[1],
+        lat2 = coords2[0],
+        lon2 = coords2[1];
       const R = 6371e3; // Earth radius in meters
-      const φ1 = toRad(lat1), φ2 = toRad(lat2);
-      const Δφ = toRad(lat2 - lat1), Δλ = toRad(lon2 - lon1);
+      const φ1 = toRad(lat1),
+        φ2 = toRad(lat2);
+      const Δφ = toRad(lat2 - lat1),
+        Δλ = toRad(lon2 - lon1);
 
-      const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+      const a =
+        Math.sin(Δφ / 2) ** 2 +
+        Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       return R * c; // Distance in meters
     };
 
     // Check for existing reports within 10 meters
-    const existingReports = await Report.find({ infraType }).populate('report_status'); // Populate status
+    const existingReports = await Report.find({ infraType }).populate(
+      "report_status"
+    ); // Populate status
     for (const report of existingReports) {
-      const distance = haversineDistance([latitude, longitude], [report.latitude, report.longitude]);
-      if (distance < 10 && report.report_status.stat_name !== 'Resolved') { // Adjust based on your status naming
+      const distance = haversineDistance(
+        [latitude, longitude],
+        [report.latitude, report.longitude]
+      );
+      if (distance < 10 && report.report_status.stat_name !== "Resolved") {
+        // Adjust based on your status naming
         return res.status(409).json({
           message: "A similar report has already been reported. ",
           // existingReport: `Address: ${report.report_address}, Description: ${report.report_desc}, Status: ${report.report_status.stat_name}`,
@@ -39,21 +70,33 @@ const createReport = asyncHandler(async (req, res) => {
 
     // Create and save the new report
     const report = new Report({
-      report_address, latitude, longitude, infraType, report_by, report_contactNum, report_desc, report_img,
+      report_address,
+      latitude,
+      longitude,
+      infraType,
+      report_by,
+      report_contactNum,
+      report_desc,
+      report_img,
     });
 
     const savedReport = await report.save();
-    return res.status(201).json({ message: "Report created successfully", report: savedReport });
-
+    return res
+      .status(201)
+      .json({ message: "Report created successfully", report: savedReport });
   } catch (error) {
     console.error(`Error creating report: ${error.message}`);
 
     if (error.name === "ValidationError") {
-      return res.status(422).json({ message: "Validation error: " + error.message });
+      return res
+        .status(422)
+        .json({ message: "Validation error: " + error.message });
     } else if (error.code === 11000) {
       return res.status(409).json({ message: "Duplicate report found." });
     } else {
-      return res.status(500).json({ message: "Server error. Please try again later." });
+      return res
+        .status(500)
+        .json({ message: "Server error. Please try again later." });
     }
   }
 });
@@ -302,7 +345,6 @@ const getSubModeratorReports = asyncHandler(async (req, res) => {
   }
 });
 
-
 const getSubModeratorArchivedReports = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
@@ -340,7 +382,9 @@ const getSubModeratorArchivedReports = asyncHandler(async (req, res) => {
 
     res.json(archivedReports);
   } catch (error) {
-    console.error(`Error fetching submoderator archived reports: ${error.message}`);
+    console.error(
+      `Error fetching submoderator archived reports: ${error.message}`
+    );
 
     if (error.name === "CastError") {
       res.status(400).json({ message: "Invalid report or user ID format." });
@@ -353,7 +397,6 @@ const getSubModeratorArchivedReports = asyncHandler(async (req, res) => {
     }
   }
 });
-
 
 const archiveReport = asyncHandler(async (req, res) => {
   try {
@@ -528,6 +571,58 @@ const markReportAsSeen = asyncHandler(async (req, res) => {
   }
 });
 
+const markAsRead = asyncHandler(async (req, res) => {
+  try {
+    const reportId = req.params.id;
+
+    const report = await Report.findById(reportId);
+
+    if (!report) {
+      return res.status(404).json({ message: "Report not found." });
+    }
+
+    if (!report.is_new) {
+      return res.status(200).json({ message: "Report is already marked as read." });
+    }
+
+    report.is_new = false;
+    const updatedReport = await report.save();
+
+    res.json({ message: "Report marked as read successfully", report: updatedReport });
+  } catch (error) {
+    console.error(`Error marking report as read: ${error.message}`);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+
+const markAsUnread = asyncHandler(async (req, res) => {
+  try {
+    const reportId = req.params.id;
+
+    const report = await Report.findById(reportId);
+
+    if (!report) {
+      return res.status(404).json({ message: "Report not found." });
+    }
+
+    if (report.is_new) {
+      return res.status(200).json({ message: "Report is already marked as unread." });
+    }
+
+    report.is_new = true;
+    const updatedReport = await report.save();
+
+    res.json({ message: "Report marked as unread successfully", report: updatedReport });
+  } catch (error) {
+    console.error(`Error marking report as unread: ${error.message}`);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+
+
+
 export {
   createReport,
   getReports,
@@ -543,4 +638,6 @@ export {
   getUnassignedReports,
   updateOnAccept,
   markReportAsSeen,
+  markAsRead,
+  markAsUnread
 };

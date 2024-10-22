@@ -65,6 +65,14 @@ const reportSchema = mongoose.Schema(
     archived_at: {
       type: Date,
     },
+    is_approved: {
+      type: Boolean,
+      default: false, 
+    },
+    is_requested: {
+      type: Boolean,
+      default: false,
+    },
     report_time_resolved:{
       type: Date,
       default: null,

@@ -19,7 +19,7 @@ export function ModReportDataTableRowActions({ row }) {
   const [isUpdateStatusDialogOpen, setUpdateStatusDialogOpen] = useState(false);
   const [isArchiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [dialogData, setDialogData] = useState(null);
-  const [reportIdToArchive, setReportIdToArchive] = useState(null); // Store the report ID for archiving
+  const [reportIdToArchive, setReportIdToArchive] = useState(null);
 
   const handleUpdateStatus = () => {
     setDialogData(row.original);
@@ -27,19 +27,18 @@ export function ModReportDataTableRowActions({ row }) {
   };
 
   const openArchiveDialog = () => {
-    setReportIdToArchive(row.original._id); // Set the report ID to archive
-    setArchiveDialogOpen(true); // Open the archive confirmation dialog
+    setReportIdToArchive(row.original._id);
+    setArchiveDialogOpen(true);
   };
 
   const handleArchive = async () => {
-    const reportId = reportIdToArchive; // Get the stored report ID
-
+    const reportId = reportIdToArchive; 
     try {
       const response = await axios.put(`/api/reports/archive/${reportId}`);
       console.log(response.data.message);
       toast.success("Report hid successfully!");
       setArchiveDialogOpen(false);
-      setReportIdToArchive(null); // Clear the stored report ID
+      setReportIdToArchive(null); 
     } catch (error) {
       console.error("Error hiding report:", error);
       toast.error(error.response?.data?.message || "Failed to hide report.");
@@ -49,7 +48,30 @@ export function ModReportDataTableRowActions({ row }) {
   const handleCloseDialog = () => {
     setUpdateStatusDialogOpen(false);
     setArchiveDialogOpen(false);
-    setReportIdToArchive(null); // Clear the stored report ID on close
+    setReportIdToArchive(null); 
+  };
+
+
+  const handleMarkAsRead = async () => {
+    const reportId = row.original._id;
+    try {
+      const response = await axios.put(`/api/reports/read/${reportId}`);
+      toast.success(response.data.message || "Report marked as read!");
+    } catch (error) {
+      console.error("Error marking report as read:", error);
+      toast.error(error.response?.data?.message || "Failed to mark as read.");
+    }
+  };
+
+  const handleMarkAsUnread = async () => {
+    const reportId = row.original._id;
+    try {
+      const response = await axios.put(`/api/reports/unread/${reportId}`);
+      toast.success(response.data.message || "Report marked as unread!");
+    } catch (error) {
+      console.error("Error marking report as unread:", error);
+      toast.error(error.response?.data?.message || "Failed to mark as unread.");
+    }
   };
 
   return (
@@ -70,12 +92,12 @@ export function ModReportDataTableRowActions({ row }) {
             Update Status
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="flex gap-2">
-            <Eye size={14} className="text-muted-foreground"/>
+          <DropdownMenuItem onClick={handleMarkAsRead} className="flex gap-2">
+            <Eye size={14} className="text-muted-foreground" />
             Mark as Read
           </DropdownMenuItem>
-          <DropdownMenuItem className="flex gap-2">
-            <EyeOff size={14} className="text-muted-foreground"/>
+          <DropdownMenuItem onClick={handleMarkAsUnread} className="flex gap-2">
+            <EyeOff size={14} className="text-muted-foreground" />
             Mark as Unread
           </DropdownMenuItem>
 
@@ -83,7 +105,7 @@ export function ModReportDataTableRowActions({ row }) {
 
           <DropdownMenuItem
             className="flex gap-2"
-            onClick={openArchiveDialog} // Open the archive dialog here
+            onClick={openArchiveDialog}
           >
             <ArchiveIcon size={14} className="text-muted-foreground"/>
             Hide Report
