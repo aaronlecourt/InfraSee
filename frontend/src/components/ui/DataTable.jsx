@@ -3,6 +3,8 @@ import axios from "axios";
 import {
   flexRender,
   getCoreRowModel,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
@@ -17,14 +19,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { Check, Eye } from "lucide-react";
+import { Check } from "lucide-react";
 import { DataTablePagination } from "../data-table/DataTablePagination";
 import { DataTableToolbar } from "../data-table/DataTableToolbar";
 import { ReportDetailsDialog } from "../elements/report-details-modal";
@@ -34,7 +30,6 @@ export function DataTable({
   columns,
   data,
   activeTab,
-  userInfo,
   highlightedId,
   setHighlightedId,
 }) {
@@ -42,6 +37,7 @@ export function DataTable({
   const [columnVisibility, setColumnVisibility] = useState({});
   const [columnFilters, setColumnFilters] = useState([]);
   const [sorting, setSorting] = useState([]);
+  
   const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);
   const [isConfirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
@@ -65,6 +61,8 @@ export function DataTable({
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
   const handleRowClick = (row) => {
@@ -147,8 +145,8 @@ export function DataTable({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
+            {table.getFilteredRowModel().rows.length ? (
+              table.getFilteredRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() ? "selected" : undefined}

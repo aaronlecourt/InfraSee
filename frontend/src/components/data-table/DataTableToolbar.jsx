@@ -1,12 +1,10 @@
+// DataTableToolbar.js
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import {
   TrashIcon,
   Plus,
   Download,
-  ArchiveIcon,
-  ArchiveRestore,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,13 +14,13 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogClose,
   DialogDescription,
 } from "@/components/ui/dialog";
 import { RegisterForm } from "@/components/elements/register-form";
 import { CalendarDatePicker } from "../elements/calendar-date-picker";
 import { DataTableViewOptions } from "./DataTableViewOptions";
 import { DataTableFacetedFilter } from "./DataTableFacetedFilter";
+import { fetchFilterOptions } from "./fetchFilterOptions"; // Import the function
 
 export function DataTableToolbar({
   table,
@@ -36,72 +34,27 @@ export function DataTableToolbar({
     from: new Date(new Date().getFullYear(), 0, 1),
     to: new Date(),
   });
+  
   const [filterOptions, setFilterOptions] = useState({
     infraType: [],
     reportMod: [],
     reportStatus: [],
   });
+  console.log("Filter Options:", filterOptions.reportStatus)
 
   const handleDateSelect = ({ from, to }) => {
     setDateRange({ from, to });
     table.getColumn("createdAt")?.setFilterValue([from, to]);
   };
 
-  const fetchInfraTypes = async () => {
-    try {
-      const response = await axios.get("/api/infrastructure-types");
-      setFilterOptions((prev) => ({
-        ...prev,
-        infraType: response.data.map((type) => ({
-          label: type.infra_name,
-          value: type.infra_name,
-        })),
-      }));
-    } catch (error) {
-      console.error("Error fetching infrastructure types:", error);
-    }
-  };
-
-  const fetchModerators = async () => {
-    try {
-      const response = await axios.get("/api/users/moderators-list");
-      setFilterOptions((prev) => ({
-        ...prev,
-        reportMod: response.data.map((mod) => ({
-          label: mod.name,
-          value: mod.name,
-        })),
-      }));
-    } catch (error) {
-      console.error("Error fetching moderators:", error);
-    }
-  };
-
-  const fetchStatusOptions = async () => {
-    try {
-      const response = await axios.get("/api/status");
-      setFilterOptions((prev) => ({
-        ...prev,
-        reportStatus: response.data.map((status) => ({
-          label: status.stat_name,
-          value: status.stat_name,
-        })),
-      }));
-    } catch (error) {
-      console.error("Error fetching status options:", error);
-    }
-  };
-
   useEffect(() => {
     const initializeData = async () => {
-      await fetchInfraTypes();
-      await fetchModerators();
-      await fetchStatusOptions();
+      const options = await fetchFilterOptions();
+      setFilterOptions(options);
     };
     initializeData();
   }, []);
 
-  // Automatically set the filter value for the reporter ID when the component mounts
   useEffect(() => {
     if (activeTab === "unassigned" && highlightedId) {
       table.getColumn("_id")?.setFilterValue(highlightedId);
@@ -118,25 +71,10 @@ export function DataTableToolbar({
               value={table.getColumn("report_by")?.getFilterValue() ?? ""}
               className="h-9"
               onChange={(event) => {
-                table
-                  .getColumn("report_by")
-                  ?.setFilterValue(event.target.value);
+                table.getColumn("report_by")?.setFilterValue(event.target.value);
               }}
             />
           )}
-          {table.getColumn("report_by") && activeTab === undefined && (
-            <Input
-              placeholder="Search reporter name..."
-              value={table.getColumn("report_by")?.getFilterValue() ?? ""}
-              className="h-9"
-              onChange={(event) => {
-                table
-                  .getColumn("report_by")
-                  ?.setFilterValue(event.target.value);
-              }}
-            />
-          )}
-          {/* UNASSIGNED TAB */}
           {activeTab === "unassigned" && (
             <>
               <Input
@@ -144,9 +82,7 @@ export function DataTableToolbar({
                 value={table.getColumn("report_by")?.getFilterValue() ?? ""}
                 className="h-9"
                 onChange={(event) => {
-                  table
-                    .getColumn("report_by")
-                    ?.setFilterValue(event.target.value);
+                  table.getColumn("report_by")?.setFilterValue(event.target.value);
                 }}
                 onFocus={() => {
                   setHighlightedId();
@@ -161,7 +97,6 @@ export function DataTableToolbar({
               />
             </>
           )}
-          {/* ADMIN ACCOUNTS */}
           {activeTab === undefined && table.getColumn("name") && (
             <Input
               placeholder="Search moderator name..."
@@ -191,7 +126,6 @@ export function DataTableToolbar({
       <div className="grid grid-cols-1 gap-y-2">
         <div className="col-span-1 flex items-center justify-between">
           <div className="flex items-center">
-            {/* MOD REPORTS TAB */}
             {activeTab === "reports" && table.getColumn("report_by") && !table.getColumn("report_mod") && (
               <DataTableFacetedFilter
                 column={table.getColumn("report_status")}
@@ -199,7 +133,6 @@ export function DataTableToolbar({
                 options={filterOptions.reportStatus}
               />
             )}
-            {/* ADMIN ACCOUNTS */}
             {activeTab === undefined && table.getColumn("infra_type") && (
               <DataTableFacetedFilter
                 column={table.getColumn("infra_type")}
@@ -233,59 +166,55 @@ export function DataTableToolbar({
             )}
           </div>
           <div className="flex gap-x-2">
-            {activeTab != "unassigned" && activeTab != "hidden" && (
+            {activeTab !== "unassigned" && activeTab !== "hidden" && (
               <div className="hidden gap-2 sm:flex">
-              <DataTableViewOptions table={table} />
-              <Button size="filter" className="flex gap-2">
-                <Download size={15} />
-                <p className="hidden md:block">CSV</p>
-              </Button>
-            </div>
+                <DataTableViewOptions table={table} />
+                <Button size="filter" className="flex gap-2">
+                  <Download size={15} />
+                  <p className="hidden md:block">CSV</p>
+                </Button>
+              </div>
             )}
             <div className="flex gap-x-2">
-              {table.getFilteredSelectedRowModel().rows.length > 0 &&
-                activeTab === undefined && (
-                  <Button
-                    variant="outline"
-                    size="filter"
-                    className="flex gap-2"
-                  >
-                    <TrashIcon size={15} aria-hidden="true" />
-                    <p className="hidden md:block">Delete</p>(
-                    {table.getFilteredSelectedRowModel().rows.length})
-                  </Button>
-                )}
-              {table.getFilteredSelectedRowModel().rows.length > 0 &&
-                activeTab === "archives" && (
-                  <Button
-                    variant="outline"
-                    size="filter"
-                    className="flex gap-2"
-                  >
-                    <TrashIcon size={15} aria-hidden="true" />
-                    <p className="hidden md:block">Delete</p>(
-                    {table.getFilteredSelectedRowModel().rows.length})
-                  </Button>
-                )}
-              {table.getFilteredSelectedRowModel().rows.length > 0 &&
-                activeTab === "archives" && (
-                  <Button variant="outline" size="sm">
-                    <ArchiveRestore
-                      className="mr-2 h-4 w-4"
-                      aria-hidden="true"
-                    />
-                    <p className="hidden md:block">Unhide</p>(
-                    {table.getFilteredSelectedRowModel().rows.length})
-                  </Button>
-                )}
-              {table.getFilteredSelectedRowModel().rows.length > 0 &&
-                activeTab === "reports" && (
-                  <Button variant="outline" size="sm">
-                    <ArchiveIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                    <p className="hidden md:block">Hide</p>(
-                    {table.getFilteredSelectedRowModel().rows.length})
-                  </Button>
-                )}
+              {table.getFilteredSelectedRowModel().rows.length > 0 && activeTab === undefined && (
+                <Button
+                  variant="outline"
+                  size="filter"
+                  className="flex gap-2"
+                >
+                  <TrashIcon size={15} aria-hidden="true" />
+                  <p className="hidden md:block">Delete</p>(
+                  {table.getFilteredSelectedRowModel().rows.length})
+                </Button>
+              )}
+              {table.getFilteredSelectedRowModel().rows.length > 0 && activeTab === "archives" && (
+                <Button
+                  variant="outline"
+                  size="filter"
+                  className="flex gap-2"
+                >
+                  <TrashIcon size={15} aria-hidden="true" />
+                  <p className="hidden md:block">Delete</p>(
+                  {table.getFilteredSelectedRowModel().rows.length})
+                </Button>
+              )}
+              {table.getFilteredSelectedRowModel().rows.length > 0 && activeTab === "archives" && (
+                <Button variant="outline" size="sm">
+                  <Plus
+                    className="mr-2 h-4 w-4"
+                    aria-hidden="true"
+                  />
+                  <p className="hidden md:block">Unhide</p>(
+                  {table.getFilteredSelectedRowModel().rows.length})
+                </Button>
+              )}
+              {table.getFilteredSelectedRowModel().rows.length > 0 && activeTab === "reports" && (
+                <Button variant="outline" size="sm">
+                  <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
+                  <p className="hidden md:block">Hide</p>(
+                  {table.getFilteredSelectedRowModel().rows.length})
+                </Button>
+              )}
               {table.getColumn("infra_type") && activeTab === undefined && (
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
