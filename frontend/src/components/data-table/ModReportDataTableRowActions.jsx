@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ReportDetailsDialog } from "../elements/report-details-modal";
 import { UpdateStatusDialog } from "../elements/update-status-modal";
 import { ConfirmArchiveDialog } from "../elements/archive-confirm-modal";
 import { ArchiveIcon, Edit, Eye, EyeOff } from "lucide-react";
@@ -17,6 +18,7 @@ import { toast } from "sonner";
 
 export function ModReportDataTableRowActions({ row }) {
   const [isUpdateStatusDialogOpen, setUpdateStatusDialogOpen] = useState(false);
+  const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);
   const [isArchiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [dialogData, setDialogData] = useState(null);
   const [reportIdToArchive, setReportIdToArchive] = useState(null);
@@ -45,7 +47,13 @@ export function ModReportDataTableRowActions({ row }) {
     }
   };
 
+  const handleShowDetails = () => {
+    setDialogData(row.original);
+    setShowDetailsDialogOpen(true);
+  };
+  
   const handleCloseDialog = () => {
+    setShowDetailsDialogOpen(false)
     setUpdateStatusDialogOpen(false);
     setArchiveDialogOpen(false);
     setReportIdToArchive(null); 
@@ -87,19 +95,28 @@ export function ModReportDataTableRowActions({ row }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
+        <DropdownMenuItem onClick={handleShowDetails} className="flex gap-2">
+            <Eye size={14} className="text-muted-foreground"/>
+            Show Details
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleUpdateStatus} className="flex gap-2">
             <Edit size={14} className="text-muted-foreground"/>
             Update Status
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleMarkAsRead} className="flex gap-2">
+          {row.original.is_new ? (
+            <DropdownMenuItem onClick={handleMarkAsRead} className="flex gap-2">
             <Eye size={14} className="text-muted-foreground" />
             Mark as Read
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleMarkAsUnread} className="flex gap-2">
+          ):
+          (
+            <DropdownMenuItem onClick={handleMarkAsUnread} className="flex gap-2">
             <EyeOff size={14} className="text-muted-foreground" />
             Mark as Unread
           </DropdownMenuItem>
+          )}
 
           <DropdownMenuSeparator />
 
@@ -115,6 +132,11 @@ export function ModReportDataTableRowActions({ row }) {
 
       <UpdateStatusDialog
         isOpen={isUpdateStatusDialogOpen}
+        onClose={handleCloseDialog}
+        data={dialogData}
+      />
+      <ReportDetailsDialog
+        isOpen={isShowDetailsDialogOpen}
         onClose={handleCloseDialog}
         data={dialogData}
       />

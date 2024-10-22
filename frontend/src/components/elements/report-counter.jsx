@@ -1,12 +1,11 @@
 // ReportCounter.js
 import React from "react";
 import { Badge } from "../ui/badge";
-import { FlameIcon } from "lucide-react";
 
 export function ReportCounter({ data, userInfo, activeTab }) {
   const getStatusCounts = (reports) => {
     const counts = {
-      total: reports.length,
+      total: { count: 0, new: 0 },
       inprogress: { count: 0, new: 0 },
       resolved: { count: 0, new: 0 },
       dismissed: { count: 0, new: 0 },
@@ -15,7 +14,10 @@ export function ReportCounter({ data, userInfo, activeTab }) {
     };
 
     reports.forEach((report) => {
+      counts.total.count++; // Increment total count
       const status = report.report_status?.stat_name || "unknown";
+
+      if (report.is_new) counts.total.new++; // Increment new count for total
 
       // Increment the count for the corresponding status
       if (status === "In Progress") {
@@ -45,24 +47,21 @@ export function ReportCounter({ data, userInfo, activeTab }) {
   const statusCounts = getStatusCounts(data);
 
   // Destructure status counts for easier use
-  const { total, inprogress, resolved, dismissed, pending, unassigned } =
-    statusCounts;
+  const { total, inprogress, resolved, dismissed, pending, unassigned } = statusCounts;
 
   return (
     <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
       <Card
         title="Total Reports"
-        count={total}
+        count={total.count} // Updated to show total count
         description="All reports made"
-        badgeCount={userInfo && activeTab === "overview" ? total : null}
+        badgeCount={userInfo && activeTab === "overview" ? total.new : null} // Updated to show new count
       />
       <Card
         title="In Progress Reports"
         count={inprogress.count}
         description="Reports already being worked on"
-        badgeCount={
-          userInfo && activeTab === "overview" ? inprogress.new : null
-        }
+        badgeCount={userInfo && activeTab === "overview" ? inprogress.new : null}
       />
       <Card
         title="Resolved Reports"
@@ -74,9 +73,7 @@ export function ReportCounter({ data, userInfo, activeTab }) {
         title="Unassigned Reports"
         count={unassigned.count}
         description="Reports currently handled by no one"
-        badgeCount={
-          userInfo && activeTab === "overview" ? unassigned.new : null
-        }
+        badgeCount={userInfo && activeTab === "overview" ? unassigned.new : null}
       />
       <Card
         title="Pending Reports"
@@ -90,7 +87,7 @@ export function ReportCounter({ data, userInfo, activeTab }) {
   function Card({ title, count, description, badgeCount }) {
     return (
       <div className="relative border rounded-md bg-white">
-        {badgeCount !== null && (
+        {badgeCount !== 0 && (
           <Badge className="absolute -top-2 -right-2 px-2" variant="destructive">
             {badgeCount}
           </Badge>
