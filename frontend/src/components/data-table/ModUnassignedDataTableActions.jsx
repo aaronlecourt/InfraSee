@@ -10,13 +10,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { UpdateStatusDialog } from "../elements/update-status-modal";
-import { ConfirmArchiveDialog } from "../elements/archive-confirm-modal";
+import { ReportDetailsDialog } from "../elements/report-details-modal";
 import { LucideGalleryVerticalEnd, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 export function ModUnassignedDataTableRowActions({ row }) {
+  const [dialogData, setDialogData] = useState(null);
+  const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);
 
+  const handleShowDetails = () => {
+    setDialogData(row.original);
+    setShowDetailsDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setShowDetailsDialogOpen(false)
+  };
+  
   const handleMarkAsRead = async () => {
     const reportId = row.original._id;
     try {
@@ -61,7 +71,7 @@ export function ModUnassignedDataTableRowActions({ row }) {
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="flex gap-2">
+          <DropdownMenuItem onClick={handleShowDetails} className="flex gap-2">
             <LucideGalleryVerticalEnd
               size={14}
               className="text-muted-foreground"
@@ -70,6 +80,12 @@ export function ModUnassignedDataTableRowActions({ row }) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <ReportDetailsDialog
+        isOpen={isShowDetailsDialogOpen}
+        onClose={handleCloseDialog}
+        data={dialogData}
+      />
     </>
   );
 }

@@ -65,11 +65,6 @@ export function DataTable({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
-  const handleRowClick = (row) => {
-    setDialogData(row.original);
-    setShowDetailsDialogOpen(true);
-  };
-
   const handleCloseDialog = (reportId) => {
     setShowDetailsDialogOpen(false);
     setDialogData(null);
