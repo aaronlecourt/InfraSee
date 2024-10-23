@@ -1,15 +1,21 @@
 import { DataTableColumnHeader } from "../DataTableColumnHeader";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format, isValid } from "date-fns";
-import { ZapIcon, DropletIcon, TrainTrackIcon, SatelliteDish, BuildingIcon } from "lucide-react";
+import {
+  ZapIcon,
+  DropletIcon,
+  TrainTrackIcon,
+  SatelliteDish,
+  BuildingIcon,
+} from "lucide-react";
 import { AdminAccountDataTableRowActions } from "../AdminAccountDataTableRowActions";
 
 const infraTypeIcons = {
-  'Power and Energy': <ZapIcon size={15} color="rgba(0,0,0,0.5)" />,
-  'Water and Waste': <DropletIcon size={15} color="rgba(0,0,0,0.5)" />,
-  'Transportation': <TrainTrackIcon size={15} color="rgba(0,0,0,0.5)" />,
-  'Telecommunications': <SatelliteDish size={15} color="rgba(0,0,0,0.5)" />,
-  'Commercial': <BuildingIcon size={15} color="rgba(0,0,0,0.5)" />
+  "Power and Energy": <ZapIcon size={15} color="rgba(0,0,0,0.5)" />,
+  "Water and Waste": <DropletIcon size={15} color="rgba(0,0,0,0.5)" />,
+  Transportation: <TrainTrackIcon size={15} color="rgba(0,0,0,0.5)" />,
+  Telecommunications: <SatelliteDish size={15} color="rgba(0,0,0,0.5)" />,
+  Commercial: <BuildingIcon size={15} color="rgba(0,0,0,0.5)" />,
 };
 
 // Helper function to format date using date-fns
@@ -18,7 +24,7 @@ const formatDate = (dateString) => {
   if (!isValid(date)) {
     return "Invalid date";
   }
-  return format(date, 'MMMM dd, yyyy');
+  return format(date, "MMMM dd, yyyy");
 };
 
 export const columnsAccounts = [
@@ -72,17 +78,9 @@ export const columnsAccounts = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Infrastructure Type" />
     ),
-    cell: ({ row }) => {
-      const infraType = row.getValue("infra_type")?.infra_name || "N/A";
-      const icon = infraTypeIcons[infraType] || null; // Fallback if type is not in the map
-
-      return (
-        <div className="flex items-center">
-          {icon && <span className="mr-2">{icon}</span>}
-          <span>{infraType}</span>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="">{row.getValue("infra_type")?.infra_name || "N/A"}</div>
+    ),
     enableSorting: true,
     enableHiding: true,
   },
