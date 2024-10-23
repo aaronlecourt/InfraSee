@@ -29,15 +29,23 @@ export function SubModReportDataTableRowActions({ row }) {
     setAcceptDialogOpen(true);
   };
 
+  const handleReject = () => {
+    setDialogData(row.original);
+    setRejectDialogOpen(true);
+  };
+
   const handleConfirm = async () => {
     const reportId = dialogData?._id;
-    console.log(reportId)
     if (!reportId) {
       toast.error("No report with that ID was found. Please try again.");
       return;
     }
+
     try {
-      const response = await axios.put(`/api/reports/approval/${reportId}`);
+      // Send approval request with isAccepted set to true
+      const response = await axios.put(`/api/reports/approval/${reportId}`, {
+        isAccepted: true,
+      });
       toast.success(response.data.message || "Report successfully approved!");
       setAcceptDialogOpen(false);
     } catch (error) {
@@ -47,11 +55,25 @@ export function SubModReportDataTableRowActions({ row }) {
   };
   
 
-  const handleReject = () => {
-    setDialogData(row.original);
-    setRejectDialogOpen(true);
+  const handleRejectConfirm = async () => {
+    const reportId = dialogData?._id;
+    if (!reportId) {
+      toast.error("No report with that ID was found. Please try again.");
+      return;
+    }
+  
+    try {
+      const response = await axios.put(`/api/reports/reject/${reportId}`, {
+        isAccepted: false, // Pass false to indicate rejection
+      });
+      toast.success(response.data.message || "Report successfully rejected!");
+      setRejectDialogOpen(false);
+    } catch (error) {
+      console.error("Error rejecting approval:", error);
+      toast.error(error.response?.data?.message || "Request has failed. Try Again.");
+    }
   };
-
+  
   const handleShowDetails = () => {
     setDialogData(row.original);
     setShowDetailsDialogOpen(true);
@@ -143,6 +165,7 @@ export function SubModReportDataTableRowActions({ row }) {
       />
       <ConfirmRejectDialog
         isOpen={isRejectDialogOpen}
+        onConfirm={handleRejectConfirm}
         onClose={handleCloseDialog}
         data={dialogData}
       />

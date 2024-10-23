@@ -367,16 +367,16 @@ const getSubModeratorReports = asyncHandler(async (req, res) => {
       throw new Error("Submoderator does not have an assigned moderator.");
     }
 
-    // Fetch the ID for "Pending Confirmation" status
-    const pendingConfirmationStatus = await Status.findOne({ stat_name: "Pending Confirmation" });
-    if (!pendingConfirmationStatus) {
-      return res.status(404).json({ message: "Pending Confirmation status not found." });
+    // Fetch the ID for "Under Review" status
+    const underReviewStatus = await Status.findOne({ stat_name: "Under Review" });
+    if (!underReviewStatus) {
+      return res.status(404).json({ message: "Under Review status not found." });
     }
 
-    // Fetch reports assigned to the assigned moderator with "Pending Confirmation" status
+    // Fetch reports assigned to the assigned moderator with "Under Review" status
     const reports = await Report.find({
       report_mod: user.assignedModerator._id,
-      report_status: pendingConfirmationStatus._id, // Use the status ID
+      report_status: underReviewStatus._id, // Use the status ID
       is_archived: false,
     })
       .populate("report_mod", "name")
@@ -613,29 +613,32 @@ const updateReportStatus = async (req, res) => {
       return res.status(404).json({ message: "Moderator not found" });
     }
 
-    // Find the resolved and pending confirmation status
+    // Find the resolved and Under Review status
     const resolvedStatus = await Status.findOne({ stat_name: "Resolved" });
-    const pendingConfirmationStatus = await Status.findOne({ stat_name: "Pending Confirmation" });
+    const underReviewStatus = await Status.findOne({ stat_name: "Under Review" });
     const unassignedStatus = await Status.findOne({ stat_name: "Unassigned" });
 
     // Prepare update data for report
     const updateData = {
       report_status: statusId,
       status_remark,
-      is_new: true, // Keeping this part for resetting the "new" flag
+      is_new: true, 
+      request_time: null,
     };
 
     // Check if the status is being set to "Resolved"
     if (statusId === resolvedStatus._id.toString()) {
       // Check if the moderator has submoderators
       if (moderator.subModerators.length > 0) {
-        // If moderator has submoderators, set status to "Pending Confirmation" and is_requested to true
-        updateData.report_status = pendingConfirmationStatus._id;
+        // If moderator has submoderators, set status to "Under Review" and is_requested to true
+        updateData.report_status = underReviewStatus._id;
         updateData.is_requested = true;
+        updateData.request_time = Date.now(); 
       } else {
         // If no submoderators, set the status to "Resolved"
         updateData.report_status = resolvedStatus._id;
-        updateData.is_requested = false;
+        updateData.is_requested = false; 
+        updateData.request_time = null; 
       }
     }
 
@@ -666,7 +669,7 @@ const updateReportStatus = async (req, res) => {
 const submodApproval = async (req, res) => {
   const reportId = req.params.id;
   const { isAccepted } = req.body; // submoderator will pass true/false for isAccepted
-  const userId = req.user._id; // Assuming req.user contains the authenticated user information
+  const userId = req.user._id;
 
   try {
     // Find the logged-in user to check if they are a submoderator
@@ -704,6 +707,46 @@ const submodApproval = async (req, res) => {
 };
 
 
+const submodReject = async (req, res) => {
+  const reportId = req.params.id;
+  const { isAccepted } = req.body; // submoderator will pass true/false for isAccepted
+  const userId = req.user._id;
+
+  try {
+    // Find the logged-in user to check if they are a submoderator
+    const user = await User.findById(userId);
+    if (!user || !user.isSubModerator) {
+      return res.status(403).json({ message: "Access denied: User is not a submoderator." });
+    }
+
+    // Find the report
+    const report = await Report.findById(reportId);
+    if (!report) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+
+    const forRevisionStatus = await Status.findOne({ stat_name: "For Revision" });
+
+    if (report.is_requested && !isAccepted) {
+      // Submoderator rejects the report
+      report.is_approved = false;
+      report.report_status = forRevisionStatus._id;
+      report.is_requested = false; // Set to false since it's no longer requested
+      report.is_new = true; // Optionally reset the "new" flag
+    } else {
+      return res.status(400).json({ message: "Report not rejected by submoderator" });
+    }
+
+    await report.save();
+    res.status(200).json({ message: "Report rejection processed", report });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "An error occurred", error });
+  }
+};
+
+
+
 
 
 const markReportAsSeen = asyncHandler(async (req, res) => {
@@ -738,6 +781,7 @@ const markReportAsSeen = asyncHandler(async (req, res) => {
     }
   }
 });
+
 
 const markAsRead = asyncHandler(async (req, res) => {
   try {
@@ -804,6 +848,7 @@ export {
   deleteReport,
   updateReportStatus,
   submodApproval,
+  submodReject,
   getUnassignedReports,
   updateOnAccept,
   markReportAsSeen,

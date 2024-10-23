@@ -12,6 +12,7 @@ import {
   createReport,
   updateReportStatus,
   submodApproval,
+  submodReject,
   getUnassignedReports,
   updateOnAccept,
   markReportAsSeen,
@@ -42,6 +43,7 @@ router.route("/restore/:id").put(restoreReport);
 router.route("/delete/:id").delete(deleteReport);
 router.route("/status/:id").put(protect, updateReportStatus);
 router.route("/approval/:id").put(protect, submodApproval); 
+router.route("/reject/:id").put(protect, submodReject);
 router.route("/accept/:id").put(protect, updateOnAccept);
 
 export default router;
