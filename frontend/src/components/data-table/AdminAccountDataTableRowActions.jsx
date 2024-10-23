@@ -68,13 +68,21 @@ export function AdminAccountDataTableRowActions({ row }) {
             <span className="sr-only">Open menu</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[160px]">
+        <DropdownMenuContent align="start" className="w-[160px]">
+        <DropdownMenuItem
+            className="flex gap-2"
+            onClick={() => handleShowDetails()}
+          >
+            <Eye size={14} className="text-muted-foreground" />
+            Show Details
+            </DropdownMenuItem>
+            <DropdownMenuSeparator/>
           {row.original.deactivated ? (
             <DropdownMenuItem
             className="text-green-600 flex gap-2"
             onClick={() => setReactivateDialogOpen(true)}
           >
-            <RefreshCcw size={14} />
+            <RefreshCcw size={14} className="" />
             Reactivate
             </DropdownMenuItem>
           ):(
@@ -83,10 +91,12 @@ export function AdminAccountDataTableRowActions({ row }) {
             className="text-red-600 flex gap-2"
             onClick={() => setDeactivateDialogOpen(true)}
           >
-            <Trash2 size={14} />
+            <Trash2 size={14} className="" />
             Deactivate
           </DropdownMenuItem>
           )}
+          
+          
           
         </DropdownMenuContent>
       </DropdownMenu>
