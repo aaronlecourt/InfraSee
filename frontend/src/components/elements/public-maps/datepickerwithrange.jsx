@@ -78,7 +78,7 @@ export function DatePickerWithRange({ className, onDateSelect }) {
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="flex flex-col md:flex-row max-h-96 overflow-y-auto p-3 rounded-md w-auto " align="start">
+        <PopoverContent className="flex flex-col md:flex-row max-h-96 overflow-y-auto p-3 rounded-md w-auto" align="start">
           <div className="flex flex-col gap-2 mb-3 md:hidden">
             <Select onValueChange={(value) => handleDateSelect(predefinedRanges[value], value)}>
               <SelectTrigger>

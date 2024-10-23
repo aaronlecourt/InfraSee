@@ -1,11 +1,6 @@
-// DataTableToolbar.js
 import React, { useState, useEffect } from "react";
 import { Cross2Icon } from "@radix-ui/react-icons";
-import {
-  TrashIcon,
-  Plus,
-  Download,
-} from "lucide-react";
+import { TrashIcon, Plus, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,7 +15,7 @@ import { RegisterForm } from "@/components/elements/register-form";
 import { CalendarDatePicker } from "../elements/calendar-date-picker";
 import { DataTableViewOptions } from "./DataTableViewOptions";
 import { DataTableFacetedFilter } from "./DataTableFacetedFilter";
-import { fetchFilterOptions } from "./fetchFilterOptions"; // Import the function
+import { fetchFilterOptions } from "./fetchFilterOptions";
 
 export function DataTableToolbar({
   table,
@@ -31,20 +26,24 @@ export function DataTableToolbar({
   const isFiltered = table.getState().columnFilters.length > 0;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dateRange, setDateRange] = useState({
-    from: new Date(new Date().getFullYear(), 0, 1),
+    from: new Date(),
     to: new Date(),
   });
-  
+
   const [filterOptions, setFilterOptions] = useState({
     infraType: [],
     reportMod: [],
     reportStatus: [],
   });
-  console.log("Filter Options:", filterOptions.reportStatus)
 
   const handleDateSelect = ({ from, to }) => {
     setDateRange({ from, to });
     table.getColumn("createdAt")?.setFilterValue([from, to]);
+  };
+
+  const handleReset = () => {
+    setDateRange({ from: new Date(), to: new Date() });
+    table.resetColumnFilters();
   };
 
   useEffect(() => {
@@ -107,6 +106,16 @@ export function DataTableToolbar({
               }}
             />
           )}
+          {activeTab === undefined && table.getColumn("report_by") && (
+            <Input
+              placeholder="Search reporter name..."
+              value={table.getColumn("report_by")?.getFilterValue() ?? ""}
+              className="h-9"
+              onChange={(event) => {
+                table.getColumn("report_by")?.setFilterValue(event.target.value);
+              }}
+            />
+          )}
           <div className="flex gap-2 sm:hidden">
             <DataTableViewOptions table={table} />
             <Button size="filter" className="flex gap-2">
@@ -119,6 +128,7 @@ export function DataTableToolbar({
           <CalendarDatePicker
             date={dateRange}
             onDateSelect={handleDateSelect}
+            onReset={handleReset} // Pass onReset to the CalendarDatePicker
             variant="outline"
           />
         </div>
@@ -157,8 +167,8 @@ export function DataTableToolbar({
             {isFiltered && (
               <Button
                 variant="ghost"
-                onClick={() => table.resetColumnFilters()}
-                className="h-9 px-2 lg:px-3"
+                onClick={handleReset} // Call handleReset here
+                className="h-8 px-2 lg:px-3"
               >
                 Reset
                 <Cross2Icon className="ml-2 h-4 w-4" />
@@ -177,22 +187,14 @@ export function DataTableToolbar({
             )}
             <div className="flex gap-x-2">
               {table.getFilteredSelectedRowModel().rows.length > 0 && activeTab === undefined && (
-                <Button
-                  variant="outline"
-                  size="filter"
-                  className="flex gap-2"
-                >
+                <Button variant="outline" size="filter" className="flex gap-2">
                   <TrashIcon size={15} aria-hidden="true" />
                   <p className="hidden md:block">Delete</p>(
                   {table.getFilteredSelectedRowModel().rows.length})
                 </Button>
               )}
               {table.getFilteredSelectedRowModel().rows.length > 0 && activeTab === "archives" && (
-                <Button
-                  variant="outline"
-                  size="filter"
-                  className="flex gap-2"
-                >
+                <Button variant="outline" size="filter" className="flex gap-2">
                   <TrashIcon size={15} aria-hidden="true" />
                   <p className="hidden md:block">Delete</p>(
                   {table.getFilteredSelectedRowModel().rows.length})
@@ -200,10 +202,7 @@ export function DataTableToolbar({
               )}
               {table.getFilteredSelectedRowModel().rows.length > 0 && activeTab === "archives" && (
                 <Button variant="outline" size="sm">
-                  <Plus
-                    className="mr-2 h-4 w-4"
-                    aria-hidden="true"
-                  />
+                  <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
                   <p className="hidden md:block">Unhide</p>(
                   {table.getFilteredSelectedRowModel().rows.length})
                 </Button>
@@ -218,11 +217,7 @@ export function DataTableToolbar({
               {table.getColumn("infra_type") && activeTab === undefined && (
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="filter"
-                      className="flex gap-2"
-                    >
+                    <Button variant="outline" size="filter" className="flex gap-2">
                       <Plus size={15} />
                       <p className="hidden md:block">Add Moderator</p>
                     </Button>

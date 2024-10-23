@@ -95,6 +95,11 @@ export const columnsAccounts = [
     cell: ({ row }) => (
       <div className="">{formatDate(row.getValue("createdAt"))}</div>
     ),
+    filterFn: (row, id, value) => {
+      const rowDate = new Date(row.getValue(id));
+      const [startDate, endDate] = value;
+      return rowDate >= startDate && rowDate <= endDate;
+    },
     enableSorting: true,
     enableHiding: true,
   },
