@@ -140,8 +140,8 @@ export function DataTable({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getFilteredRowModel().rows.length ? (
-              table.getFilteredRowModel().rows.map((row) => (
+            {table.getRowModel().rows.length ? (
+              table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() ? "selected" : undefined}
