@@ -68,11 +68,20 @@ const AdminDashboardScreen = () => {
   const columns = activeButton === "reports" ? columnsReports : columnsAccounts;
 
   useEffect(() => {
-    socket.on("reportChange", loadReports);
-    return () => {
-      socket.off("reportChange");
+    const handleUserChange = async () => {
+      await loadAccounts();
+      await loadReports();
+      await loadModerators();
+      await loadSubModerators();
+      await loadDeactivated();
     };
+  
+    socket.on("userChange", handleUserChange);
+  
+    // Cleanup the listener when component unmounts
+    return () => socket.off("userChange", handleUserChange);
   }, []);
+  
 
   const loadAccounts = async () => {
     setLoadingAccounts(true);
@@ -181,7 +190,6 @@ const AdminDashboardScreen = () => {
     }
   };
 
-  console.log("DEACTIVATED ARRAY: ", deactivatedData)
   return (
     <div className="grid grid-cols-1 xl:grid-cols-5">
       <HelmetProvider>

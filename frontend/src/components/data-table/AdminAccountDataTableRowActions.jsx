@@ -15,6 +15,7 @@ import { ConfirmDeactivateDialog } from "../elements/deactivate-confirm-modal";
 import { Edit, Eye, RefreshCcw, Trash2 } from "lucide-react";
 import { useDeactivateModeratorMutation, useReactivateModeratorMutation } from "@/slices/users-api-slice";
 import { ConfirmReactivateDialog } from "../elements/reactivate-confirm-modal";
+import { toast } from 'sonner';
 
 export function AdminAccountDataTableRowActions({ row }) {
   const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);
@@ -33,21 +34,27 @@ export function AdminAccountDataTableRowActions({ row }) {
 
   const handleDeactivate = async () => {
     try {
-      await deactivateModerator(userId);
+      await deactivateModerator(userId).unwrap();
       console.log("Account deactivated:", userId);
       setDeactivateDialogOpen(false);
+      toast.success("Account deactivated successfully!");
     } catch (error) {
-      console.error("Error deactivating account:", error);
+      const errorMessage = error?.data?.message || "An unexpected error occurred.";
+      toast.error(`Deactivation failed: ${errorMessage}`);
+      setDeactivateDialogOpen(false);
     }
   };
-
+  
   const handleReactivate = async () => {
     try {
-      await reactivateModerator(userId);
+      await reactivateModerator(userId).unwrap();
       console.log("Account reactivated:", userId);
       setReactivateDialogOpen(false);
+      toast.success("Account reactivated successfully!");
     } catch (error) {
-      console.error("Error reactivating account:", error);
+      const errorMessage = error?.data?.message || "An unexpected error occurred.";
+      toast.error(`Reactivation failed: ${errorMessage}`);
+      setReactivateDialogOpen(false);
     }
   };
 

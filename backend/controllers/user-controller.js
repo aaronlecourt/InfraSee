@@ -410,18 +410,13 @@ const getDeactivatedUsers = asyncHandler(async (req, res) => {
       ]
     }).populate("infra_type", "infra_name");
 
-    if (!deactivatedUsers || deactivatedUsers.length === 0) {
-      return res.status(404).json({ message: "No deactivated moderators or submoderators found" });
-    }
-
-    return res.status(200).json(deactivatedUsers.length ? deactivatedUsers : []);
+    // Return deactivated users, even if the array is empty
+    return res.status(200).json(deactivatedUsers);
   } catch (error) {
     console.error(`Error fetching deactivated users: ${error.message}`);
     return res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
-
-
 
 
 // @desc    Logout user / clear cookie
@@ -637,7 +632,8 @@ const getModeratorList = asyncHandler(async (req, res) => {
 const getSubModeratorList = asyncHandler(async (req, res) => {
   try {
     const subModerators = await User.find({ isSubModerator: true })
-      .populate("infra_type", "infra_name");
+      .populate("infra_type", "infra_name") 
+      .populate("assignedModerator", "name"); 
 
     res.status(200).json(subModerators.length ? subModerators : []);
   } catch (error) {
