@@ -24,13 +24,6 @@ export const userApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
-    subModeratorLogin: builder.mutation({
-      query: (data) => ({
-        url: `${USERS_URL}/auth/submoderator`,
-        method: "POST",
-        body: data,
-      }),
-    }),
     logout: builder.mutation({
       query: () => ({
         url: `${USERS_URL}/logout`,
@@ -105,7 +98,6 @@ export const {
   useLoginMutation,
   useAdminLoginMutation,
   useModeratorLoginMutation,
-  useSubModeratorLoginMutation,
   useLogoutMutation,
   useRegisterMutation,
   useUpdateUserMutation,

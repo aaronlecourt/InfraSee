@@ -60,84 +60,32 @@ const adminUser = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Auth user & get token
+// @desc    Auth user (Moderator or SubModerator) & get token
 // @route   POST /api/users/auth
 // @access  Public
 const moderatorUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email }).populate(
-    "infra_type",
-    "infra_name"
-  );
-
-  if (!user || !user.isModerator || user.deactivated) {
-    res.status(401);
-    if (!user) {
-      throw new Error("Invalid email or password");
-    } else if (!user.isModerator) {
-      throw new Error("Access denied: Not a moderator");
-    } else {
-      throw new Error("Account is deactivated. Contact support.");
-    }
-  }
-
-  if (user && (await user.matchPassword(password))) {
-    if (!user.isModerator) {
-      res.status(403);
-      throw new Error("Access denied: Not a moderator");
-    }
-
-    // Generate token for authenticated user
-    generateToken(res, user._id);
-
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      isAdmin: user.isAdmin,
-      isModerator: user.isModerator,
-      isSubModerator: user.isSubModerator,
-      infra_type: user.infra_type
-        ? { _id: user.infra_type._id, infra_name: user.infra_type.infra_name }
-        : null,
-      assignedModerator: user.assignedModerator,
-    });
-  } else {
-    res.status(401);
-    throw new Error("Invalid email or password");
-  }
-});
-
-
-// @desc    Auth submoderator & get token
-// @route   POST /api/users/auth/submoderators
-// @access  Public
-const subModeratorUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   // Find the user by email
   const user = await User.findOne({ email }).populate("infra_type", "infra_name");
 
-  if (!user || !user.isSubModerator || user.deactivated) {
+  // Check if user exists, is deactivated, or password is incorrect
+  if (!user || user.deactivated) {
     res.status(401);
-    if (!user) {
-      throw new Error("Invalid email or password");
-    } else if (!user.isSubModerator) {
-      throw new Error("Access denied: Not a submoderator");
-    } else {
-      throw new Error("Account is deactivated. Contact support.");
-    }
+    throw new Error("Account deactivated. Contact support.");
   }
 
-  // Check the password
-  if (user && (await user.matchPassword(password))) {
-    if (!user.isSubModerator) {
-      res.status(403);
-      throw new Error("Access denied: Not a moderator");
-    }
-    // Generate token for authenticated submoderator
+  // Check password
+  if (!(await user.matchPassword(password))) {
+    res.status(401);
+    throw new Error("Invalid email or password");
+  }
+
+  // Check role and generate token
+  if (user.isModerator || user.isSubModerator) {
     generateToken(res, user._id);
 
+    // Respond with user data
     res.json({
       _id: user._id,
       name: user.name,
@@ -151,8 +99,8 @@ const subModeratorUser = asyncHandler(async (req, res) => {
       assignedModerator: user.assignedModerator,
     });
   } else {
-    res.status(401);
-    throw new Error("Invalid email or password");
+    res.status(403);
+    throw new Error("Access denied: Not a moderator or submoderator");
   }
 });
 
@@ -615,7 +563,7 @@ const getModerators = asyncHandler(async (req, res) => {
 // @access  Public or Private based on your requirement
 const getModeratorList = asyncHandler(async (req, res) => {
   try {
-    const moderators = await User.find({ isModerator: true })
+    const moderators = await User.find({ isModerator: true, deactivated: false })
       .populate("infra_type", "infra_name");
 
     res.status(200).json(moderators.length ? moderators : []);
@@ -631,7 +579,7 @@ const getModeratorList = asyncHandler(async (req, res) => {
 // @access  Public or Private based on your requirement
 const getSubModeratorList = asyncHandler(async (req, res) => {
   try {
-    const subModerators = await User.find({ isSubModerator: true })
+    const subModerators = await User.find({ isSubModerator: true, deactivated: false })
       .populate("infra_type", "infra_name") 
       .populate("assignedModerator", "name"); 
 
@@ -680,7 +628,6 @@ export {
   authUser,
   adminUser,
   moderatorUser,
-  subModeratorUser,
   registerUser,
   createSubModerator,
   deleteUser,

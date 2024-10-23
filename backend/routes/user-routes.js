@@ -5,7 +5,6 @@ import {
   authUser,
   adminUser,
   moderatorUser,
-  subModeratorUser,
   deleteUser,
   deactivateModerator,
   reactivateModerator,
@@ -35,7 +34,6 @@ router.route("/delete/:id").delete(deleteUser);
 router.route("/auth").post(authUser);
 router.route("/auth/admin").post(adminUser);
 router.route("/auth/moderator").post(moderatorUser);
-router.route("/auth/submoderator").post(subModeratorUser);
 router.route("/logout").post(logoutUser);
 router
   .route("/profile")

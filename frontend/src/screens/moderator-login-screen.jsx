@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useModeratorLoginMutation } from "../slices/users-api-slice";
-import { useSubModeratorLoginMutation } from "../slices/users-api-slice";
 import { setCredentials } from "../slices/auth-slice";
 import { toast } from "sonner";
 import { useForm, FormProvider } from "react-hook-form";
@@ -65,7 +64,6 @@ function ModeratorLoginScreen() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [loginModerator] = useModeratorLoginMutation();
-  const [loginSubModerator] = useSubModeratorLoginMutation();
   const [loading, setLoading] = useState(false);
   const { userInfo } = useSelector((state) => state.auth);
 
@@ -104,19 +102,10 @@ function ModeratorLoginScreen() {
       navigate("/moderator/dashboard");
       toast.success("Moderator login successful!");
     } catch (err) {
-      try {
-        const res = await loginSubModerator(data).unwrap();
-        dispatch(setCredentials({ ...res }));
-        navigate("/submoderator/dashboard");
-        toast.success("SubModerator login successful!");
-      } catch (subErr) {
-        if (subErr?.data?.message) {
-          toast.error(subErr.data.message);
-        } else {
-          toast.error(
-            "Login failed for both roles. Please check your credentials."
-          );
-        }
+      if (err?.data?.message) {
+        toast.error(err.data.message);
+      } else {
+        toast.error("Login failed. Please check your credentials.");
       }
     } finally {
       setLoading(false); 
