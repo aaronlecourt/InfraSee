@@ -259,17 +259,25 @@ const createSubModerator = asyncHandler(async (req, res) => {
       $addToSet: { subModerators: submoderator._id },
     });
 
+    // Populate the assignedModerator details
+    const populatedModerator = await User.findById(assignedModeratorId).select('_id name');
+
     res.status(201).json({
       _id: submoderator._id,
       name: submoderator.name,
       email: submoderator.email,
       isSubModerator: submoderator.isSubModerator,
       infra_type: submoderator.infra_type,
+      assignedModerator: {
+        _id: populatedModerator._id, // Populate the moderator's _id
+        name: populatedModerator.name, // Populate the moderator's name
+      },
     });
   } else {
     res.status(400).json({ message: "Invalid submoderator data" });
   }
 });
+
 
 // @desc    Delete a user
 // @route   DELETE /api/users/:id
@@ -654,15 +662,24 @@ const checkEmailExists = asyncHandler(async (req, res) => {
   console.log(`Received request to check email: ${email}`); // Logging
 
   try {
+    // Check if the email exists in the User collection
     const user = await User.findOne({ email });
 
     if (user) {
-      console.log("Email exists");
-      res.json({ exists: true });
-    } else {
-      console.log("Email does not exist");
-      res.json({ exists: false });
+      console.log("Email exists in users");
+      return res.json({ exists: true });
     }
+
+    // Check if the email exists in any submoderators
+    const subModerator = await User.findOne({ "subModerators.email": email });
+
+    if (subModerator) {
+      console.log("Email exists in submoderators");
+      return res.json({ exists: true });
+    }
+
+    console.log("Email does not exist");
+    res.json({ exists: false });
   } catch (error) {
     console.error("Error in checkEmailExists:", error); // Logging
     res.status(500).json({ message: "Server error" });

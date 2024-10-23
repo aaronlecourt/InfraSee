@@ -12,7 +12,6 @@ import { Helmet, HelmetProvider } from "react-helmet-async";
 import { DataTable } from "@/components/ui/DataTable";
 import { columnsAccounts } from "@/components/data-table/columns/columnsAccounts";
 import { columnsReports } from "@/components/data-table/columns/columnsReports";
-import { columnsSubMod } from "@/components/data-table/columns/columnsSubMod";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
@@ -144,21 +143,6 @@ const AdminDashboardScreen = () => {
     loadModerators();
     loadSubModerators();
     loadDeactivated();
-  }, []);
-
-  // Handle the keyboard shortcut for logout
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "l") {
-        event.preventDefault();
-        handleLogout();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
   }, []);
 
   // Handle logout
