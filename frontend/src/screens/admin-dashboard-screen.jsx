@@ -90,13 +90,15 @@ const AdminDashboardScreen = () => {
     setLoadingModerators(true);
     try {
       const data = await fetchModerators();
-      setModeratorsData(data);
+      const filteredModerators = data.filter(mod => !mod.isSubModerator);
+      setModeratorsData(filteredModerators);
     } catch (error) {
       console.error("Failed to fetch moderators", error);
     } finally {
       setLoadingModerators(false);
     }
   };
+  
 
   const loadSubModerators = async () => {
     setLoadingSubModerators(true);

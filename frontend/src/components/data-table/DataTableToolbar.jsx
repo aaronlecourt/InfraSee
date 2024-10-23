@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Cross2Icon } from "@radix-ui/react-icons";
-import { TrashIcon, Plus, Download } from "lucide-react";
+import { TrashIcon, Plus, Download, UserRoundPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,6 +12,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { RegisterForm } from "@/components/elements/register-form";
+import { SubModRegisterForm } from "../elements/submod-register-form";
 import { CalendarDatePicker } from "../elements/calendar-date-picker";
 import { DataTableViewOptions } from "./DataTableViewOptions";
 import { DataTableFacetedFilter } from "./DataTableFacetedFilter";
@@ -25,6 +26,7 @@ export function DataTableToolbar({
 }) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubModDialogOpen, setIsSubModDialogOpen] = useState(false);
   const [dateRange, setDateRange] = useState({
     from: new Date(),
     to: new Date(),
@@ -215,6 +217,7 @@ export function DataTableToolbar({
                 </Button>
               )}
               {table.getColumn("infra_type") && activeTab === undefined && (
+                <>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="outline" size="filter" className="flex gap-2">
@@ -232,6 +235,25 @@ export function DataTableToolbar({
                     <RegisterForm onClose={() => setIsDialogOpen(false)} />
                   </DialogContent>
                 </Dialog>
+
+                <Dialog open={isSubModDialogOpen} onOpenChange={setIsSubModDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="filter" className="flex gap-2">
+                      <UserRoundPlus size={15} />
+                      <p className="hidden md:block">Add Sub Moderator</p>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Sub Moderator</DialogTitle>
+                      <DialogDescription>
+                        Please fill in the details below.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <SubModRegisterForm onClose={() => setIsSubModDialogOpen(false)} />
+                  </DialogContent>
+                </Dialog>
+                </>
               )}
             </div>
           </div>
