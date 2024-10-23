@@ -76,6 +76,7 @@ export function DataTableFacetedFilter({ column, title, options }) {
                       }
                       const filterValues = Array.from(selectedValues);
                       column?.setFilterValue(filterValues.length ? filterValues : undefined);
+                      console.log(filterValues)
                     }}
                   >
                     <div

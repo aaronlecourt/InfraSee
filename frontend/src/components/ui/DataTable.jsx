@@ -37,7 +37,7 @@ export function DataTable({
   const [columnVisibility, setColumnVisibility] = useState({});
   const [columnFilters, setColumnFilters] = useState([]);
   const [sorting, setSorting] = useState([]);
-  
+
   const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);
   const [isConfirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
@@ -114,7 +114,7 @@ export function DataTable({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <DataTableToolbar
         table={table}
         activeTab={activeTab}

@@ -41,11 +41,11 @@ export const columnsModReports = [
     cell: ({ row }) => (
       <div className="whitespace-nowrap">
         {row.getValue("is_new") ? (
-          <Badge variant="outline" className="w-full">
+          <Badge variant="outline" className="w-full rounded-md border-muted-foreground/20 text-muted-foreground">
             Unread
           </Badge>
         ) : (
-          <Badge variant="outline" className="w-full">
+          <Badge variant="outline" className="w-full rounded-md border-muted-foreground/20 text-muted-foreground">
             Read
           </Badge>
         )}
@@ -78,7 +78,9 @@ export const columnsModReports = [
     accessorKey: "report_status",
     title: "Status",
     header: ({ column }) => (
+      <>
       <DataTableColumnHeader column={column} title="Status" />
+      </>
     ),
     cell: ({ row }) => (
       <Badge className="px-2" variant="default">
@@ -86,11 +88,11 @@ export const columnsModReports = [
       </Badge>
     ),
     filterFn: (row, id, value) => {
+      console.log(id)
       return value.includes(row.getValue(id));
     },
     enableSorting: true,
     enableHiding: true,
-    
   },
   {
     accessorKey: "report_address",
