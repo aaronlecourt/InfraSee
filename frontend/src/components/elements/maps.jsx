@@ -1,120 +1,153 @@
-import React, { useEffect, useState, useRef } from "react";
-import { APIProvider, Map, Marker, InfoWindow } from "@vis.gl/react-google-maps";
-import { Button } from "../ui/button";
-import { LocateIcon } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { APIProvider, Map } from "@vis.gl/react-google-maps";
+import { ClusteredReportMarkers } from "./public-maps/clustered-report-markers";
+import MapHandler from "./public-maps/map-handler";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
-const Maps = ({ userInfo, data }) => {
+const Maps = ({ data }) => {
   const initialLocation = { lat: 16.4023, lng: 120.596 }; // Baguio City
-  const apiKey = "AIzaSyCq5N2BhjPRx_qLLIwmm6YMftl4oEab9vY"; // Replace with your actual API key
-  const mapRef = useRef(null);
-  const [activeMarkerId, setActiveMarkerId] = useState(null); // Store the ID of the active marker
+  const apiKey = import.meta.env.VITE_REACT_APP_API_KEY;
+  const mapId = import.meta.env.VITE_REACT_APP_MAP_ID;
 
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+  const baguioBounds = {
+    north: 16.433,
+    south: 16.375,
+    east: 120.610,
+    west: 120.570,
   };
 
-  const handleMapClick = () => {
-    // Close InfoWindow if it's open
-    if (activeMarkerId) {
-      setActiveMarkerId(null);
+  const [activeMarker, setActiveMarker] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [predictions, setPredictions] = useState([]);
+  const [place, setPlace] = useState(null); // Added state for place
+  const mapRef = useRef(null);
+  const inputRef = useRef(null);
+
+  const initMap = () => {
+    if (mapRef.current) {
+      mapRef.current.setCenter(initialLocation);
+      mapRef.current.setZoom(14);
+      mapRef.current.setOptions({
+        restriction: {
+          latLngBounds: baguioBounds,
+          strictBounds: true,
+        },
+      });
     }
   };
 
-  const benguetBounds = {
-    north: 16.569,
-    south: 16.25,
-    east: 120.778,
-    west: 120.396,
+  const handleMapLoad = (map) => {
+    mapRef.current = map;
+    initMap();
   };
+
+  const fetchPredictions = async (input) => {
+    const service = new google.maps.places.AutocompleteService();
+    service.getPlacePredictions(
+      {
+        input,
+        locationBias: {
+          center: new google.maps.LatLng(
+            (baguioBounds.north + baguioBounds.south) / 2,
+            (baguioBounds.east + baguioBounds.west) / 2
+          ),
+          radius: 5000,
+        },
+      },
+      (predictions, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+          setPredictions(predictions);
+        } else {
+          setPredictions([]);
+        }
+      }
+    );
+  };
+
+  const handleInputChange = (event) => {
+    const value = event.target.value;
+    setSearchTerm(value);
+    if (value) {
+      fetchPredictions(value);
+    } else {
+      setPredictions([]);
+    }
+  };
+
+  const updateMap = (lat, lng) => {
+    if (mapRef.current) {
+      mapRef.current.setCenter({ lat, lng });
+    }
+  };
+
+  const selectPrediction = (prediction) => {
+    const { place_id } = prediction;
+    const service = new google.maps.places.PlacesService(document.createElement("div"));
+    service.getDetails({ placeId: place_id }, (place, status) => {
+      if (status === google.maps.places.PlacesServiceStatus.OK) {
+        const { lat, lng } = place.geometry.location.toJSON();
+        setPlace(place); // Store the selected place
+        setSearchTerm(""); // Clear input after selection
+        updateMap(lat, lng);
+        setPredictions([]);
+      }
+    });
+  };
+
+  useEffect(() => {
+    const initAutocomplete = async () => {
+      await google.maps.importLibrary("places");
+    };
+    initAutocomplete();
+  }, []);
 
   return (
     <APIProvider apiKey={apiKey}>
-      <div style={{ position: "relative", height: "100%" }}>
-        <Map
-          defaultZoom={14}
-          defaultCenter={initialLocation}
-          gestureHandling={"greedy"}
-          disableDefaultUI={true}
-          options={{
-            restriction: {
-              latLngBounds: benguetBounds,
-              strictBounds: true,
-            },
-          }}
-          onClick={handleMapClick} // Handle map clicks
-          ref={mapRef}
-        >
-          {data.map((item) => (
-            <Marker
-              key={item._id}
-              position={{
-                lat: parseFloat(item.latitude),
-                lng: parseFloat(item.longitude),
-              }}
-              onClick={() => setActiveMarkerId(item._id)} // Set active marker ID
+      <div className="w-full h-full relative">
+        <div className="absolute top-3 left-3 z-50 max-w-xs">
+          <div className="relative">
+            <Input
+              ref={inputRef}
+              type="text"
+              value={searchTerm}
+              onChange={handleInputChange}
+              placeholder="Search for places or addresses..."
+              className="autocomplete-input text-sm pl-10"
             />
-          ))}
-
-          {activeMarkerId && data.map((item) => {
-            if (activeMarkerId === item._id) {
-              const markerPosition = {
-                lat: parseFloat(item.latitude),
-                lng: parseFloat(item.longitude),
-              };
-
-              return (
-                <InfoWindow
-                  headerDisabled={true}
-                  key={item._id}
-                  position={markerPosition}
-                  options={{
-                    maxWidth: 300,
-                    disableAutoPan: false,
-                  }}
-                  onCloseClick={() => setActiveMarkerId(null)} // Close info window
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+              <Search size={16} className="text-gray-500" />
+            </div>
+          </div>
+          {predictions.length > 0 && (
+            <ul className="absolute bg-white border rounded-md text-sm max-h-60 overflow-y-auto z-50 mt-1">
+              {predictions.map((prediction) => (
+                <li
+                  key={prediction.place_id}
+                  className="flex flex-col gap-0 p-2 cursor-pointer hover:bg-gray-200 border-b"
+                  onClick={() => selectPrediction(prediction)}
                 >
-                  <div className="m-0 p-0">
-                    <div className="w-full">
-                      <div className="text-base leading-none font-bold mb-1">
-                        {item.report_desc}
-                        <br />
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <p>{item.report_by}</p>
-                        {item.account_num ? (
-                          <span>{item.account_num}</span>
-                        ) : (
-                          <span>-</span>
-                        )}
-                      </div>
-                      <p className="border-t mt-2 pt-2">
-                        <strong>Reported on:</strong> {formatDate(item.createdAt)}
-                      </p>
-                    </div>
-
-                    <div className="mt-3">
-                      <img
-                        src={item.report_img}
-                        alt={item.report_desc}
-                        style={{ width: "100%", marginTop: 0 }}
-                        className="rounded-md border"
-                      />
-                      <p>{item.report_address}</p>
-                    </div>
-
-                    <div className="flex items-center mt-3 justify-between">
-                      <div className="font-bold">{item.report_mod?.name}</div>
-                      <div className="px-2 font-medium text-xs rounded-sm py-1 bg-black text-white">
-                        {item.report_status?.stat_name}
-                      </div>
-                    </div>
-                  </div>
-                </InfoWindow>
-              );
-            }
-            return null; // Return null if it’s not the active marker
-          })}
+                  <strong>{prediction.structured_formatting.main_text}</strong>
+                  <span className="text-sm">{prediction.structured_formatting.secondary_text}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <Map
+          onLoad={handleMapLoad}
+          defaultCenter={initialLocation}
+          defaultZoom={14}
+          disableDefaultUI={true}
+          mapId={mapId}
+        >
+          <ClusteredReportMarkers
+            reports={data}
+            onMarkerClick={setActiveMarker}
+            activeMarker={activeMarker}
+            onCloseInfoWindow={() => setActiveMarker(null)}
+          />
+          <MapHandler place={place} />
         </Map>
       </div>
     </APIProvider>
