@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { SkeletonTable } from "@/components/elements/skeletontable";
 import ModNavbar from "@/components/elements/mod-navbar/navbar";
 import { columnsModUnassigned } from "@/components/data-table/columns/columnsModUnassigned";
+import { columnsSubModReports } from "@/components/data-table/columns/columnsSubModReports";
 
 const fetchReports = async () => {
   const response = await axios.get("/api/reports/submoderator/reports");
@@ -155,7 +156,7 @@ const SubModeratorDashboardScreen = () => {
               ) : (
                 <Reports
                   data={reports}
-                  columns={columnsModReports}
+                  columns={columnsSubModReports}
                   activeTab={activeTab}
                 />
               )}
