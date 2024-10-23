@@ -70,14 +70,15 @@ const moderatorUser = asyncHandler(async (req, res) => {
     "infra_name"
   );
 
-  if (!user) {
+  if (!user || !user.isModerator || user.deactivated) {
     res.status(401);
-    throw new Error("Invalid email or password");
-  }
-
-  if (user.deactivated) {
-    res.status(401);
-    throw new Error("Account is deactivated. Contact support.");
+    if (!user) {
+      throw new Error("Invalid email or password");
+    } else if (!user.isModerator) {
+      throw new Error("Access denied: Not a moderator");
+    } else {
+      throw new Error("Account is deactivated. Contact support.");
+    }
   }
 
   if (user && (await user.matchPassword(password))) {
@@ -117,16 +118,15 @@ const subModeratorUser = asyncHandler(async (req, res) => {
   // Find the user by email
   const user = await User.findOne({ email }).populate("infra_type", "infra_name");
 
-  // Check if user exists and is a submoderator
-  if (!user || !user.isSubModerator) {
+  if (!user || !user.isSubModerator || user.deactivated) {
     res.status(401);
-    throw new Error("Invalid email or password");
-  }
-
-  // Check if the account is deactivated
-  if (user.deactivated) {
-    res.status(401);
-    throw new Error("Account is deactivated. Contact support.");
+    if (!user) {
+      throw new Error("Invalid email or password");
+    } else if (!user.isSubModerator) {
+      throw new Error("Access denied: Not a submoderator");
+    } else {
+      throw new Error("Account is deactivated. Contact support.");
+    }
   }
 
   // Check the password

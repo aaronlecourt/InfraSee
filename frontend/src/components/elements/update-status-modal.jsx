@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import axios from "axios";
 import { useForm, FormProvider, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,6 +32,7 @@ const schema = z.object({
 });
 
 export function UpdateStatusDialog({ isOpen, onClose, data }) {
+  const { userInfo } = useSelector((state) => state.auth);
   const [statusOptions, setStatusOptions] = useState([]);
   const methods = useForm({
     resolver: zodResolver(schema),
@@ -64,12 +66,13 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
   }, [data, setValue]);
 
   const onSubmit = async (formData) => {
-    console.log("Updated status ID:", formData.status);
     const reportId = data._id; // Assuming data contains the report ID
+    console.log("Moderator ID:", userInfo._id); // Check if ID is available
     try {
       const response = await axios.put(`/api/reports/status/${reportId}`, {
         report_status: formData.status,
         status_remark: formData.remarks,
+        modID: userInfo._id, // Use the moderator's ID
       });
       console.log(response.data.message);
       toast.success("Report status updated successfully!");
@@ -79,6 +82,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
       toast.error("Error updating report status.");
     }
   };
+  
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

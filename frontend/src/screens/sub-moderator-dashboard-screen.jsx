@@ -29,7 +29,9 @@ const fetchUnassigned = async () => {
 };
 
 const fetchArchives = async () => {
-  const response = await axios.get("/api/reports/submoderator/reports/archived");
+  const response = await axios.get(
+    "/api/reports/submoderator/reports/archived"
+  );
   return response.data;
 };
 
@@ -41,18 +43,18 @@ const SubModeratorDashboardScreen = () => {
   const [archives, setArchives] = useState([]);
   const [loadingReports, setLoadingReports] = useState(true);
   const [loadingArchives, setLoadingArchives] = useState(true);
-  const [loadingUnassigned, setLoadingUnassigned] = useState(true);
+  // const [loadingUnassigned, setLoadingUnassigned] = useState(true);
 
   useEffect(() => {
     socket.on("reportChange", (change) => {
       console.log("Received report change:", change);
-      loadReports(); 
-      loadArchives();
-      loadUnassigned();
+      loadReports();
+      // loadArchives();
+      // loadUnassigned();
     });
 
     return () => {
-      socket.off("reportChange"); 
+      socket.off("reportChange");
     };
   }, []);
 
@@ -68,8 +70,8 @@ const SubModeratorDashboardScreen = () => {
       setLoadingReports(false);
     }
   };
-
-  const loadUnassigned = async () => {
+  
+  {/* const loadUnassigned = async () => {
     setLoadingUnassigned(true);
     try {
       const data = await fetchUnassigned();
@@ -79,9 +81,9 @@ const SubModeratorDashboardScreen = () => {
     } finally {
       setLoadingUnassigned(false);
     }
-  };
+  };*/}
 
-  const loadArchives = async () => {
+  {/* const loadArchives = async () => {
     setLoadingArchives(true);
     try {
       const data = await fetchArchives();
@@ -91,13 +93,13 @@ const SubModeratorDashboardScreen = () => {
     } finally {
       setLoadingArchives(false);
     }
-  };
+  };*/}
 
   // Initial load
   useEffect(() => {
     loadReports();
-    loadUnassigned();
-    loadArchives();
+    // loadUnassigned();
+    // loadArchives();
   }, []);
 
   const goToUnassignedTab = () => {
@@ -122,14 +124,14 @@ const SubModeratorDashboardScreen = () => {
               <TabsList className="h-auto">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
-                <TabsTrigger value="unassigned">Unassigned</TabsTrigger>
-                <TabsTrigger value="hidden">Hidden</TabsTrigger>
+                {/* <TabsTrigger value="unassigned">Unassigned</TabsTrigger>
+                <TabsTrigger value="hidden">Hidden</TabsTrigger> */}
               </TabsList>
             </div>
 
             {/* OVERVIEW */}
             <TabsContent value="overview" className="h-[calc(100vh-11rem)]">
-              {loadingReports || loadingUnassigned ? (
+              {loadingReports ? (
                 <div className="flex justify-center items-center h-full">
                   <Spinner size="large" />
                 </div>
@@ -163,18 +165,18 @@ const SubModeratorDashboardScreen = () => {
                 Shows unassigned reports based on infrastructure type
                 e.g BAWADI will only see unassigned water infra related reports
             */}
-            <TabsContent value="unassigned" className="h-[calc(100vh-11rem)]">
+            {/* <TabsContent value="unassigned" className="h-[calc(100vh-11rem)]">
               <Unassigned
                 data={unassigned}
                 columns={columnsModUnassigned}
                 activeTab={activeTab}
               />
-            </TabsContent>
+            </TabsContent> */}
 
             {/* ARCHIVES/HIDDEN 
                 Contains reports that are hidden to the public view.
             */}
-            <TabsContent value="hidden" className="h-[calc(100vh-11rem)]">
+            {/* <TabsContent value="hidden" className="h-[calc(100vh-11rem)]">
               {loadingArchives ? (
                 <SkeletonTable columns={columnsModArchives} />
               ) : (
@@ -184,7 +186,8 @@ const SubModeratorDashboardScreen = () => {
                   activeTab={activeTab}
                 />
               )}
-            </TabsContent>
+            </TabsContent> */}
+
           </Tabs>
         </main>
       </div>

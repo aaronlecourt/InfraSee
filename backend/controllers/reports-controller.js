@@ -1,7 +1,7 @@
 import asyncHandler from "express-async-handler";
 import Report from "../models/reports-model.js";
 import User from "../models/user-model.js";
-import InfrastructureType from "../models/infrastructureType-model.js";
+import Status from "../models/status-model.js";
 
 const createReport = asyncHandler(async (req, res) => {
   try {
@@ -295,6 +295,56 @@ const getModeratorArchivedReports = asyncHandler(async (req, res) => {
   }
 });
 
+// const getSubModeratorReports = asyncHandler(async (req, res) => {
+//   try {
+//     const userId = req.user._id;
+
+//     if (!userId) {
+//       res.status(400);
+//       throw new Error("User ID is missing in the request.");
+//     }
+
+//     // Find the logged-in user
+//     const user = await User.findById(userId);
+//     if (!user || !user.isSubModerator) {
+//       res.status(403);
+//       throw new Error("Access denied: User is not a submoderator.");
+//     }
+
+//     // Ensure the submoderator has an assigned moderator
+//     if (!user.assignedModerator) {
+//       res.status(400);
+//       throw new Error("Submoderator does not have an assigned moderator.");
+//     }
+
+//     // Fetch reports assigned to the assigned moderator of this submoderator
+//     const reports = await Report.find({
+//       report_mod: user.assignedModerator,
+//       is_archived: false,
+//     })
+//       .populate("report_mod", "name")
+//       .populate("report_status", "stat_name");
+
+//     if (!reports || reports.length === 0) {
+//       return res.status(200).json([]); // Return empty array with 200 OK
+//     }
+
+//     res.json(reports);
+//   } catch (error) {
+//     console.error(`Error fetching submoderator reports: ${error.message}`);
+
+//     if (error.name === "CastError") {
+//       res.status(400).json({ message: "Invalid report or user ID format." });
+//     } else if (error.name === "ValidationError") {
+//       res.status(422).json({ message: error.message });
+//     } else {
+//       res
+//         .status(500)
+//         .json({ message: "Server error. Please try again later." });
+//     }
+//   }
+// });
+
 const getSubModeratorReports = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
@@ -305,7 +355,7 @@ const getSubModeratorReports = asyncHandler(async (req, res) => {
     }
 
     // Find the logged-in user
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).populate("assignedModerator");
     if (!user || !user.isSubModerator) {
       res.status(403);
       throw new Error("Access denied: User is not a submoderator.");
@@ -317,9 +367,16 @@ const getSubModeratorReports = asyncHandler(async (req, res) => {
       throw new Error("Submoderator does not have an assigned moderator.");
     }
 
-    // Fetch reports assigned to the assigned moderator of this submoderator
+    // Fetch the ID for "Pending Confirmation" status
+    const pendingConfirmationStatus = await Status.findOne({ stat_name: "Pending Confirmation" });
+    if (!pendingConfirmationStatus) {
+      return res.status(404).json({ message: "Pending Confirmation status not found." });
+    }
+
+    // Fetch reports assigned to the assigned moderator with "Pending Confirmation" status
     const reports = await Report.find({
-      report_mod: user.assignedModerator,
+      report_mod: user.assignedModerator._id,
+      report_status: pendingConfirmationStatus._id, // Use the status ID
       is_archived: false,
     })
       .populate("report_mod", "name")
@@ -329,7 +386,7 @@ const getSubModeratorReports = asyncHandler(async (req, res) => {
       return res.status(200).json([]); // Return empty array with 200 OK
     }
 
-    res.json(reports);
+    res.status(200).json(reports);
   } catch (error) {
     console.error(`Error fetching submoderator reports: ${error.message}`);
 
@@ -497,46 +554,157 @@ const deleteReport = asyncHandler(async (req, res) => {
   }
 });
 
-const updateReportStatus = asyncHandler(async (req, res) => {
-  try {
-    const reportId = req.params.id;
-    const { report_status, status_remark } = req.body;
+// const updateReportStatus = asyncHandler(async (req, res) => {
+//   try {
+//     const reportId = req.params.id;
+//     const { report_status, status_remark } = req.body;
 
+//     const updateData = {
+//       report_status,
+//       status_remark,
+//       is_new: true,
+//     };
+
+//     console.log(report_status);
+
+//     // Check if the status is '66d25911baae7f52f54793f6'
+//     if (report_status === "66d25911baae7f52f54793f6") {
+//       await Report.findByIdAndUpdate(reportId, { $unset: { report_mod: "" } });
+//     }
+
+//     const report = await Report.findByIdAndUpdate(reportId, updateData, {
+//       new: true,
+//     });
+
+//     if (!report) {
+//       res.status(404);
+//       throw new Error("Report not found.");
+//     }
+
+//     res.json({ message: "Report status updated successfully", report });
+//   } catch (error) {
+//     console.error(`Error updating report status: ${error.message}`);
+
+//     if (error.name === "CastError") {
+//       res.status(400).json({ message: "Invalid report ID format." });
+//     } else {
+//       res
+//         .status(500)
+//         .json({ message: "Server error. Please try again later." });
+//     }
+//   }
+// });
+
+
+const updateReportStatus = async (req, res) => {
+  const reportId = req.params.id;
+  const { report_status: statusId, modID: modId, status_remark } = req.body; // Updated destructuring
+
+  try {
+    // Find the report
+    const report = await Report.findById(reportId).populate("report_mod");
+    if (!report) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+
+    // Find the moderator who is updating the report
+    const moderator = await User.findById(modId).populate("subModerators");
+    if (!moderator) {
+      return res.status(404).json({ message: "Moderator not found" });
+    }
+
+    // Find the resolved and pending confirmation status
+    const resolvedStatus = await Status.findOne({ stat_name: "Resolved" });
+    const pendingConfirmationStatus = await Status.findOne({ stat_name: "Pending Confirmation" });
+    const unassignedStatus = await Status.findOne({ stat_name: "Unassigned" });
+
+    // Prepare update data for report
     const updateData = {
-      report_status,
+      report_status: statusId,
       status_remark,
-      is_new: true,
+      is_new: true, // Keeping this part for resetting the "new" flag
     };
 
-    console.log(report_status);
+    // Check if the status is being set to "Resolved"
+    if (statusId === resolvedStatus._id.toString()) {
+      // Check if the moderator has submoderators
+      if (moderator.subModerators.length > 0) {
+        // If moderator has submoderators, set status to "Pending Confirmation" and is_requested to true
+        updateData.report_status = pendingConfirmationStatus._id;
+        updateData.is_requested = true;
+      } else {
+        // If no submoderators, set the status to "Resolved"
+        updateData.report_status = resolvedStatus._id;
+        updateData.is_requested = false;
+      }
+    }
 
-    // Check if the status is '66d25911baae7f52f54793f6'
-    if (report_status === "66d25911baae7f52f54793f6") {
+    // Check if the status is being set to "Unassigned"
+    if (statusId === unassignedStatus._id.toString()) {
+      // If the status is "Unassigned", clear the assigned moderator
       await Report.findByIdAndUpdate(reportId, { $unset: { report_mod: "" } });
     }
 
-    const report = await Report.findByIdAndUpdate(reportId, updateData, {
+    // Update the report with new status and information
+    const updatedReport = await Report.findByIdAndUpdate(reportId, updateData, {
       new: true,
     });
 
-    if (!report) {
-      res.status(404);
-      throw new Error("Report not found.");
-    }
-
-    res.json({ message: "Report status updated successfully", report });
+    // Return success response
+    res.status(200).json({
+      message: "Report status updated successfully",
+      report: updatedReport,
+    });
   } catch (error) {
-    console.error(`Error updating report status: ${error.message}`);
-
-    if (error.name === "CastError") {
-      res.status(400).json({ message: "Invalid report ID format." });
-    } else {
-      res
-        .status(500)
-        .json({ message: "Server error. Please try again later." });
-    }
+    console.error(error);
+    res.status(500).json({ message: "An error occurred", error });
   }
-});
+};
+
+
+
+const submodApproval = async (req, res) => {
+  const reportId = req.params.id;
+  const { isAccepted } = req.body; // submoderator will pass true/false for isAccepted
+  const userId = req.user._id; // Assuming req.user contains the authenticated user information
+
+  try {
+    // Find the logged-in user to check if they are a submoderator
+    const user = await User.findById(userId);
+    if (!user || !user.isSubModerator) {
+      return res.status(403).json({ message: "Access denied: User is not a submoderator." });
+    }
+
+    // Find the report
+    const report = await Report.findById(reportId);
+
+    if (!report) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+
+    const resolvedStatus = await Status.findOne({ stat_name: "Resolved" });
+
+    if (report.is_requested && isAccepted) {
+      // Submoderator approves the report
+      report.is_approved = true;
+      report.report_status = resolvedStatus._id;
+      report.is_requested = false;
+      report.is_new = true; // Optionally reset the "new" flag
+    } else {
+      // If rejected or not approved, keep as pending or modify based on your requirements
+      return res.status(400).json({ message: "Report not approved by submoderator" });
+    }
+
+    await report.save();
+    res.status(200).json({ message: "Report approval processed", report });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "An error occurred", error });
+  }
+};
+
+
+
 
 const markReportAsSeen = asyncHandler(async (req, res) => {
   try {
@@ -635,6 +803,7 @@ export {
   restoreReport,
   deleteReport,
   updateReportStatus,
+  submodApproval,
   getUnassignedReports,
   updateOnAccept,
   markReportAsSeen,

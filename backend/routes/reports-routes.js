@@ -11,6 +11,7 @@ import {
   deleteReport,
   createReport,
   updateReportStatus,
+  submodApproval,
   getUnassignedReports,
   updateOnAccept,
   markReportAsSeen,
@@ -39,7 +40,8 @@ router.put("/unread/:id", markAsUnread);
 router.route("/archive/:id").put(archiveReport);
 router.route("/restore/:id").put(restoreReport);
 router.route("/delete/:id").delete(deleteReport);
-router.route("/status/:id").put(updateReportStatus);
+router.route("/status/:id").put(protect, updateReportStatus);
+router.route("/approval/:id").put(protect, submodApproval); 
 router.route("/accept/:id").put(protect, updateOnAccept);
 
 export default router;
