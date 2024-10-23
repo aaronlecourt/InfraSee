@@ -83,7 +83,7 @@ export const columnsSubMod = [
       <DataTableColumnHeader column={column} title="Assigned to" />
     ),
     cell: ({ row }) => (
-      <div className="">{row.getValue("assignedModerator") || "N/A"}</div>
+      <div className="">{row.getValue("assignedModerator")?.name || "N/A"}</div>
     ),
     enableSorting: true,
     enableHiding: true,

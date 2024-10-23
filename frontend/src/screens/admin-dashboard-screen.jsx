@@ -181,6 +181,7 @@ const AdminDashboardScreen = () => {
     }
   };
 
+  console.log("DEACTIVATED ARRAY: ", deactivatedData)
   return (
     <div className="grid grid-cols-1 xl:grid-cols-5">
       <HelmetProvider>

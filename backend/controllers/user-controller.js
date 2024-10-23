@@ -404,21 +404,17 @@ const getDeactivatedUsers = asyncHandler(async (req, res) => {
   try {
     // Fetch users where `deactivated` is true and either `isModerator` or `isSubModerator` is true
     const deactivatedUsers = await User.find({
-      deactivated: true,
       $or: [
-        { isModerator: true },
-        { isSubModerator: true }
+        { isModerator: true, deactivated: true },
+        { isSubModerator: true, deactivated: true }
       ]
-    });
+    }).populate("infra_type", "infra_name");
 
     if (!deactivatedUsers || deactivatedUsers.length === 0) {
       return res.status(404).json({ message: "No deactivated moderators or submoderators found" });
     }
 
-    return res.status(200).json({
-      message: "Deactivated moderators and submoderators fetched successfully",
-      users: deactivatedUsers,
-    });
+    return res.status(200).json(deactivatedUsers.length ? deactivatedUsers : []);
   } catch (error) {
     console.error(`Error fetching deactivated users: ${error.message}`);
     return res.status(500).json({ message: "Server error. Please try again later." });
@@ -606,8 +602,8 @@ const getModerators = asyncHandler(async (req, res) => {
   try {
     const moderators = await User.find({
       $or: [
-        { isModerator: true },
-        { isSubModerator: true }
+        { isModerator: true, deactivated: false },
+        { isSubModerator: true, deactivated: false }
       ],
     })
     .populate("infra_type", "infra_name"); 
@@ -618,8 +614,6 @@ const getModerators = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
-
 
 // @desc    Get moderators by infrastructure type
 // @route   GET /api/moderators

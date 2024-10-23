@@ -11,18 +11,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AccountDetailsDialog } from "../elements/account-details-modal";
-import { ConfirmDeleteDialog } from "../elements/delete-confirm-modal";
-import { Edit, Eye, Trash2 } from "lucide-react";
-import { useDeactivateModeratorMutation } from "@/slices/users-api-slice";
+import { ConfirmDeactivateDialog } from "../elements/deactivate-confirm-modal";
+import { Edit, Eye, RefreshCcw, Trash2 } from "lucide-react";
+import { useDeactivateModeratorMutation, useReactivateModeratorMutation } from "@/slices/users-api-slice";
+import { ConfirmReactivateDialog } from "../elements/reactivate-confirm-modal";
 
 export function AdminAccountDataTableRowActions({ row }) {
   const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeactivateDialogOpen, setDeactivateDialogOpen] = useState(false);
+  const [isReactivateDialogOpen, setReactivateDialogOpen] = useState(false);
   const [dialogData, setDialogData] = useState(null);
   const userId = row.original._id;
 
-  // Using the deactivateModerator mutation hook
   const [deactivateModerator] = useDeactivateModeratorMutation();
+  const [reactivateModerator] = useReactivateModeratorMutation();
 
   const handleShowDetails = () => {
     setDialogData(row.original);
@@ -31,17 +33,27 @@ export function AdminAccountDataTableRowActions({ row }) {
 
   const handleDeactivate = async () => {
     try {
-      await deactivateModerator(userId); // Call the mutation with the userId
-      console.log("Account deactivated:", dialogData);
-      setDeleteDialogOpen(false);
+      await deactivateModerator(userId);
+      console.log("Account deactivated:", userId);
+      setDeactivateDialogOpen(false);
     } catch (error) {
       console.error("Error deactivating account:", error);
     }
   };
 
+  const handleReactivate = async () => {
+    try {
+      await reactivateModerator(userId);
+      console.log("Account reactivated:", userId);
+      setReactivateDialogOpen(false);
+    } catch (error) {
+      console.error("Error reactivating account:", error);
+    }
+  };
+
   const handleCloseDialog = () => {
     setShowDetailsDialogOpen(false);
-    setDeleteDialogOpen(false);
+    setDeactivateDialogOpen(false);
   };
 
   return (
@@ -57,13 +69,25 @@ export function AdminAccountDataTableRowActions({ row }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
-          <DropdownMenuItem
+          {row.original.deactivated ? (
+            <DropdownMenuItem
+            className="text-green-600 flex gap-2"
+            onClick={() => setReactivateDialogOpen(true)}
+          >
+            <RefreshCcw size={14} />
+            Reactivate
+            </DropdownMenuItem>
+          ):(
+            
+            <DropdownMenuItem
             className="text-red-600 flex gap-2"
-            onClick={() => setDeleteDialogOpen(true)}
+            onClick={() => setDeactivateDialogOpen(true)}
           >
             <Trash2 size={14} />
             Deactivate
           </DropdownMenuItem>
+          )}
+          
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -72,10 +96,15 @@ export function AdminAccountDataTableRowActions({ row }) {
         onClose={handleCloseDialog}
         data={dialogData}
       />
-      <ConfirmDeleteDialog
-        isOpen={isDeleteDialogOpen}
+      <ConfirmDeactivateDialog
+        isOpen={isDeactivateDialogOpen}
         onClose={handleCloseDialog}
-        onConfirm={handleDeactivate} // Confirm deactivation instead of deletion
+        onConfirm={handleDeactivate}
+      />
+      <ConfirmReactivateDialog
+        isOpen={isReactivateDialogOpen}
+        onClose={handleCloseDialog}
+        onConfirm={handleReactivate}
       />
     </>
   );
