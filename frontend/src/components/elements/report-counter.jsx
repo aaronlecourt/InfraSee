@@ -57,13 +57,13 @@ export function ReportCounter({ data, userInfo, activeTab }) {
   const { total, inprogress, resolved, dismissed, pending, unassigned } = statusCounts;
 
   return (
-    <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
-      <Card
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {/* <Card
         title="Total Reports"
         count={total.count}
         description="All reports made"
         badgeCount={userInfo && activeTab === "overview" ? total.new : null}
-      />
+      /> */}
       <Card
         title="In Progress Reports"
         count={inprogress.count}
