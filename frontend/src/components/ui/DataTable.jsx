@@ -27,9 +27,11 @@ import { ReportDetailsDialog } from "../elements/report-details-modal";
 import { ConfirmAssignDialog } from "../elements/confirm-assign-modal";
 
 export function DataTable({
+  userInfo,
   columns,
   data,
   activeTab,
+  activeButton,
   highlightedId,
   setHighlightedId,
 }) {
@@ -111,8 +113,10 @@ export function DataTable({
   return (
     <div className="space-y-2">
       <DataTableToolbar
+        userInfo={userInfo}
         table={table}
         activeTab={activeTab}
+        activeButton={activeButton}
         highlightedId={highlightedId}
         setHighlightedId={setHighlightedId}
       />

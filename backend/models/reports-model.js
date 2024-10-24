@@ -77,6 +77,11 @@ const reportSchema = mongoose.Schema(
       type: Date,
       default: null,
       nullable: true, 
+    },
+    request_time:{
+      type: Date,
+      default: null,
+      nullable: true, 
     }
   },
   {

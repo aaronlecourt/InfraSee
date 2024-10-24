@@ -12,6 +12,15 @@ const formatDate = (dateString) => {
 
 export const columnsSubModReports = [
   {
+    accessorKey: "submod_id",
+    title: "",
+    header: ({ column }) => <DataTableColumnHeader column={column} title=""/>,
+    cell: () => null,
+    enableSorting: false,
+    enableHiding: false,
+    enableCellSorting: false,
+  },
+  {
     accessorKey: "is_new",
     title: "",
     header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
@@ -88,13 +97,13 @@ export const columnsSubModReports = [
     enableHiding: true,
   },
   {
-    accessorKey: "updatedAt",
+    accessorKey: "request_time",
     title: "Requested Last",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Requested Last" />
     ),
     cell: ({ row }) => (
-      <div className="">{formatDate(row.getValue("updatedAt"))}</div>
+      <div className="">{row.getValue("request_time") ? formatDate(row.getValue("request_time")) : "N/A"}</div>
     ),
     filterFn: (row, id, value) => {
       const rowDate = new Date(row.getValue(id));

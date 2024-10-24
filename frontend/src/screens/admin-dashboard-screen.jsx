@@ -65,8 +65,6 @@ const AdminDashboardScreen = () => {
   const [loadingSubModerators, setLoadingSubModerators] = useState(true);
   const [loadingDeactivated, setLoadingDeactivated] = useState(true);
 
-  const columns = activeButton === "reports" ? columnsReports : columnsAccounts;
-
   useEffect(() => {
     const handleUserChange = async () => {
       await loadAccounts();
@@ -75,13 +73,12 @@ const AdminDashboardScreen = () => {
       await loadSubModerators();
       await loadDeactivated();
     };
-  
+
     socket.on("userChange", handleUserChange);
-  
+
     // Cleanup the listener when component unmounts
     return () => socket.off("userChange", handleUserChange);
   }, []);
-  
 
   const loadAccounts = async () => {
     setLoadingAccounts(true);
@@ -100,7 +97,7 @@ const AdminDashboardScreen = () => {
     setLoadingModerators(true);
     try {
       const data = await fetchModerators();
-      const filteredModerators = data.filter(mod => !mod.isSubModerator);
+      const filteredModerators = data.filter((mod) => !mod.isSubModerator);
       setModeratorsData(filteredModerators);
     } catch (error) {
       console.error("Failed to fetch moderators", error);
@@ -108,7 +105,6 @@ const AdminDashboardScreen = () => {
       setLoadingModerators(false);
     }
   };
-  
 
   const loadSubModerators = async () => {
     setLoadingSubModerators(true);
@@ -355,6 +351,8 @@ const AdminDashboardScreen = () => {
                   </div>
                 ) : (
                   <DataTable
+                    activeTab={activeTab}
+                    activeButton={activeButton}
                     data={accountsData}
                     columns={columnsAccounts}
                     userInfo={userInfo}
@@ -371,6 +369,8 @@ const AdminDashboardScreen = () => {
                   </div>
                 ) : (
                   <DataTable
+                    activeTab={activeTab}
+                    activeButton={activeButton}
                     data={moderatorsData}
                     columns={columnsAccounts}
                     userInfo={userInfo}
@@ -387,6 +387,8 @@ const AdminDashboardScreen = () => {
                   </div>
                 ) : (
                   <DataTable
+                    activeTab={activeTab}
+                    activeButton={activeButton}
                     data={subModeratorsData}
                     columns={columnsSubMod}
                     userInfo={userInfo}
@@ -403,6 +405,8 @@ const AdminDashboardScreen = () => {
                   </div>
                 ) : (
                   <DataTable
+                    activeTab={activeTab}
+                    activeButton={activeButton}
                     data={deactivatedData}
                     columns={columnsAccounts}
                     userInfo={userInfo}

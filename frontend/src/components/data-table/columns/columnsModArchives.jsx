@@ -6,34 +6,10 @@ import { Badge } from "@/components/ui/badge";
 // Helper function to format date using date-fns
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return format(date, "MMMM dd, yyyy"); // Corrected to use 'mm' for minutes and 'ss' for seconds
+  return format(date, "MMMM dd, yyyy hh:mm aa"); // Corrected to use 'mm' for minutes and 'ss' for seconds
 };
 
 export const columnsModArchives = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-        className="translate-y-0.5"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-        className="translate-y-0.5"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
   {
     accessorKey: "report_by",
     title: "Reported By",

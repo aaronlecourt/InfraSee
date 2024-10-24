@@ -1,9 +1,9 @@
 import React from "react";
 import { DataTable } from "../ui/DataTable";
-export function HiddenReports({ data, columns, activeTab }) {
+export function HiddenReports({ userInfo, data, columns, activeTab }) {
   return (
     <div className="h-full">
-      <DataTable data={data} columns={columns} activeTab={activeTab}/>
+      <DataTable userInfo={userInfo} data={data} columns={columns} activeTab={activeTab}/>
     </div>
   );
 }

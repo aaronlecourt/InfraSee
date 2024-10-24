@@ -15,7 +15,7 @@ const statusIcons = {
   Dismissed: "/pins/pins_-05.png",
 };
 
-const Maps = ({ data, onDateSelect }) => {
+const Maps = ({ data, userInfo }) => {
   const initialLocation = { lat: 16.4023, lng: 120.596 }; // Baguio City
   const apiKey = import.meta.env.VITE_REACT_APP_API_KEY;
   const mapId = import.meta.env.VITE_REACT_APP_MAP_ID;
@@ -193,49 +193,59 @@ const Maps = ({ data, onDateSelect }) => {
           )}
           <DatePickerWithRange onDateSelect={handleDateRangeChange} />
         </div>
-        
-        {/* Toggle button for status */}
-        <div className="absolute top-3 right-3 z-50 flex flex-col items-end gap-2 shadow-sm">
-          <Button variant="outline" onClick={() => setStatusVisible(!statusVisible)} className="p-0 w-10 h-10 rounded-full border">
-            {!statusVisible ? (
-              <LayersIcon size={16}/>
-            ) : (
-              <LucideEyeOff size={16}/>
-            )}
-          </Button>
 
-          {statusVisible && (
-            <div className="flex gap-2 flex-col items-end">
-              {[
-                "All",
-                "Pending",
-                "Resolved",
-                "In Progress",
-                "Dismissed",
-                "Unassigned",
-              ].map((status) => (
-                <Button
-                  key={status}
-                  className="h-10 flex items-center gap-x-2 sm:w-auto sm:p-3 p-auto rounded-md text-sm"
-                  variant={selectedStatus === status ? "default" : "outline"}
-                  onClick={() => handleStatusChange(status)}
-                >
-                  {status !== "All" && (
-                    <>
-                      <img
-                        src={statusIcons[status]}
-                        alt={status}
-                        className="h-4"
-                      />
-                      <span className="sm:block hidden">{status}</span>
-                    </>
-                  )}
-                  {status === "All" && <span>{status}</span>}
-                </Button>
-              ))}
+        {!userInfo.isSubModerator && (
+          <>
+            {/* Toggle button for status */}
+            <div className="absolute top-3 right-3 z-50 flex flex-col items-end gap-2 shadow-sm">
+              <Button
+                variant="outline"
+                onClick={() => setStatusVisible(!statusVisible)}
+                className="p-0 w-10 h-10 rounded-full border"
+              >
+                {!statusVisible ? (
+                  <LayersIcon size={16} />
+                ) : (
+                  <LucideEyeOff size={16} />
+                )}
+              </Button>
+
+              {statusVisible && (
+                <div className="flex gap-2 flex-col items-end">
+                  {[
+                    "All",
+                    "Pending",
+                    "Resolved",
+                    "In Progress",
+                    "Dismissed",
+                    "Unassigned",
+                  ].map((status) => (
+                    <Button
+                      key={status}
+                      className="h-10 flex items-center gap-x-2 sm:w-auto sm:p-3 p-auto rounded-md text-sm"
+                      variant={
+                        selectedStatus === status ? "default" : "outline"
+                      }
+                      onClick={() => handleStatusChange(status)}
+                    >
+                      {status !== "All" && (
+                        <>
+                          <img
+                            src={statusIcons[status]}
+                            alt={status}
+                            className="h-4"
+                          />
+                          <span className="sm:block hidden">{status}</span>
+                        </>
+                      )}
+                      {status === "All" && <span>{status}</span>}
+                    </Button>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
 
         <Map
           onLoad={handleMapLoad}

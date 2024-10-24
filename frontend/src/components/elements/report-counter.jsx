@@ -1,4 +1,3 @@
-// ReportCounter.js
 import React from "react";
 import { Badge } from "../ui/badge";
 
@@ -11,6 +10,8 @@ export function ReportCounter({ data, userInfo, activeTab }) {
       dismissed: { count: 0, new: 0 },
       pending: { count: 0, new: 0 },
       unassigned: { count: 0, new: 0 },
+      underReview: { count: 0, new: 0 }, // Added for internal counting
+      forRevision: { count: 0, new: 0 }, // Added for internal counting
     };
 
     reports.forEach((report) => {
@@ -35,6 +36,12 @@ export function ReportCounter({ data, userInfo, activeTab }) {
       } else if (status === "Unassigned") {
         counts.unassigned.count++;
         if (report.is_new) counts.unassigned.new++;
+      } else if (status === "Under Review") {
+        counts.underReview.count++;
+        if (report.is_new) counts.underReview.new++;
+      } else if (status === "For Revision") {
+        counts.forRevision.count++;
+        if (report.is_new) counts.forRevision.new++;
       } else {
         console.warn(`Unexpected report status: ${status}`);
       }
@@ -53,9 +60,9 @@ export function ReportCounter({ data, userInfo, activeTab }) {
     <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
       <Card
         title="Total Reports"
-        count={total.count} // Updated to show total count
+        count={total.count}
         description="All reports made"
-        badgeCount={userInfo && activeTab === "overview" ? total.new : null} // Updated to show new count
+        badgeCount={userInfo && activeTab === "overview" ? total.new : null}
       />
       <Card
         title="In Progress Reports"

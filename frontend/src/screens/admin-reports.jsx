@@ -303,6 +303,7 @@ const AdminReportsScreen = () => {
             </div>
           ) : (
             <DataTable
+              activeButton={activeButton}
               data={activeButton === "accounts" ? accountsData : reportsData}
               columns={columns}
               userInfo={userInfo}

@@ -18,21 +18,11 @@ import { SkeletonTable } from "@/components/elements/skeletontable";
 import ModNavbar from "@/components/elements/mod-navbar/navbar";
 import { columnsModUnassigned } from "@/components/data-table/columns/columnsModUnassigned";
 import { columnsSubModReports } from "@/components/data-table/columns/columnsSubModReports";
+import { SubOverview } from "@/components/elements/sub-overview";
+import { SubReports } from "@/components/elements/sub-reports";
 
 const fetchReports = async () => {
   const response = await axios.get("/api/reports/submoderator/reports");
-  return response.data;
-};
-
-const fetchUnassigned = async () => {
-  const response = await axios.get("/api/reports/unassigned");
-  return response.data;
-};
-
-const fetchArchives = async () => {
-  const response = await axios.get(
-    "/api/reports/submoderator/reports/archived"
-  );
   return response.data;
 };
 
@@ -40,18 +30,13 @@ const SubModeratorDashboardScreen = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const [activeTab, setActiveTab] = useState("overview");
   const [reports, setReports] = useState([]);
-  const [unassigned, setUnassigned] = useState([]);
-  const [archives, setArchives] = useState([]);
   const [loadingReports, setLoadingReports] = useState(true);
-  const [loadingArchives, setLoadingArchives] = useState(true);
-  // const [loadingUnassigned, setLoadingUnassigned] = useState(true);
+  const [highlightedId, setHighlightedId] = useState();
 
   useEffect(() => {
     socket.on("reportChange", (change) => {
       console.log("Received report change:", change);
       loadReports();
-      // loadArchives();
-      // loadUnassigned();
     });
 
     return () => {
@@ -72,43 +57,15 @@ const SubModeratorDashboardScreen = () => {
     }
   };
   
-  {/* const loadUnassigned = async () => {
-    setLoadingUnassigned(true);
-    try {
-      const data = await fetchUnassigned();
-      setUnassigned(data);
-    } catch (error) {
-      console.error("Failed to fetch unassigned reports", error);
-    } finally {
-      setLoadingUnassigned(false);
-    }
-  };*/}
-
-  {/* const loadArchives = async () => {
-    setLoadingArchives(true);
-    try {
-      const data = await fetchArchives();
-      setArchives(data);
-    } catch (error) {
-      console.error("Failed to fetch archives", error);
-    } finally {
-      setLoadingArchives(false);
-    }
-  };*/}
-
-  // Initial load
   useEffect(() => {
     loadReports();
-    // loadUnassigned();
-    // loadArchives();
   }, []);
 
-  const goToUnassignedTab = () => {
-    setActiveTab("unassigned");
+  const goToReportsTab = () => {
+    setActiveTab("reports");
   };
 
-  // Combine reports and unassigned reports for the Overview
-  const combinedReports = [...reports, ...unassigned];
+  const combinedReports = [...reports];
 
   return (
     <HelmetProvider>
@@ -125,8 +82,6 @@ const SubModeratorDashboardScreen = () => {
               <TabsList className="h-auto">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
-                {/* <TabsTrigger value="unassigned">Unassigned</TabsTrigger>
-                <TabsTrigger value="hidden">Hidden</TabsTrigger> */}
               </TabsList>
             </div>
 
@@ -137,12 +92,13 @@ const SubModeratorDashboardScreen = () => {
                   <Spinner size="large" />
                 </div>
               ) : (
-                <Overview
-                  goToUnassignedTab={goToUnassignedTab}
+                <SubOverview
+                  goToReportsTab={goToReportsTab}
                   data={combinedReports}
                   userInfo={userInfo}
-                  unassigned={unassigned}
                   activeTab={activeTab}
+                  highlightedId={highlightedId}
+                  setHighlightedId={setHighlightedId}
                 />
               )}
             </TabsContent>
@@ -154,41 +110,16 @@ const SubModeratorDashboardScreen = () => {
               {loadingReports ? (
                 <SkeletonTable columns={columnsModReports} />
               ) : (
-                <Reports
+                <SubReports
                   data={reports}
+                  userInfo={userInfo}
                   columns={columnsSubModReports}
                   activeTab={activeTab}
+                  highlightedId={highlightedId}
+                  setHighlightedId={setHighlightedId}
                 />
               )}
             </TabsContent>
-
-            {/* UNASSIGNED REPORTS 
-                Shows unassigned reports based on infrastructure type
-                e.g BAWADI will only see unassigned water infra related reports
-            */}
-            {/* <TabsContent value="unassigned" className="h-[calc(100vh-11rem)]">
-              <Unassigned
-                data={unassigned}
-                columns={columnsModUnassigned}
-                activeTab={activeTab}
-              />
-            </TabsContent> */}
-
-            {/* ARCHIVES/HIDDEN 
-                Contains reports that are hidden to the public view.
-            */}
-            {/* <TabsContent value="hidden" className="h-[calc(100vh-11rem)]">
-              {loadingArchives ? (
-                <SkeletonTable columns={columnsModArchives} />
-              ) : (
-                <HiddenReports
-                  data={archives}
-                  columns={columnsModArchives}
-                  activeTab={activeTab}
-                />
-              )}
-            </TabsContent> */}
-
           </Tabs>
         </main>
       </div>

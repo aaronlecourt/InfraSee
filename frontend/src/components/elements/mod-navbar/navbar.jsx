@@ -153,7 +153,7 @@ const ModNavbar = ({ userInfo }) => {
             <DropdownMenuTrigger asChild>
               <Avatar className="h-8 w-8 hover:ring-4 ring-slate-200 cursor-pointer">
                 <AvatarFallback className="text-white bg-slate-950">
-                  M
+                  {userInfo.isModerator ? "M" : "S"}
                 </AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>

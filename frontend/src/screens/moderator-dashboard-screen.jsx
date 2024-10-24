@@ -156,6 +156,7 @@ const ModeratorDashboardScreen = () => {
               ) : (
                 <Reports
                   data={reports}
+                  userInfo={userInfo}
                   columns={columnsModReports}
                   activeTab={activeTab}
                 />
@@ -169,6 +170,7 @@ const ModeratorDashboardScreen = () => {
             <TabsContent value="unassigned" className="h-[calc(100vh-11rem)]">
               <Unassigned
                 data={unassigned}
+                userInfo={userInfo}
                 columns={columnsModUnassigned}
                 activeTab={activeTab}
                 highlightedId={highlightedId}
@@ -186,6 +188,7 @@ const ModeratorDashboardScreen = () => {
                 <HiddenReports
                   data={archives}
                   columns={columnsModArchives}
+                  userInfo={userInfo}
                   activeTab={activeTab}
                 />
               )}

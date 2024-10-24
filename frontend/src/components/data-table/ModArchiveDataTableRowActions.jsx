@@ -92,12 +92,6 @@ export function ModArchiveDataTableRowActions({ row }) {
             Unhide
           </DropdownMenuItem>
 
-          {/* <DropdownMenuItem
-            className="text-red-500 flex gap-2"
-            onClick={() => setDeleteDialogOpen(true)}
-          >
-            <Trash2 size={14} /> Delete
-          </DropdownMenuItem> */}
         </DropdownMenuContent>
       </DropdownMenu>
 
