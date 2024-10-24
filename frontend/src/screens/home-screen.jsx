@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/sheet";
 import { ArrowRight } from "lucide-react";
 import { Helmet, HelmetProvider } from "react-helmet-async";
+import { DateTimePicker } from "@/components/elements/datetimepicker";
 
 function HomeScreen() {
   const navigate = useNavigate();
@@ -93,7 +94,6 @@ function HomeScreen() {
             We provide an easy way to report infrastructure issues, ensuring
             quick action and transparency.
           </p>
-
           <section className="mt-4 bg-white/30 rounded-md p-4">
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="item-1">

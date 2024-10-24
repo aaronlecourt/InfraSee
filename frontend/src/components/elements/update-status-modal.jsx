@@ -21,14 +21,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea"; // Import Textarea component
-import { FormItem, FormLabel, FormMessage } from "@/components/ui/form"; // Import form components
+import { Textarea } from "@/components/ui/textarea";
+import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from 'sonner';
+import { DateTimePicker } from './DateTimePicker'; // Adjust the import path as necessary
 
 // Define your Zod schema
 const schema = z.object({
-  status: z.string().nonempty("Status is required"),
-  remarks: z.string().min(1, "Remarks are required").max(150, "Remarks must be at most 150 characters"), // Make remarks required and limit to 150 characters
+  status: z.string().min(1, "Status is required"),
+  remarks: z.string().min(1, "Remarks are required").max(150, "Remarks must be at most 150 characters"),
+  report_time_resolved: z.string().optional(), // Optional for now
 });
 
 export function UpdateStatusDialog({ isOpen, onClose, data }) {
@@ -38,7 +40,8 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
     resolver: zodResolver(schema),
     defaultValues: {
       status: data?.report_status?._id || "",
-      remarks: "", // Default value for remarks
+      remarks: "",
+      report_time_resolved: "", // Initialize if needed
     },
   });
 
@@ -61,18 +64,18 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
 
   useEffect(() => {
     if (data && data.report_status) {
-      setValue("status", data.report_status._id); // Set the _id as the default value
+      setValue("status", data.report_status._id);
     }
   }, [data, setValue]);
 
   const onSubmit = async (formData) => {
     const reportId = data._id; // Assuming data contains the report ID
-    console.log("Moderator ID:", userInfo._id); // Check if ID is available
     try {
       const response = await axios.put(`/api/reports/status/${reportId}`, {
         report_status: formData.status,
         status_remark: formData.remarks,
-        modID: userInfo._id, // Use the moderator's ID
+        report_time_resolved: formData.report_time_resolved, // Include this
+        modID: userInfo._id,
       });
       console.log(response.data.message);
       toast.success("Report status updated successfully!");
@@ -82,7 +85,6 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
       toast.error("Error updating report status.");
     }
   };
-  
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -90,8 +92,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
         <DialogHeader>
           <DialogTitle>Update Report Status</DialogTitle>
           <DialogDescription>
-            Update the reporter's report status here. An SMS notification is
-            sent to their contact number immediately.
+            Update the reporter's report status here. An SMS notification is sent to their contact number immediately.
           </DialogDescription>
           {data ? (
             <div className="w-full pt-2">
@@ -108,8 +109,8 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                     control={control}
                     render={({ field }) => (
                       <Select
-                        onValueChange={field.onChange} // Handle value change
-                        value={field.value} // Set current value
+                        onValueChange={field.onChange}
+                        value={field.value}
                         className="w-full"
                       >
                         <SelectTrigger className="w-full">
@@ -121,9 +122,9 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                             {statusOptions.map((option) => (
                               <SelectItem
                                 key={option._id}
-                                value={option._id} // Use _id as the value
+                                value={option._id}
                               >
-                                {option.stat_name} {/* Display stat_name */}
+                                {option.stat_name}
                               </SelectItem>
                             ))}
                           </SelectGroup>
@@ -131,7 +132,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                       </Select>
                     )}
                   />
-                  
+
                   {/* Textarea for remarks */}
                   <FormItem>
                     <FormLabel className="font-bold">Remarks</FormLabel>
@@ -148,9 +149,24 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                         />
                       )}
                     />
-                    {errors.remarks && <FormMessage>{errors.remarks.message}</FormMessage>} {/* Display error message for remarks */}
+                    {errors.remarks && <FormMessage>{errors.remarks.message}</FormMessage>}
                   </FormItem>
-                  
+
+                  {/* DateTimePicker for report time resolved */}
+                  <FormItem>
+                    <FormLabel className="font-bold">Time Resolved</FormLabel>
+                    <Controller
+                      name="report_time_resolved"
+                      control={control}
+                      render={({ field: { onChange } }) => (
+                        <DateTimePicker onChange={onChange} />
+                      )}
+                    />
+                    {errors.report_time_resolved && (
+                      <FormMessage>{errors.report_time_resolved.message}</FormMessage>
+                    )}
+                  </FormItem>
+
                   <Button type="submit" className="mt-4 w-full">
                     Update Status
                   </Button>
