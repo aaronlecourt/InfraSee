@@ -1,9 +1,6 @@
-"use client";
-
 import * as React from "react";
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
-
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -14,21 +11,34 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
-export function DateTimePicker() {
-  const [date, setDate] = React.useState();
+export function DateTimePicker({ value, onChange, minDate }) {
   const [isOpen, setIsOpen] = React.useState(false);
+  const [date, setDate] = React.useState(value ? new Date(value) : undefined);
 
   const hours = Array.from({ length: 12 }, (_, i) => i + 1);
   const minutes = Array.from({ length: 60 }, (_, i) => i);
 
   const handleDateSelect = (selectedDate) => {
     if (selectedDate) {
-      setDate(selectedDate);
+      const newDate = new Date(selectedDate);
+      // Set the time to one hour later than minDate
+      if (minDate) {
+        const minSelectableTime = new Date(minDate);
+        minSelectableTime.setHours(minSelectableTime.getHours() + 1);
+        newDate.setHours(minSelectableTime.getHours());
+        newDate.setMinutes(minSelectableTime.getMinutes());
+      } else {
+        newDate.setHours(0);
+        newDate.setMinutes(0);
+      }
+
+      setDate(newDate);
+      onChange(newDate.toISOString());
     }
   };
 
   const handleTimeChange = (type, value) => {
-    const newDate = date ? new Date(date) : new Date(); // Use current date if no date is set
+    const newDate = date ? new Date(date) : new Date();
 
     if (type === "hour") {
       newDate.setHours((parseInt(value) % 12) + (newDate.getHours() >= 12 ? 12 : 0));
@@ -39,27 +49,19 @@ export function DateTimePicker() {
       newDate.setHours(value === "PM" ? currentHours + 12 : currentHours - 12);
     }
 
+    // Ensure the selected time is valid based on minDate
+    if (minDate && date) {
+      const minSelectableTime = new Date(minDate);
+      minSelectableTime.setHours(minSelectableTime.getHours() + 1); // At least one hour later
+      if (newDate < minSelectableTime) {
+        newDate.setHours(minSelectableTime.getHours());
+        newDate.setMinutes(0); // Reset minutes to 0 for the new time
+      }
+    }
+
     setDate(newDate);
+    onChange(newDate.toISOString());
   };
-
-  // Add a passive wheel event listener for smoother scrolling
-  React.useEffect(() => {
-    const scrollAreas = document.querySelectorAll(".scroll-area");
-
-    const handleWheel = (event) => {
-      // Custom handling if needed
-    };
-
-    scrollAreas.forEach((area) => {
-      area.addEventListener("wheel", handleWheel, { passive: true });
-    });
-
-    return () => {
-      scrollAreas.forEach((area) => {
-        area.removeEventListener("wheel", handleWheel);
-      });
-    };
-  }, []);
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen} modal="true">
@@ -69,7 +71,7 @@ export function DateTimePicker() {
           className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "MMM dd yyyy hh:mmaa") : <span>Select date and time resolved</span>}
+          {date ? format(date, "MMM dd yyyy hh:mmaa") : <span>Select date and time</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0 max-h-80 overflow-y-auto">
@@ -79,60 +81,79 @@ export function DateTimePicker() {
             selected={date}
             onSelect={handleDateSelect}
             initialFocus
+            fromDate={minDate} // Disable past dates based on minDate
           />
-          
           <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
             <ScrollArea className="scroll-area w-72 sm:w-auto overflow-auto">
               <div className="flex sm:flex-col p-2 pointer-events-auto">
-                {hours.reverse().map((hour) => (
-                  <Button
-                    key={hour}
-                    size="icon"
-                    variant={date && date.getHours() % 12 === hour % 12 ? "default" : "ghost"}
-                    className="sm:w-full shrink-0 aspect-square"
-                    onClick={() => handleTimeChange("hour", hour.toString())}
-                  >
-                    {hour}
-                  </Button>
-                ))}
+                {hours.reverse().map((hour) => {
+                  const isMinDate = date && date.toDateString() === new Date(minDate).toDateString();
+                  const minHour = new Date(minDate).getHours() % 12 || 12;
+
+                  return (
+                    <Button
+                      key={hour}
+                      size="icon"
+                      variant={date && date.getHours() % 12 === hour % 12 ? "default" : "ghost"}
+                      className="sm:w-full shrink-0 aspect-square"
+                      onClick={() => handleTimeChange("hour", hour.toString())}
+                      disabled={isMinDate && hour <= minHour}
+                    >
+                      {hour}
+                    </Button>
+                  );
+                })}
               </div>
               <ScrollBar orientation="horizontal" className="sm:hidden" />
             </ScrollArea>
             <ScrollArea className="scroll-area w-72 sm:w-auto overflow-auto">
               <div className="flex sm:flex-col p-2 pointer-events-auto">
-                {minutes.map((minute) => (
-                  <Button
-                    key={minute}
-                    size="icon"
-                    variant={date && date.getMinutes() === minute ? "default" : "ghost"}
-                    className="sm:w-full shrink-0 aspect-square"
-                    onClick={() => handleTimeChange("minute", minute.toString().padStart(2, '0'))} // Ensure two-digit format
-                  >
-                    {minute.toString().padStart(2, '0')}
-                  </Button>
-                ))}
+                {minutes.map((minute) => {
+                  const isMinDate = date && date.toDateString() === new Date(minDate).toDateString();
+                  const minHour = new Date(minDate).getHours();
+
+                  return (
+                    <Button
+                      key={minute}
+                      size="icon"
+                      variant={date && date.getMinutes() === minute ? "default" : "ghost"}
+                      className="sm:w-full shrink-0 aspect-square"
+                      onClick={() => handleTimeChange("minute", minute.toString().padStart(2, '0'))}
+                      disabled={isMinDate && date.getHours() === minHour && minute < new Date(minDate).getMinutes()}
+                    >
+                      {minute.toString().padStart(2, '0')}
+                    </Button>
+                  );
+                })}
               </div>
               <ScrollBar orientation="horizontal" className="sm:hidden" />
             </ScrollArea>
             <ScrollArea className="scroll-area overflow-auto">
               <div className="flex sm:flex-col p-2 pointer-events-auto">
-                {["AM", "PM"].map((ampm) => (
-                  <Button
-                    key={ampm}
-                    size="icon"
-                    variant={
-                      date &&
-                      ((ampm === "AM" && date.getHours() < 12) ||
-                      (ampm === "PM" && date.getHours() >= 12))
-                        ? "default"
-                        : "ghost"
-                    }
-                    className="sm:w-full shrink-0 aspect-square"
-                    onClick={() => handleTimeChange("ampm", ampm)}
-                  >
-                    {ampm}
-                  </Button>
-                ))}
+                {["AM", "PM"].map((ampm) => {
+                  const isMinDate = date && date.toDateString() === new Date(minDate).toDateString();
+                  const minHour = new Date(minDate).getHours();
+                  const isDisabled = isMinDate && (ampm === "AM" ? minHour >= 12 : minHour < 12);
+
+                  return (
+                    <Button
+                      key={ampm}
+                      size="icon"
+                      variant={
+                        date &&
+                        ((ampm === "AM" && date.getHours() < 12) ||
+                        (ampm === "PM" && date.getHours() >= 12))
+                          ? "default"
+                          : "ghost"
+                      }
+                      className="sm:w-full shrink-0 aspect-square"
+                      onClick={() => handleTimeChange("ampm", ampm)}
+                      disabled={isDisabled}
+                    >
+                      {ampm}
+                    </Button>
+                  );
+                })}
               </div>
             </ScrollArea>
           </div>

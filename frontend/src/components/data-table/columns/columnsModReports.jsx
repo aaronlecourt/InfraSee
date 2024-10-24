@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 // Helper function to format date using date-fns
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return format(date, "MMMM dd, yyyy"); // Corrected to use 'mm' for minutes and 'ss' for seconds
+  return format(date, "MMM dd yyyy hh:mmaa"); // Corrected to use 'mm' for minutes and 'ss' for seconds
 };
 
 export const columnsModReports = [
