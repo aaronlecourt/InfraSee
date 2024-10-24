@@ -21,22 +21,31 @@ export function DateTimePicker({ value, onChange, minDate }) {
   const handleDateSelect = (selectedDate) => {
     if (selectedDate) {
       const newDate = new Date(selectedDate);
-      // Set the time to one hour later than minDate
+      
+      // Set the time to one hour later than minDate while preserving minutes
       if (minDate) {
         const minSelectableTime = new Date(minDate);
         minSelectableTime.setHours(minSelectableTime.getHours() + 1);
-        newDate.setHours(minSelectableTime.getHours());
-        newDate.setMinutes(minSelectableTime.getMinutes());
+  
+        // If the selected date is the same as minDate, set the hours and minutes accordingly
+        if (newDate.toDateString() === minSelectableTime.toDateString()) {
+          newDate.setHours(minSelectableTime.getHours());
+          newDate.setMinutes(minSelectableTime.getMinutes());
+        } else {
+          // Otherwise, just set the hours to the default
+          newDate.setHours(minSelectableTime.getHours());
+          newDate.setMinutes(0); // Reset minutes to 0 for new selections on different days
+        }
       } else {
         newDate.setHours(0);
         newDate.setMinutes(0);
       }
-
+  
       setDate(newDate);
       onChange(newDate.toISOString());
     }
   };
-
+  
   const handleTimeChange = (type, value) => {
     const newDate = date ? new Date(date) : new Date();
 

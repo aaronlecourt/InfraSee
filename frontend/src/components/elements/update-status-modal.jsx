@@ -26,23 +26,15 @@ import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
 import { DateTimePicker } from "./DateTimePicker"; // Adjust the import path as necessary
 
-// Define your base schema
 const baseSchema = z.object({
   status: z.string().min(1, "Status is required"),
-  remarks: z
-    .string()
-    .min(1, "Remarks are required")
-    .max(150, "Remarks must be at most 150 characters"),
+  remarks: z.string().min(1, "Remarks are required").max(150, "Remarks must be at most 150 characters"),
 });
 
-// Define the resolved schema
 const resolvedSchema = baseSchema.extend({
-  report_time_resolved: z
-    .string()
-    .min(1, "Time resolved is required when status is 'Resolved'."),
+  report_time_resolved: z.string().min(1, "Time resolved is required when status is 'Resolved'."),
 });
 
-// Create a schema based on the selected status
 const getSchema = (selectedStatus) => {
   return selectedStatus === "Resolved" ? resolvedSchema : baseSchema;
 };
@@ -50,7 +42,8 @@ const getSchema = (selectedStatus) => {
 export function UpdateStatusDialog({ isOpen, onClose, data }) {
   const { userInfo } = useSelector((state) => state.auth);
   const [statusOptions, setStatusOptions] = useState([]);
-  const [selectedStatus, setSelectedStatus] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState(data?.report_status.stat_name || "");
+  const currentStatus = data?.report_status.stat_name || "";
 
   const methods = useForm({
     resolver: zodResolver(getSchema(selectedStatus)),
@@ -105,7 +98,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
 
     try {
       const schema = getSchema(formData.status);
-      schema.parse(formData); // Validate the form data against the schema
+      schema.parse(formData);
 
       const response = await axios.put(`/api/reports/status/${reportId}`, {
         report_status: formData.status,
@@ -116,7 +109,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
 
       console.log(response.data.message);
       toast.success("Report status updated successfully!");
-      onClose(); // Close dialog after success
+      onClose();
     } catch (error) {
       if (error instanceof z.ZodError) {
         methods.clearErrors();
@@ -133,7 +126,34 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
     }
   };
 
-  const createdAt = data?.createdAt ? new Date(data.createdAt) : undefined; // Get createdAt
+  const createdAt = data?.createdAt ? new Date(data.createdAt) : undefined;
+
+  const getAllowedStatusOptions = () => {
+    const restrictedStatuses = {
+      "Pending": ["In Progress", "Dismissed", "Unassigned"],
+      "In Progress": ["Resolved"],
+      "For Revision": ["Resolved"],
+      "Dismissed": [],
+      "Resolved": [],
+      "Under Review": [],
+    };
+
+    const allowed = restrictedStatuses[currentStatus] || [];
+    const currentStatusOption = statusOptions.find(option => option.stat_name === currentStatus);
+
+    const filteredOptions = allowed.map(statName =>
+      statusOptions.find(option => option.stat_name === statName)
+    ).filter(Boolean);
+
+    // Include the current status in the options
+    if (currentStatusOption && !filteredOptions.includes(currentStatusOption)) {
+      filteredOptions.push(currentStatusOption);
+    }
+
+    return filteredOptions;
+  };
+
+  const allowedStatusOptions = getAllowedStatusOptions();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -163,9 +183,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                           const selectedOption = statusOptions.find(
                             (option) => option._id === value
                           );
-                          setSelectedStatus(
-                            selectedOption ? selectedOption.stat_name : ""
-                          );
+                          setSelectedStatus(selectedOption ? selectedOption.stat_name : "");
                         }}
                         value={field.value}
                         className="w-full"
@@ -176,7 +194,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                         <SelectContent>
                           <SelectGroup>
                             <SelectLabel>Status Options</SelectLabel>
-                            {statusOptions.map((option) => (
+                            {allowedStatusOptions.map((option) => (
                               <SelectItem key={option._id} value={option._id}>
                                 {option.stat_name}
                               </SelectItem>
@@ -187,54 +205,64 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                     )}
                   />
 
-                  <FormItem>
-                    <FormLabel className="font-bold">Remarks</FormLabel>
-                    <Controller
-                      name="remarks"
-                      control={control}
-                      render={({ field }) => (
-                        <Textarea
-                          {...field}
-                          id="remarks"
-                          placeholder="Enter remarks (required, max 150 characters)"
-                          className="mt-1"
-                          rows="3"
+                  {["Dismissed", "Resolved", "Under Review"].includes(currentStatus) ? (
+                    <p className="mt-2 text-muted-foreground text-sm">
+                      {currentStatus === "Dismissed" && `This report was dismissed because: "${data.status_remark}"`}
+                      {currentStatus === "Resolved" && "This report is already resolved."}
+                      {currentStatus === "Under Review" && "This report is being reviewed by your submoderator, no action can be taken yet."}
+                    </p>
+                  ) : (
+                    <>
+                      <FormItem>
+                        <FormLabel className="font-bold">Remarks</FormLabel>
+                        <Controller
+                          name="remarks"
+                          control={control}
+                          render={({ field }) => (
+                            <Textarea
+                              {...field}
+                              id="remarks"
+                              placeholder="Enter remarks (required, max 150 characters)"
+                              className="mt-1"
+                              rows="3"
+                            />
+                          )}
                         />
-                      )}
-                    />
-                    {errors.remarks && (
-                      <FormMessage>{errors.remarks.message}</FormMessage>
-                    )}
-                  </FormItem>
-
-                  {selectedStatus === "Resolved" && (
-                    <FormItem>
-                      <FormLabel className="font-bold">Time Resolved</FormLabel>
-                      <Controller
-                        name="report_time_resolved"
-                        control={control}
-                        render={({ field }) => (
-                          <DateTimePicker
-                            value={field.value}
-                            onChange={(value) => {
-                              field.onChange(value);
-                              if (value) {
-                                methods.clearErrors("report_time_resolved");
-                              }
-                            }}
-                            minDate={createdAt} // Pass the createdAt date
-                          />
+                        {errors.remarks && (
+                          <FormMessage>{errors.remarks.message}</FormMessage>
                         )}
-                      />
-                      {errors.report_time_resolved && (
-                        <FormMessage>
-                          {errors.report_time_resolved.message}
-                        </FormMessage>
+                      </FormItem>
+
+                      {selectedStatus === "Resolved" && (
+                        <FormItem>
+                          <FormLabel className="font-bold">Time Resolved</FormLabel>
+                          <Controller
+                            name="report_time_resolved"
+                            control={control}
+                            render={({ field }) => (
+                              <DateTimePicker
+                                value={field.value}
+                                onChange={(value) => {
+                                  field.onChange(value);
+                                  if (value) {
+                                    methods.clearErrors("report_time_resolved");
+                                  }
+                                }}
+                                minDate={createdAt}
+                              />
+                            )}
+                          />
+                          {errors.report_time_resolved && (
+                            <FormMessage>
+                              {errors.report_time_resolved.message}
+                            </FormMessage>
+                          )}
+                        </FormItem>
                       )}
-                    </FormItem>
+                    </>
                   )}
 
-                  <Button type="submit" className="mt-4 w-full">
+                  <Button type="submit" className="mt-4 w-full" disabled={["Dismissed", "Resolved", "Under Review"].includes(currentStatus)}>
                     Update Status
                   </Button>
                 </form>
