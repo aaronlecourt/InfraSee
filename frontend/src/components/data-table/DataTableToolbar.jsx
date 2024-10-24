@@ -44,6 +44,7 @@ export function DataTableToolbar({
     setDateRange({ from, to });
     table.getColumn("createdAt")?.setFilterValue([from, to]);
     table.getColumn("archived_at")?.setFilterValue([from, to]);
+    table.getColumn("request_time")?.setFilterValue([from, to]);
   };
 
   const handleReset = () => {
@@ -168,6 +169,14 @@ export function DataTableToolbar({
                   options={filterOptions.reportStatus}
                 />
               )}
+            {/* SUBMOD SIDE REPORT STATUS */}
+            {userInfo.isSubModerator && activeTab === "reports" && (
+              <DataTableFacetedFilter
+                column={table.getColumn("report_status")}
+                title="Status"
+                options={filterOptions.reportStatus}
+              />
+            )}
 
             {/* ADMIN SIDE ACCOUNTS PAGE, ALL TABS EXCEPT SUBMODERATORS */}
             {userInfo.isAdmin &&
