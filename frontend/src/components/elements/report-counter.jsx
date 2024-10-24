@@ -92,7 +92,7 @@ export function ReportCounter({ data, userInfo, activeTab }) {
             {badgeCount}
           </Badge>
         )}
-        <div className="p-2 flex sm:flex-col sm:p-3 items-center sm:items-start">
+        <div className="p-2 flex sm:flex-col sm:p-3 items-center justify-between sm:items-start">
           <p className="text-xs sm:text-sm text-wrap">{title}</p>
           <h1 className="text-lg text-gray-300 sm:text-primary sm:text-3xl">
             {count}

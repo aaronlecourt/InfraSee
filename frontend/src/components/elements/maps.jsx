@@ -3,9 +3,19 @@ import { APIProvider, Map } from "@vis.gl/react-google-maps";
 import { ClusteredReportMarkers } from "./public-maps/clustered-report-markers";
 import MapHandler from "./public-maps/map-handler";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, LayersIcon, LucideEyeOff } from "lucide-react";
+import { DatePickerWithRange } from "./public-maps/datepickerwithrange";
+import { Button } from "../ui/button";
 
-const Maps = ({ data }) => {
+const statusIcons = {
+  Unassigned: "/pins/pins_-04.png",
+  "In Progress": "/pins/pins_-02.png",
+  Resolved: "/pins/pins_-03.png",
+  Pending: "/pins/pins_-01.png",
+  Dismissed: "/pins/pins_-05.png",
+};
+
+const Maps = ({ data, onDateSelect }) => {
   const initialLocation = { lat: 16.4023, lng: 120.596 }; // Baguio City
   const apiKey = import.meta.env.VITE_REACT_APP_API_KEY;
   const mapId = import.meta.env.VITE_REACT_APP_MAP_ID;
@@ -13,16 +23,60 @@ const Maps = ({ data }) => {
   const baguioBounds = {
     north: 16.433,
     south: 16.375,
-    east: 120.610,
-    west: 120.570,
+    east: 120.61,
+    west: 120.57,
   };
 
   const [activeMarker, setActiveMarker] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [predictions, setPredictions] = useState([]);
-  const [place, setPlace] = useState(null); // Added state for place
+  const [place, setPlace] = useState(null);
   const mapRef = useRef(null);
   const inputRef = useRef(null);
+  const [selectedStatus, setSelectedStatus] = useState("All");
+  const [statusVisible, setStatusVisible] = useState(false); // State for status visibility
+  const [dateRange, setDateRange] = useState({
+    from: null,
+    to: null,
+  });
+
+  const handleStatusChange = (status) => {
+    setSelectedStatus(status);
+  };
+
+  const handleDateRangeChange = (range) => {
+    if (range && range.from && range.to) {
+      const fromDate = new Date(range.from);
+      const toDate = new Date(range.to);
+      fromDate.setUTCHours(0, 0, 0, 0);
+      toDate.setUTCHours(23, 59, 59, 999);
+      const fromISO = fromDate.toISOString();
+      const toISO = toDate.toISOString();
+      setDateRange({ from: fromISO, to: toISO });
+    } else {
+      setDateRange({ from: null, to: null });
+    }
+  };
+
+  const filteredData = data.filter((report) => {
+    const reportDate = new Date(report.createdAt);
+    const normalizedReportDate = new Date(reportDate.setUTCHours(0, 0, 0, 0));
+
+    const { from, to } = dateRange;
+
+    const fromDate = from ? new Date(from).setUTCHours(0, 0, 0, 0) : null;
+    const toDate = to ? new Date(to).setUTCHours(23, 59, 59, 999) : null;
+
+    const isInDateRange =
+      (fromDate === null || normalizedReportDate >= fromDate) &&
+      (toDate === null || normalizedReportDate <= toDate);
+
+    const isStatusMatch =
+      selectedStatus === "All" ||
+      report.report_status.stat_name === selectedStatus;
+
+    return isInDateRange && isStatusMatch;
+  });
 
   const initMap = () => {
     if (mapRef.current) {
@@ -83,12 +137,14 @@ const Maps = ({ data }) => {
 
   const selectPrediction = (prediction) => {
     const { place_id } = prediction;
-    const service = new google.maps.places.PlacesService(document.createElement("div"));
+    const service = new google.maps.places.PlacesService(
+      document.createElement("div")
+    );
     service.getDetails({ placeId: place_id }, (place, status) => {
       if (status === google.maps.places.PlacesServiceStatus.OK) {
         const { lat, lng } = place.geometry.location.toJSON();
-        setPlace(place); // Store the selected place
-        setSearchTerm(""); // Clear input after selection
+        setPlace(place);
+        setSearchTerm("");
         updateMap(lat, lng);
         setPredictions([]);
       }
@@ -105,7 +161,7 @@ const Maps = ({ data }) => {
   return (
     <APIProvider apiKey={apiKey}>
       <div className="w-full h-full relative">
-        <div className="absolute top-3 left-3 z-50 max-w-xs">
+        <div className="absolute top-3 left-3 z-50 max-w-md gap-2 flex flex-col-reverse sm:flex-row">
           <div className="relative">
             <Input
               ref={inputRef}
@@ -115,12 +171,12 @@ const Maps = ({ data }) => {
               placeholder="Search for places or addresses..."
               className="autocomplete-input text-sm pl-10"
             />
-            <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+            <div className="absolute z-20 left-3 top-3">
               <Search size={16} className="text-gray-500" />
             </div>
           </div>
           {predictions.length > 0 && (
-            <ul className="absolute bg-white border rounded-md text-sm max-h-60 overflow-y-auto z-50 mt-1">
+            <ul className="absolute bg-white border rounded-md text-sm max-h-52 overflow-y-auto z-50 mt-10">
               {predictions.map((prediction) => (
                 <li
                   key={prediction.place_id}
@@ -128,12 +184,59 @@ const Maps = ({ data }) => {
                   onClick={() => selectPrediction(prediction)}
                 >
                   <strong>{prediction.structured_formatting.main_text}</strong>
-                  <span className="text-sm">{prediction.structured_formatting.secondary_text}</span>
+                  <span className="text-sm">
+                    {prediction.structured_formatting.secondary_text}
+                  </span>
                 </li>
               ))}
             </ul>
           )}
+          <DatePickerWithRange onDateSelect={handleDateRangeChange} />
         </div>
+        
+        {/* Toggle button for status */}
+        <div className="absolute top-3 right-3 z-50 flex flex-col items-end gap-2 shadow-sm">
+          <Button variant="outline" onClick={() => setStatusVisible(!statusVisible)} className="p-0 w-10 h-10 rounded-full border">
+            {!statusVisible ? (
+              <LayersIcon size={16}/>
+            ) : (
+              <LucideEyeOff size={16}/>
+            )}
+          </Button>
+
+          {statusVisible && (
+            <div className="flex gap-2 flex-col items-end">
+              {[
+                "All",
+                "Pending",
+                "Resolved",
+                "In Progress",
+                "Dismissed",
+                "Unassigned",
+              ].map((status) => (
+                <Button
+                  key={status}
+                  className="h-10 flex items-center gap-x-2 sm:w-auto sm:p-3 p-auto rounded-md text-sm"
+                  variant={selectedStatus === status ? "default" : "outline"}
+                  onClick={() => handleStatusChange(status)}
+                >
+                  {status !== "All" && (
+                    <>
+                      <img
+                        src={statusIcons[status]}
+                        alt={status}
+                        className="h-4"
+                      />
+                      <span className="sm:block hidden">{status}</span>
+                    </>
+                  )}
+                  {status === "All" && <span>{status}</span>}
+                </Button>
+              ))}
+            </div>
+          )}
+        </div>
+
         <Map
           onLoad={handleMapLoad}
           defaultCenter={initialLocation}
@@ -142,7 +245,7 @@ const Maps = ({ data }) => {
           mapId={mapId}
         >
           <ClusteredReportMarkers
-            reports={data}
+            reports={filteredData}
             onMarkerClick={setActiveMarker}
             activeMarker={activeMarker}
             onCloseInfoWindow={() => setActiveMarker(null)}

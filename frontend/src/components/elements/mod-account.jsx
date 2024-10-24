@@ -51,7 +51,7 @@ const fetchInfrastructureTypes = async () => {
   return response.data;
 };
 
-export function ModAccount({ user }) {
+export function ModAccount({ user, userInfo }) {
   const [infrastructureTypes, setInfrastructureTypes] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [updateUser, { isLoading, isError, error }] = useUpdateUserMutation();
@@ -105,17 +105,17 @@ export function ModAccount({ user }) {
     }
   };
 
-  const handleDeactivate = async () => {
-    try {
-      await axios.delete("/api/deactivate-account");
-      toast.success("Account deactivated successfully!");
-      setIsDialogOpen(false);
-    } catch (err) {
-      const errorMessage =
-        err.response?.data?.message || "An error occurred during deactivation.";
-      toast.error(errorMessage);
-    }
-  };
+  // const handleDeactivate = async () => {
+  //   try {
+  //     await axios.delete("/api/deactivate-account");
+  //     toast.success("Account deactivated successfully!");
+  //     setIsDialogOpen(false);
+  //   } catch (err) {
+  //     const errorMessage =
+  //       err.response?.data?.message || "An error occurred during deactivation.";
+  //     toast.error(errorMessage);
+  //   }
+  // };
 
   // Find the selected infrastructure name
   const getInfraName = (value) => {
@@ -206,7 +206,8 @@ export function ModAccount({ user }) {
           </Button>
 
           {/* Moved DialogTrigger inside Dialog */}
-          <Dialog>
+          {!userInfo.isSubModerator && (
+            <Dialog>
             <DialogTrigger asChild>
               <Button
                 variant="outline"
@@ -241,6 +242,7 @@ export function ModAccount({ user }) {
               </DialogContent>
             </DialogPortal>
           </Dialog>
+          )}
         </form>
       </Form>
     </div>

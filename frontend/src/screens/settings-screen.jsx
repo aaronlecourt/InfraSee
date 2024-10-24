@@ -75,7 +75,7 @@ function SettingsScreen() {
       console.log(err);
     }
   };
-  console.log();
+  console.log(userInfo);
   return (
     <HelmetProvider>
       <div className="">
@@ -105,7 +105,7 @@ function SettingsScreen() {
           </div>
           <div className="col-span-1 lg:col-span-7 py-2 px-4">
             <TabsContent value="account">
-              <ModAccount user={user} />
+              <ModAccount user={user} userInfo={userInfo}/>
             </TabsContent>
             <TabsContent value="report_form">
               <ModReport user={user} />

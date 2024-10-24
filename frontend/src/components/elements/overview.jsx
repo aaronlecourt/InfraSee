@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ReportCounter } from "./report-counter";
 import { ReportList } from "./report-list";
-import { ChevronDown } from "lucide-react";
+import { ChevronUp, ChevronDown } from "lucide-react";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import {
@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import Maps from "./maps";
+import Maps from "./maps"; // Updated import to use the modified Maps component
 
 export function Overview({
   goToUnassignedTab,
@@ -30,7 +30,11 @@ export function Overview({
       <ReportCounter data={data} userInfo={userInfo} activeTab={activeTab} />
       <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 h-full">
         <div className="border rounded-md col-span-1 sm:col-span-2 min-h-[30rem]">
-          <Maps userInfo={loggedModerator_id} data={data} />
+          <Maps
+            userInfo={loggedModerator_id}
+            data={data}
+            className="absolute inset-0 z-0"
+          />
         </div>
         <div className="col-span-1 sm:col-span-1">
           <Card className="flex flex-col h-full min-h-[30rem]">
