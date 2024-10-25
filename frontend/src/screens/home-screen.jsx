@@ -3,31 +3,46 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
-import { ArrowDown, Zap, Droplet, Car, Wifi, Building } from "lucide-react";
+import {
+  ArrowDown,
+  Zap,
+  Droplet,
+  Car,
+  Wifi,
+  Building,
+  ArrowRight,
+} from "lucide-react";
 import axios from "axios";
 
 function HomeScreen() {
   const [reports, setReports] = useState([]);
   const [infraType, setInfraType] = useState([]);
+  const [reportCounts, setReportCounts] = useState({
+    pending: 0,
+    inProgress: 0,
+    resolved: 0,
+  });
   const navigate = useNavigate();
-
-  const handleLogoClick = () => {
-    navigate("/");
-  };
-
-  const handleContactClick = () => {
-    navigate("/contact-us");
-  };
-
-  const handleReportClick = () => {
-    navigate("/report");
-  };
 
   useEffect(() => {
     const fetchReports = async () => {
       try {
         const response = await axios.get("/api/reports");
         setReports(response.data);
+
+        const counts = response.data.reduce(
+          (acc, report) => {
+            if (report.report_status.stat_name === "Pending") acc.pending++;
+            else if (report.report_status.stat_name === "In Progress")
+              acc.inProgress++;
+            else if (report.report_status.stat_name === "Resolved")
+              acc.resolved++;
+            return acc;
+          },
+          { pending: 0, inProgress: 0, resolved: 0 }
+        );
+
+        setReportCounts(counts);
       } catch (error) {
         console.error("Error fetching reports:", error);
       }
@@ -36,7 +51,7 @@ function HomeScreen() {
     const fetchInfraTypes = async () => {
       try {
         const response = await axios.get("/api/infrastructure-types");
-        setInfraType(response.data); // Assuming the API returns an array of infra types
+        setInfraType(response.data);
       } catch (error) {
         console.error("Error fetching infrastructure types:", error);
       }
@@ -73,14 +88,17 @@ function HomeScreen() {
         <title>{"InfraSee | Home"}</title>
       </Helmet>
       <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400 backdrop-blur-sm bg-white/80 sticky top-0 z-20">
-        <div className="w-[6rem] mt-1 cursor-pointer" onClick={handleLogoClick}>
+        <div
+          className="w-[6rem] mt-1 cursor-pointer"
+          onClick={() => navigate("/")}
+        >
           <img src="/infrasee_black.png" alt="Infrasee Logomark" />
         </div>
         <nav className="flex">
-          <Button onClick={handleContactClick} variant="ghost">
+          <Button onClick={() => navigate("/contact-us")} variant="ghost">
             Contact Us
           </Button>
-          <Button onClick={handleReportClick}>Make a Report</Button>
+          <Button onClick={() => navigate("/report")}>Make a Report</Button>
         </nav>
       </header>
 
@@ -102,44 +120,89 @@ function HomeScreen() {
           <h1 className="text-4xl md:text-6xl font-bold text-center">
             A one-stop tool for reporting infrastructure damage.
           </h1>
-          <p className="text-base text-muted-foreground mt-3 text-center max-w-md">
-            We provide an easy way to report infrastructure issues, ensuring
-            quick action and transparency in Baguio City.
+          <p className="text-base text-muted-foreground mt-3 text-center max-w-lg">
+            We provide a relatively easy way to report infrastructure issues,
+            ensuring quick action and transparency in Baguio City.
           </p>
         </div>
       </div>
 
       <div className="pb-80 bg-black/5 flex flex-col items-center pt-6 px-5 sm:pt-12 justify-start rounded-t-full">
         <div className="pt-24 sm:pt-40 flex flex-col justify-center items-center gap-4 text-center">
-          <p>
-            With already over <b>{reports.length} reports </b> made. We continue
+          <div className="flex justify-evenly w-full">
+            <div className="flex flex-col items-center">
+              <div className="bg-white/70 border w-10 h-10 rounded-full flex items-center justify-center">
+                <p className="text-base font-bold">{reportCounts.pending}</p>
+              </div>
+              <h3 className="text-xs font-semibold text-muted-foreground">
+                Pending
+              </h3>
+            </div>
+
+            <div className="flex flex-col items-center">
+              <div className="bg-white/70 border w-10 h-10 rounded-full flex items-center justify-center">
+                <p className="text-base font-bold">{reportCounts.inProgress}</p>
+              </div>
+              <h3 className="text-xs font-semibold text-muted-foreground">
+                In Progress
+              </h3>
+            </div>
+
+            <div className="flex flex-col items-center">
+              <div className="bg-white/70 border w-10 h-10 rounded-full flex items-center justify-center">
+                <p className="text-base font-bold">{reportCounts.resolved}</p>
+              </div>
+              <h3 className="text-xs font-semibold text-muted-foreground">
+                Resolved
+              </h3>
+            </div>
+          </div>
+          <p className="max-w-md mt-5">
+            With already over <b>{reports.length} reports</b> made. We continue
             to offer reporting services for the following infrastructure types.
           </p>
 
           <div className="flex max-w-3xl">
-          <div className="flex flex-wrap items-start justify-center text-left gap-2">
-            {infraType.map((infra) => (
-              <div
-                key={infra._id}
-                className={`flex flex-col justify-top p-4 border rounded-lg cursor-pointer min-w-56 sm:mb-0 mb-2 text-wrap transition ${
-                  infraType === infra._id
-                    ? "border-gray-300 bg-gray-100"
-                    : "border"
-                } max-w-[250px] min-h-[100px]`}
-              >
-                <div className="flex items-center gap-x-2">
-                  <div>{iconMapping[infra.infra_name] || null}</div>
-                  <Label className="font-bold text-base">
-                    {infra.infra_name}
-                  </Label>
+            <div className="flex flex-wrap items-start justify-center text-left gap-2">
+              {infraType.map((infra) => (
+                <div
+                  key={infra._id}
+                  className="flex flex-col flex-1 justify-start p-4 border rounded-lg cursor-pointer min-w-[250px] sm:mb-0 mb-2 text-wrap bg-white/70 min-h-[100px] sm:h-36"
+                >
+                  <div className="flex items-center gap-x-2">
+                    <div>{iconMapping[infra.infra_name] || null}</div>
+                    <Label className="font-bold text-base">
+                      {infra.infra_name}
+                    </Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-normal mt-1">
+                    {descriptionMapping[infra.infra_name] ||
+                      "Description not available."}
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground font-normal mt-1">
-                  {descriptionMapping[infra.infra_name] ||
-                    "Description not available."}
-                </p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
+
+          <div className="px-8 max-w-2xl">
+            <p>
+              Each report is valued and crucial to improving our service, and
+              users will receive timely updates on the status and resolution of
+              their reported issues.
+            </p>
+            <br />
+            <p>To learn more about Infrasee, go check out our FAQs page</p>
+            <Button
+              variant="default"
+              className="mt-3 relative z-20"
+              onClick={() => {
+                console.log("Button clicked!");
+                navigate("/faqs");
+              }}
+            >
+              <ArrowRight size={14} className="mr-2" />
+              Head to FAQs
+            </Button>
           </div>
         </div>
       </div>
