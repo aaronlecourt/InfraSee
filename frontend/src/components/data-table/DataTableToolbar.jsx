@@ -17,6 +17,9 @@ import { CalendarDatePicker } from "../elements/calendar-date-picker";
 import { DataTableViewOptions } from "./DataTableViewOptions";
 import { DataTableFacetedFilter } from "./DataTableFacetedFilter";
 import { fetchFilterOptions } from "./fetchFilterOptions";
+import { ConfirmHideDialog } from "../elements/hide-confirm-modal";
+import { ConfirmRestoreDialog } from "../elements/restore-confirm-modal";
+import axios from "axios";
 
 export function DataTableToolbar({
   userInfo,
@@ -29,6 +32,8 @@ export function DataTableToolbar({
   const isFiltered = table.getState().columnFilters.length > 0;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubModDialogOpen, setIsSubModDialogOpen] = useState(false);
+  const [isHideDialogOpen, setIsHideDialogOpen] = useState(false);
+  const [isRestoreDialogOpen, setIsRestoreDialogOpen] = useState(false);
   const [dateRange, setDateRange] = useState({
     from: new Date(),
     to: new Date(),
@@ -40,6 +45,8 @@ export function DataTableToolbar({
     reportStatus: [],
   });
 
+  const selectedRows = table.getFilteredSelectedRowModel().rows;
+
   const handleDateSelect = ({ from, to }) => {
     setDateRange({ from, to });
     table.getColumn("createdAt")?.setFilterValue([from, to]);
@@ -50,6 +57,22 @@ export function DataTableToolbar({
   const handleReset = () => {
     setDateRange({ from: new Date(), to: new Date() });
     table.resetColumnFilters();
+  };
+
+  const handleHideReports = async () => {
+    for (const report of selectedRows) {
+      const reportId = report.original._id;
+      await axios.put(`/api/reports/hide/${reportId}`);
+    }
+    setIsHideDialogOpen(false);
+  };
+
+  const handleRestoreReports = async () => {
+    for (const report of selectedRows) {
+      const reportId = report.original._id;
+      await axios.put(`/api/reports/restore/${reportId}`);
+    }
+    setIsRestoreDialogOpen(false);
   };
 
   useEffect(() => {
@@ -252,7 +275,12 @@ export function DataTableToolbar({
               {/* MOD SIDE HIDDEN TAB */}
               {table.getFilteredSelectedRowModel().rows.length > 0 &&
                 activeTab === "hidden" && (
-                  <Button variant="outline" size="sm" className="ml-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="ml-2"
+                    onClick={() => setIsRestoreDialogOpen(true)}
+                  >
                     <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
                     <p className="hidden md:block">Unhide</p>(
                     {table.getFilteredSelectedRowModel().rows.length})
@@ -261,10 +289,15 @@ export function DataTableToolbar({
               {/* MOD SIDE REPORTS TAB */}
               {table.getFilteredSelectedRowModel().rows.length > 0 &&
                 activeTab === "reports" && (
-                  <Button variant="outline" size="sm" className="ml-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="ml-2"
+                    onClick={() => setIsHideDialogOpen(true)}
+                  >
                     <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
-                    <p className="hidden md:block ">Hide</p>(
-                    {table.getFilteredSelectedRowModel().rows.length})
+                    <p className="hidden md:block">Hide</p>(
+                    {selectedRows.length})
                   </Button>
                 )}
 
@@ -324,6 +357,18 @@ export function DataTableToolbar({
           </div>
         </div>
       </div>
+      <ConfirmHideDialog
+        isOpen={isHideDialogOpen}
+        onClose={() => setIsHideDialogOpen(false)}
+        onConfirm={handleHideReports}
+        reportCount={selectedRows.length}
+      />
+      <ConfirmRestoreDialog
+        isOpen={isRestoreDialogOpen}
+        onClose={() => setIsRestoreDialogOpen(false)}
+        onConfirm={handleRestoreReports}
+        reportCount={selectedRows.length}
+      />
     </div>
   );
 }

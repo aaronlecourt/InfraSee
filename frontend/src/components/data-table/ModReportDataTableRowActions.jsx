@@ -39,8 +39,8 @@ export function ModReportDataTableRowActions({ row }) {
       const response = await axios.put(`/api/reports/hide/${reportId}`);
       console.log(response.data.message);
       toast.success("Report hid successfully!");
-      sethideDialogOpen(false);
-      setReportIdTohide(null); 
+      setHideDialogOpen(false);
+      setReportIdToHide(null); 
     } catch (error) {
       console.error("Error hiding report:", error);
       toast.error(error.response?.data?.message || "Failed to hide report.");
@@ -55,8 +55,8 @@ export function ModReportDataTableRowActions({ row }) {
   const handleCloseDialog = () => {
     setShowDetailsDialogOpen(false)
     setUpdateStatusDialogOpen(false);
-    sethideDialogOpen(false);
-    setReportIdTohide(null); 
+    setHideDialogOpen(false);
+    setReportIdToHide(null); 
   };
 
 
