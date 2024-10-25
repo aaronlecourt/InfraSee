@@ -19,11 +19,11 @@ const InfraTypeForm = ({ infraType, setInfraType }) => {
   };
 
   const descriptionMapping = {
-    "Power and Energy": "BENECO provides reliable electricity services for your daily needs.",
-    "Water and Waste": "Baguio Water District ensures clean and safe drinking water.",
-    "Transportation": "Local transport services make commuting easy and convenient.",
-    "Telecommunications": "Stay connected with fast internet and mobile networks.",
-    "Commercial": "Various businesses cater to your everyday needs in the city.",
+    "Power and Energy": "For reports on broken power infrastructure—such as electrical posts, live wires, transformers, and more—service disconnections for non-payment are excluded.",
+    "Water and Waste": "For reports on broken water or waste infrastructure, including pipes, canals, pumps, and more—service disconnections for non-payment are excluded.",
+    "Transportation": "For reports on broken transportation infrastructure—such as damaged roads, traffic signals, brigdes, and more.",
+    "Telecommunications": "For reports on broken telecommunications infrastructure—such as downed cables, cell towers, and network outages—service disconnections for non-payment are excluded.",
+    "Commercial": "For reports on damaged or broken commercial infrastructure—such as retail spaces, parking lots, office buildings, and more.",
   };
 
   useEffect(() => {
@@ -56,18 +56,18 @@ const InfraTypeForm = ({ infraType, setInfraType }) => {
         </div>
       ) : (
         <RadioGroup value={infraType} onValueChange={handleValueChange}>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-row sm:flex-wrap gap-4 overflow-x-auto">
             {infrastructureTypes.map((infra) => (
               <div
                 key={infra._id}
-                className={`flex flex-col justify-top p-4 border rounded-lg cursor-pointer transition ${
+                className={`flex flex-col justify-top p-4 border rounded-lg cursor-pointer min-w-56 sm:mb-0 mb-2 text-wrap transition ${
                   infraType === infra._id ? "border-gray-300 bg-gray-100" : "border"
                 } max-w-[250px] min-h-[100px]`}
                 onClick={() => handleValueChange(infra._id)}
               >
                 <RadioGroupItem value={infra._id} id={infra._id} className="hidden" />
                 <div className="flex items-center gap-x-2">
-                  {iconMapping[infra.infra_name] || null}
+                  <div>{iconMapping[infra.infra_name] || null}</div>
                   <Label htmlFor={infra._id} className="font-bold text-base">
                     {infra.infra_name}
                   </Label>

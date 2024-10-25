@@ -27,7 +27,8 @@ import ModeratorRoute from "./components/moderator-route.jsx";
 import NotFoundPage from "./screens/not-found-screen.jsx";
 import AdminReportsScreen from "./screens/admin-reports.jsx";
 import UnauthorizedPage from "./screens/unauthorized-screen.jsx";
-import { FormProvider } from "./FormContext"; // Import FormProvider
+import FAQScreen from "./screens/faq-screen.jsx";
+import { FormProvider } from "./FormContext";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -37,6 +38,7 @@ const router = createBrowserRouter(
       <Route path="/admin/login" element={<AdminLoginScreen />} />
       <Route path="/moderator/login" element={<ModeratorLoginScreen />} />
       <Route path="/report" element={<ReportScreen />} />
+      <Route path="/faqs" element={<FAQScreen />} />
 
       {/* Private/Moderator routes */}
       <Route element={<PrivateRoute />}>
