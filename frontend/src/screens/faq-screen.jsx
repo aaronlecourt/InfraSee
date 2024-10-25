@@ -1,84 +1,122 @@
-import React from 'react';
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 import {
-  Accordion,
-  AccordionItem,
-  AccordionContent,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
+import questions from "@/utils/faqData";
 
 const FAQScreen = () => {
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [selectedQuestion, setSelectedQuestion] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const handleLogoClick = () => {
-    navigate("/");
+  const handleSelect = (value) => {
+    setSelectedQuestion(value);
+    setOpen(false);
   };
 
-  const handleContactClick = () => {
-    navigate("/contact-us");
-  };
+  const selectedAnswer = questions.find(
+    (q) => q.question === selectedQuestion
+  )?.answer;
 
-  const handleReportClick = () => {
-    navigate("/report");
-  };
+  // Filter questions based on the search term
+  const filteredQuestions = questions.filter((item) =>
+    item.question.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div>
-      <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400">
+    <HelmetProvider>
+      <Helmet>
+        <title>{"InfraSee | FAQ"}</title>
+      </Helmet>
+      <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400 bg-white sticky top-0 z-20">
         <div
           className="w-[6rem] mt-1 cursor-pointer"
-          onClick={handleLogoClick}
+          onClick={() => navigate("/")}
         >
           <img src="/infrasee_black.png" alt="Infrasee Logomark" />
         </div>
-        <nav className="hidden sm:flex">
-          <Button onClick={handleContactClick} variant="ghost">
+        <nav className="flex">
+          <Button onClick={() => navigate("/contact-us")} variant="ghost">
             Contact Us
           </Button>
-          <Button onClick={handleReportClick}>Make a Report</Button>
+          <Button onClick={() => navigate("/report")}>Make a Report</Button>
         </nav>
       </header>
 
-      <main className="px-10 py-5">
-        <h1 className="text-3xl font-bold">Frequently Asked Questions</h1>
-        <section className="mt-4 bg-white/30 rounded-md p-4">
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1">
-              <AccordionTrigger>How do I make a report?</AccordionTrigger>
-              <AccordionContent>
-                Click on the 'Make a Report' button, select the infrastructure
-                type, choose a moderator, and complete the form.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-2">
-              <AccordionTrigger>Who sees my reports?</AccordionTrigger>
-              <AccordionContent>
-                Your reports are sent to moderators representing
-                infrastructure companies like BAWADI or BENECO.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-3">
-              <AccordionTrigger>Can I receive feedback?</AccordionTrigger>
-              <AccordionContent>
-                Yes, feedback is provided through status reports, which can be
-                viewed on the report map markers.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-4">
-              <AccordionTrigger>
-                How do I apply as a moderator?
-              </AccordionTrigger>
-              <AccordionContent>
-                Send an email to admin@a.infrasee.com with verification from
-                your company. Accepted applicants will receive login details.
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </section>
-      </main>
-    </div>
+      <div className="flex min-h-[90vh] flex-col gap-2 p-5">
+        <div className="mb-2">
+          <h2 className="text-xl font-bold mb-2">Frequently Asked Questions</h2>
+          <p className="text-sm text-muted-foreground">
+            Explore InfraSee and uncover answers to your questions.
+          </p>
+        </div>
+        <div className="flex flex-col gap-3">
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-full justify-between text-left overflow-hidden whitespace-nowrap text-ellipsis"
+              >
+                {selectedQuestion
+                  ? questions.find((q) => q.question === selectedQuestion)
+                      ?.question
+                  : "Select a question..."}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="p-0 max-w-sm">
+              <Command>
+                <CommandInput
+                  placeholder="Search questions..."
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <CommandList>
+                  {filteredQuestions.length === 0 ? (
+                    <CommandEmpty>No results.</CommandEmpty>
+                  ) : (
+                    <CommandGroup>
+                      {filteredQuestions.map((item) => (
+                        <CommandItem
+                          key={item.question}
+                          value={item.question}
+                          onSelect={handleSelect}
+                        >
+                          {item.question}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )}
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+
+          {selectedAnswer && (
+            <div className="bg-muted/50 rounded-md border p-3 w-full overflow-auto text-sm text-muted-foreground">
+              {selectedAnswer}
+            </div>
+          )}
+        </div>
+      </div>
+    </HelmetProvider>
   );
-}
+};
 
 export default FAQScreen;
