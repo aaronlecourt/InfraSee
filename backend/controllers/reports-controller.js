@@ -155,10 +155,10 @@ const getUnassignedReports = asyncHandler(async (req, res) => {
 
     const assignedInfraType = user.infra_type;
 
-    // Fetch reports that are not assigned to any moderator, not archived, and match the user's infrastructure type
+    // Fetch reports that are not assigned to any moderator, not hidden, and match the user's infrastructure type
     const reports = await Report.find({
       report_mod: null,
-      is_archived: false,
+      is_hidden: false,
       infraType: assignedInfraType,
     })
       .populate("report_mod", "name")
@@ -191,7 +191,7 @@ const getUnassignedReports = asyncHandler(async (req, res) => {
 
 const getReports = asyncHandler(async (req, res) => {
   try {
-    const reports = await Report.find({ is_archived: false })
+    const reports = await Report.find({ is_hidden: false })
       .populate("report_mod", "name")
       .populate("report_status", "stat_name")
       .populate("infraType", "infra_name");
@@ -222,7 +222,7 @@ const getModeratorReports = asyncHandler(async (req, res) => {
     // Fetch reports assigned to the moderator
     const reports = await Report.find({
       report_mod: userId,
-      is_archived: false,
+      is_hidden: false,
     })
       .populate("report_mod", "name")
       .populate("report_status", "stat_name");
@@ -248,7 +248,7 @@ const getModeratorReports = asyncHandler(async (req, res) => {
   }
 });
 
-const getModeratorArchivedReports = asyncHandler(async (req, res) => {
+const getModeratorHiddenReports = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
 
@@ -264,10 +264,10 @@ const getModeratorArchivedReports = asyncHandler(async (req, res) => {
       throw new Error("Access denied: User is not a moderator.");
     }
 
-    // Fetch archived reports assigned to the moderator
+    // Fetch hidden reports assigned to the moderator
     const reports = await Report.find({
       report_mod: userId,
-      is_archived: true,
+      is_hidden: true,
     })
       .populate("report_mod", "name")
       .populate("report_status", "stat_name")
@@ -280,7 +280,7 @@ const getModeratorArchivedReports = asyncHandler(async (req, res) => {
     res.json(reports);
   } catch (error) {
     console.error(
-      `Error fetching moderator archived reports: ${error.message}`
+      `Error fetching moderator hidden reports: ${error.message}`
     );
 
     if (error.name === "CastError") {
@@ -320,7 +320,7 @@ const getModeratorArchivedReports = asyncHandler(async (req, res) => {
 //     // Fetch reports assigned to the assigned moderator of this submoderator
 //     const reports = await Report.find({
 //       report_mod: user.assignedModerator,
-//       is_archived: false,
+//       is_hidden: false,
 //     })
 //       .populate("report_mod", "name")
 //       .populate("report_status", "stat_name");
@@ -377,7 +377,7 @@ const getSubModeratorReports = asyncHandler(async (req, res) => {
     const reports = await Report.find({
       report_mod: user.assignedModerator._id,
       report_status: underReviewStatus._id, // Use the status ID
-      is_archived: false,
+      is_hidden: false,
     })
       .populate("report_mod", "name")
       .populate("report_status", "stat_name");
@@ -402,7 +402,7 @@ const getSubModeratorReports = asyncHandler(async (req, res) => {
   }
 });
 
-const getSubModeratorArchivedReports = asyncHandler(async (req, res) => {
+const getSubModeratorHiddenReports = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
 
@@ -424,23 +424,23 @@ const getSubModeratorArchivedReports = asyncHandler(async (req, res) => {
       throw new Error("Submoderator does not have an assigned moderator.");
     }
 
-    // Fetch archived reports assigned to the assigned moderator of this submoderator
-    const archivedReports = await Report.find({
+    // Fetch hidden reports assigned to the assigned moderator of this submoderator
+    const hiddenReports = await Report.find({
       report_mod: user.assignedModerator,
-      is_archived: true,
+      is_hidden: true,
     })
       .populate("report_mod", "name")
       .populate("report_status", "stat_name")
       .populate("infraType", "infra_name");
 
-    if (!archivedReports || archivedReports.length === 0) {
+    if (!hiddenReports || hiddenReports.length === 0) {
       return res.status(200).json([]); // Return empty array with 200 OK
     }
 
-    res.json(archivedReports);
+    res.json(hiddenReports);
   } catch (error) {
     console.error(
-      `Error fetching submoderator archived reports: ${error.message}`
+      `Error fetching submoderator hidden reports: ${error.message}`
     );
 
     if (error.name === "CastError") {
@@ -455,13 +455,13 @@ const getSubModeratorArchivedReports = asyncHandler(async (req, res) => {
   }
 });
 
-const archiveReport = asyncHandler(async (req, res) => {
+const hideReport = asyncHandler(async (req, res) => {
   try {
     const reportId = req.params.id;
 
     const report = await Report.findByIdAndUpdate(
       reportId,
-      { is_archived: true, archived_at: new Date() },
+      { is_hidden: true, hidden_at: new Date() },
       { new: true }
     );
 
@@ -470,7 +470,7 @@ const archiveReport = asyncHandler(async (req, res) => {
       throw new Error("Report not found.");
     }
 
-    res.json({ message: "Report archived successfully", report });
+    res.json({ message: "Report hidden successfully", report });
   } catch (error) {
     console.error(`Error archiving report: ${error.message}`);
 
@@ -484,9 +484,9 @@ const archiveReport = asyncHandler(async (req, res) => {
   }
 });
 
-const getArchivedReports = asyncHandler(async (req, res) => {
+const getHiddenReports = asyncHandler(async (req, res) => {
   try {
-    const reports = await Report.find({ is_archived: true })
+    const reports = await Report.find({ is_hidden: true })
       .populate("report_mod", "name")
       .populate("report_status", "stat_name")
       .populate("infraType", "infra_name");
@@ -502,10 +502,10 @@ const restoreReport = asyncHandler(async (req, res) => {
   try {
     const reportId = req.params.id;
 
-    // Find the report and update is_archived to false and clear archived_at field
+    // Find the report and update is_hidden to false and clear hidden_at field
     const report = await Report.findByIdAndUpdate(
       reportId,
-      { is_archived: false, archived_at: null },
+      { is_hidden: false, hidden_at: null },
       { new: true }
     );
 
@@ -839,11 +839,11 @@ export {
   createReport,
   getReports,
   getModeratorReports,
-  getModeratorArchivedReports,
+  getModeratorHiddenReports,
   getSubModeratorReports,
-  getSubModeratorArchivedReports,
-  archiveReport,
-  getArchivedReports,
+  getSubModeratorHiddenReports,
+  hideReport,
+  getHiddenReports,
   restoreReport,
   deleteReport,
   updateReportStatus,

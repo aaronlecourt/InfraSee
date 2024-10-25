@@ -16,7 +16,7 @@ import { ConfirmRestoreDialog } from "../elements/restore-confirm-modal";
 import { EyeIcon, ArchiveRestore, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-export function ModArchiveDataTableRowActions({ row }) {
+export function ModHiddenDataTableRowActions({ row }) {
   const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);
   const [isRestoreDialogOpen, setRestoreDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);

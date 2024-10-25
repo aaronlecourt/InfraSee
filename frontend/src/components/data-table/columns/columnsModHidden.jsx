@@ -1,5 +1,5 @@
 import { DataTableColumnHeader } from "../DataTableColumnHeader";
-import { ModArchiveDataTableRowActions } from "../ModArchiveDataTableRowActions";
+import { ModHiddenDataTableRowActions } from "../ModHiddenDataTableRowActions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,7 @@ const formatDate = (dateString) => {
   return format(date, "MMMM dd, yyyy hh:mm aa"); // Corrected to use 'mm' for minutes and 'ss' for seconds
 };
 
-export const columnsModArchives = [
+export const columnsModHidden = [
   {
     accessorKey: "report_by",
     title: "Reported By",
@@ -41,6 +41,9 @@ export const columnsModArchives = [
         {row.getValue("report_status")?.stat_name || "Unknown"}
       </Badge>
     ),
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue("report_status")?._id);
+    },
     enableSorting: true,
     enableHiding: true,
   },
@@ -55,13 +58,13 @@ export const columnsModArchives = [
     enableHiding: true,
   },
   {
-    accessorKey: "archived_at",
+    accessorKey: "hidden_at",
     title: "Hidden On",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Hidden On" />
     ),
     cell: ({ row }) => (
-      <div className="">{formatDate(row.getValue("archived_at"))}</div>
+      <div className="">{formatDate(row.getValue("hidden_at"))}</div>
     ),
     filterFn: (row, id, value) => {
       const rowDate = new Date(row.getValue(id));
@@ -73,6 +76,6 @@ export const columnsModArchives = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <ModArchiveDataTableRowActions row={row} />,
+    cell: ({ row }) => <ModHiddenDataTableRowActions row={row} />,
   },
 ];

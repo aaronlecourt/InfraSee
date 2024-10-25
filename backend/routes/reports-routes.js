@@ -1,12 +1,12 @@
 import express from "express";
 import {
   getReports,
-  getArchivedReports,
+  getHiddenReports,
   getModeratorReports,
-  getModeratorArchivedReports,
+  getModeratorHiddenReports,
   getSubModeratorReports,
-  getSubModeratorArchivedReports,
-  archiveReport,
+  getSubModeratorHiddenReports,
+  hideReport,
   restoreReport,
   deleteReport,
   createReport,
@@ -28,17 +28,17 @@ router.post("/create", createReport);
 router.route("/unassigned").get(protect, getUnassignedReports);
 router.route("/moderator/reports").get(protect, getModeratorReports);
 router
-  .route("/moderator/archived/reports")
-  .get(protect, getModeratorArchivedReports);
+  .route("/moderator/hidden/reports")
+  .get(protect, getModeratorHiddenReports);
 router.route("/submoderator/reports").get(protect, getSubModeratorReports);
 router
-  .route("/submoderator/reports/archived")
-  .get(protect, getSubModeratorArchivedReports);
-router.route("/archived/reports").get(protect, getArchivedReports);
+  .route("/submoderator/reports/hidden")
+  .get(protect, getSubModeratorHiddenReports);
+router.route("/hidden/reports").get(protect, getHiddenReports);
 router.route("/seen/:id").put(protect, markReportAsSeen);
 router.put("/read/:id", markAsRead);
 router.put("/unread/:id", markAsUnread);
-router.route("/archive/:id").put(archiveReport);
+router.route("/hide/:id").put(hideReport);
 router.route("/restore/:id").put(restoreReport);
 router.route("/delete/:id").delete(deleteReport);
 router.route("/status/:id").put(protect, updateReportStatus);
