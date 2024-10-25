@@ -455,34 +455,118 @@ const getSubModeratorHiddenReports = asyncHandler(async (req, res) => {
   }
 });
 
+// const hideReport = asyncHandler(async (req, res) => {
+//   try {
+//     const reportId = req.params.id;
+
+//     const report = await Report.findByIdAndUpdate(
+//       reportId,
+//       { is_hidden: true, hidden_at: new Date() },
+//       { new: true }
+//     );
+
+//     if (!report) {
+//       res.status(404);
+//       throw new Error("Report not found.");
+//     }
+
+//     res.json({ message: "Report hidden successfully", report });
+//   } catch (error) {
+//     console.error(`Error archiving report: ${error.message}`);
+
+//     if (error.name === "CastError") {
+//       res.status(400).json({ message: "Invalid report ID format." });
+//     } else {
+//       res
+//         .status(500)
+//         .json({ message: "Server error. Please try again later." });
+//     }
+//   }
+// });
+
+// const restoreReport = asyncHandler(async (req, res) => {
+//   try {
+//     const reportId = req.params.id;
+
+//     // Find the report and update is_hidden to false and clear hidden_at field
+//     const report = await Report.findByIdAndUpdate(
+//       reportId,
+//       { is_hidden: false, hidden_at: null },
+//       { new: true }
+//     );
+
+//     if (!report) {
+//       res.status(404);
+//       throw new Error("Report not found.");
+//     }
+
+//     res.json({ message: "Report restored successfully", report });
+//   } catch (error) {
+//     console.error(`Error restoring report: ${error.message}`);
+
+//     if (error.name === "CastError") {
+//       res.status(400).json({ message: "Invalid report ID format." });
+//     } else {
+//       res
+//         .status(500)
+//         .json({ message: "Server error. Please try again later." });
+//     }
+//   }
+// });
+
 const hideReport = asyncHandler(async (req, res) => {
   try {
-    const reportId = req.params.id;
+    const reportIds = req.params.ids.split(','); // Assuming IDs are passed as a comma-separated string
 
-    const report = await Report.findByIdAndUpdate(
-      reportId,
-      { is_hidden: true, hidden_at: new Date() },
-      { new: true }
+    // Update multiple reports
+    const reports = await Report.updateMany(
+      { _id: { $in: reportIds } }, // Match any report with an ID in the array
+      { is_hidden: true, hidden_at: new Date() }
     );
 
-    if (!report) {
-      res.status(404);
-      throw new Error("Report not found.");
+    if (reports.nModified === 0) {
+      return res.status(404).json({ message: "No reports found to hide." });
     }
 
-    res.json({ message: "Report hidden successfully", report });
+    res.json({ message: "Reports hidden successfully", count: reports.nModified });
   } catch (error) {
-    console.error(`Error archiving report: ${error.message}`);
+    console.error(`Error hiding reports: ${error.message}`);
 
     if (error.name === "CastError") {
       res.status(400).json({ message: "Invalid report ID format." });
     } else {
-      res
-        .status(500)
-        .json({ message: "Server error. Please try again later." });
+      res.status(500).json({ message: "Server error. Please try again later." });
     }
   }
 });
+
+const restoreReport = asyncHandler(async (req, res) => {
+  try {
+    const reportIds = req.params.ids.split(','); // Assuming IDs are passed as a comma-separated string
+
+    // Update multiple reports
+    const reports = await Report.updateMany(
+      { _id: { $in: reportIds } }, // Match any report with an ID in the array
+      { is_hidden: false, hidden_at: null }
+    );
+
+    if (reports.nModified === 0) {
+      return res.status(404).json({ message: "No reports found to restore." });
+    }
+
+    res.json({ message: "Reports restored successfully", count: reports.nModified });
+  } catch (error) {
+    console.error(`Error restoring reports: ${error.message}`);
+
+    if (error.name === "CastError") {
+      res.status(400).json({ message: "Invalid report ID format." });
+    } else {
+      res.status(500).json({ message: "Server error. Please try again later." });
+    }
+  }
+});
+
+
 
 const getHiddenReports = asyncHandler(async (req, res) => {
   try {
@@ -498,35 +582,6 @@ const getHiddenReports = asyncHandler(async (req, res) => {
   }
 });
 
-const restoreReport = asyncHandler(async (req, res) => {
-  try {
-    const reportId = req.params.id;
-
-    // Find the report and update is_hidden to false and clear hidden_at field
-    const report = await Report.findByIdAndUpdate(
-      reportId,
-      { is_hidden: false, hidden_at: null },
-      { new: true }
-    );
-
-    if (!report) {
-      res.status(404);
-      throw new Error("Report not found.");
-    }
-
-    res.json({ message: "Report restored successfully", report });
-  } catch (error) {
-    console.error(`Error restoring report: ${error.message}`);
-
-    if (error.name === "CastError") {
-      res.status(400).json({ message: "Invalid report ID format." });
-    } else {
-      res
-        .status(500)
-        .json({ message: "Server error. Please try again later." });
-    }
-  }
-});
 
 const deleteReport = asyncHandler(async (req, res) => {
   try {

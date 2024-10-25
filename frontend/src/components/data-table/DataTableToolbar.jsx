@@ -20,6 +20,7 @@ import { fetchFilterOptions } from "./fetchFilterOptions";
 import { ConfirmHideDialog } from "../elements/hide-confirm-modal";
 import { ConfirmRestoreDialog } from "../elements/restore-confirm-modal";
 import axios from "axios";
+import { toast } from "sonner";
 
 export function DataTableToolbar({
   userInfo,
@@ -34,6 +35,7 @@ export function DataTableToolbar({
   const [isSubModDialogOpen, setIsSubModDialogOpen] = useState(false);
   const [isHideDialogOpen, setIsHideDialogOpen] = useState(false);
   const [isRestoreDialogOpen, setIsRestoreDialogOpen] = useState(false);
+  const selectedRows = table.getFilteredSelectedRowModel().rows;
   const [dateRange, setDateRange] = useState({
     from: new Date(),
     to: new Date(),
@@ -44,8 +46,6 @@ export function DataTableToolbar({
     reportMod: [],
     reportStatus: [],
   });
-
-  const selectedRows = table.getFilteredSelectedRowModel().rows;
 
   const handleDateSelect = ({ from, to }) => {
     setDateRange({ from, to });
@@ -60,20 +60,31 @@ export function DataTableToolbar({
   };
 
   const handleHideReports = async () => {
-    for (const report of selectedRows) {
-      const reportId = report.original._id;
-      await axios.put(`/api/reports/hide/${reportId}`);
+    const reportIds = selectedRows.map(report => report.original._id).join(','); // Join IDs into a comma-separated string
+    const count = selectedRows.length; // Get the count of selected reports
+    try {
+      await axios.put(`/api/reports/hide/${reportIds}`); // Pass the report IDs in the URL
+      toast.success(`${count} report${count > 1 ? 's' : ''} hidden successfully.`); // Include count in toast
+    } catch (error) {
+      toast.error("Error hiding reports. Please try again.");
+    } finally {
+      setIsHideDialogOpen(false);
     }
-    setIsHideDialogOpen(false);
   };
-
+  
   const handleRestoreReports = async () => {
-    for (const report of selectedRows) {
-      const reportId = report.original._id;
-      await axios.put(`/api/reports/restore/${reportId}`);
+    const reportIds = selectedRows.map(report => report.original._id).join(','); // Join IDs into a comma-separated string
+    const count = selectedRows.length; // Get the count of selected reports
+    try {
+      await axios.put(`/api/reports/restore/${reportIds}`); // Pass the report IDs in the URL
+      toast.success(`${count} report${count > 1 ? 's' : ''} restored successfully.`); // Include count in toast
+    } catch (error) {
+      toast.error("Error restoring reports. Please try again.");
+    } finally {
+      setIsRestoreDialogOpen(false);
     }
-    setIsRestoreDialogOpen(false);
   };
+  
 
   useEffect(() => {
     const initializeData = async () => {
