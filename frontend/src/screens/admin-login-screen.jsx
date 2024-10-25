@@ -100,7 +100,7 @@ function AdminLoginScreen() {
         </header>
 
         <main className="flex items-center justify-center min-h-screen bg-[url('/bg.jpg')] bg-cover bg-no-repeat bg-top">
-          <div className="bg-white/70 p-8 rounded-lg w-full max-w-md">
+          <div className="backdrop-blur-md border p-8 rounded-lg w-full max-w-md">
             <h1 className="text-3xl font-bold mb-6 text-center text-gray-900">
               Admin Login
             </h1>

@@ -653,7 +653,7 @@ const deleteReport = asyncHandler(async (req, res) => {
 
 const updateReportStatus = async (req, res) => {
   const reportId = req.params.id;
-  const { report_status: statusId, modID: modId, status_remark } = req.body; // Updated destructuring
+  const { report_status: statusId, modID: modId, status_remark, report_time_resolved } = req.body; // Updated destructuring
 
   try {
     // Find the report
@@ -679,6 +679,7 @@ const updateReportStatus = async (req, res) => {
       status_remark,
       is_new: true, 
       request_time: null,
+      report_time_resolved: report_time_resolved,
     };
 
     // Check if the status is being set to "Resolved"
@@ -694,6 +695,7 @@ const updateReportStatus = async (req, res) => {
         updateData.report_status = resolvedStatus._id;
         updateData.is_requested = false; 
         updateData.request_time = null; 
+        updateData.report_time_resolved = resolvedStatus.report_time_resolved
       }
     }
 

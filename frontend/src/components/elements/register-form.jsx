@@ -12,6 +12,7 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
@@ -133,6 +134,7 @@ export function RegisterForm({ onClose }) {
                     {...field}
                   />
                 </FormControl>
+                <FormDescription className="text-xs">Manually create a gmail account for this account.</FormDescription>
               </FormItem>
             )}
           />
@@ -163,6 +165,7 @@ export function RegisterForm({ onClose }) {
                     </button>
                   </div>
                 </FormControl>
+                <FormDescription className="text-xs">This account must have the same password as its GMail password.</FormDescription>
               </FormItem>
             )}
           />
