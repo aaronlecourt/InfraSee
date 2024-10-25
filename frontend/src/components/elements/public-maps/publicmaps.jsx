@@ -18,6 +18,7 @@ const PublicMaps = ({ data }) => {
     west: 120.570,
   };
 
+  const isPublicMap = true
   const [activeMarker, setActiveMarker] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -160,6 +161,7 @@ const PublicMaps = ({ data }) => {
         >
           <ClusteredReportMarkers
             reports={data}
+            isPublicMap={isPublicMap}
             onMarkerClick={setActiveMarker}
             activeMarker={activeMarker}
             onCloseInfoWindow={() => setActiveMarker(null)}

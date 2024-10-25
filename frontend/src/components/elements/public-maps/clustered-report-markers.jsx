@@ -3,7 +3,7 @@ import { useMap } from "@vis.gl/react-google-maps";
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
 import { ReportMarker } from "./report-marker";
 
-export const ClusteredReportMarkers = ({ reports, onMarkerClick, activeMarker, onCloseInfoWindow }) => {
+export const ClusteredReportMarkers = ({ reports, onMarkerClick, activeMarker, onCloseInfoWindow, isPublicMap }) => {
   const [markers, setMarkers] = useState({});
   const map = useMap();
 
@@ -53,6 +53,7 @@ export const ClusteredReportMarkers = ({ reports, onMarkerClick, activeMarker, o
           setMarkerRef={setMarkerRef}
           isActive={activeMarker === report._id}
           onClose={onCloseInfoWindow}
+          isPublicMap={isPublicMap}
         />
       ))}
     </>
