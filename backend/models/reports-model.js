@@ -58,11 +58,11 @@ const reportSchema = mongoose.Schema(
       ref: InfrastructureType,
       required: true,
     },
-    is_archived: {
+    is_hidden: {
       type: Boolean,
       default: false,
     },
-    archived_at: {
+    hidden_at: {
       type: Date,
     },
     is_approved: {

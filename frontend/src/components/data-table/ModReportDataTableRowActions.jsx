@@ -12,35 +12,35 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ReportDetailsDialog } from "../elements/report-details-modal";
 import { UpdateStatusDialog } from "../elements/update-status-modal";
-import { ConfirmArchiveDialog } from "../elements/archive-confirm-modal";
+import { ConfirmHideDialog } from "../elements/hide-confirm-modal";
 import { ArchiveIcon, Edit, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 export function ModReportDataTableRowActions({ row }) {
   const [isUpdateStatusDialogOpen, setUpdateStatusDialogOpen] = useState(false);
   const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);
-  const [isArchiveDialogOpen, setArchiveDialogOpen] = useState(false);
+  const [isHideDialogOpen, setHideDialogOpen] = useState(false);
   const [dialogData, setDialogData] = useState(null);
-  const [reportIdToArchive, setReportIdToArchive] = useState(null);
+  const [reportIdToHide, setReportIdToHide] = useState(null);
 
   const handleUpdateStatus = () => {
     setDialogData(row.original);
     setUpdateStatusDialogOpen(true);
   };
 
-  const openArchiveDialog = () => {
-    setReportIdToArchive(row.original._id);
-    setArchiveDialogOpen(true);
+  const openHideDialog = () => {
+    setReportIdToHide(row.original._id);
+    setHideDialogOpen(true);
   };
 
-  const handleArchive = async () => {
-    const reportId = reportIdToArchive; 
+  const handleHide = async () => {
+    const reportId = reportIdToHide; 
     try {
-      const response = await axios.put(`/api/reports/archive/${reportId}`);
+      const response = await axios.put(`/api/reports/hide/${reportId}`);
       console.log(response.data.message);
       toast.success("Report hid successfully!");
-      setArchiveDialogOpen(false);
-      setReportIdToArchive(null); 
+      sethideDialogOpen(false);
+      setReportIdTohide(null); 
     } catch (error) {
       console.error("Error hiding report:", error);
       toast.error(error.response?.data?.message || "Failed to hide report.");
@@ -55,8 +55,8 @@ export function ModReportDataTableRowActions({ row }) {
   const handleCloseDialog = () => {
     setShowDetailsDialogOpen(false)
     setUpdateStatusDialogOpen(false);
-    setArchiveDialogOpen(false);
-    setReportIdToArchive(null); 
+    sethideDialogOpen(false);
+    setReportIdTohide(null); 
   };
 
 
@@ -122,7 +122,7 @@ export function ModReportDataTableRowActions({ row }) {
 
           <DropdownMenuItem
             className="flex gap-2"
-            onClick={openArchiveDialog}
+            onClick={openhideDialog}
           >
             <ArchiveIcon size={14} className="text-muted-foreground"/>
             Hide Report
@@ -140,10 +140,10 @@ export function ModReportDataTableRowActions({ row }) {
         onClose={handleCloseDialog}
         data={dialogData}
       />
-      <ConfirmArchiveDialog
-        isOpen={isArchiveDialogOpen}
+      <ConfirmHideDialog
+        isOpen={isHideDialogOpen}
         onClose={handleCloseDialog}
-        onConfirm={handleArchive}
+        onConfirm={handleHide}
       />
     </>
   );

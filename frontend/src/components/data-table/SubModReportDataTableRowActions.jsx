@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ReportDetailsDialog } from "../elements/report-details-modal";
 import { UpdateStatusDialog } from "../elements/update-status-modal";
-import { ConfirmArchiveDialog } from "../elements/archive-confirm-modal";
+import { ConfirmHideDialog } from "../elements/hide-confirm-modal";
 import { ArchiveIcon, Check, Edit, Eye, EyeOff, LucideGalleryVerticalEnd, X } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmAcceptDialog } from "../elements/accept-confirm-modal";

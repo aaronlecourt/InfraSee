@@ -43,7 +43,7 @@ export function DataTableToolbar({
   const handleDateSelect = ({ from, to }) => {
     setDateRange({ from, to });
     table.getColumn("createdAt")?.setFilterValue([from, to]);
-    table.getColumn("archived_at")?.setFilterValue([from, to]);
+    table.getColumn("hidden_at")?.setFilterValue([from, to]);
     table.getColumn("request_time")?.setFilterValue([from, to]);
   };
 

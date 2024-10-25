@@ -12,7 +12,7 @@ import { Reports } from "@/components/elements/reports";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import axios from "axios";
 import { columnsModReports } from "@/components/data-table/columns/columnsModReports";
-import { columnsModArchives } from "@/components/data-table/columns/columnsModArchives";
+import { columnsModHidden } from "@/components/data-table/columns/columnsModHidden";
 import { Button } from "@/components/ui/button";
 import { SkeletonTable } from "@/components/elements/skeletontable";
 import ModNavbar from "@/components/elements/mod-navbar/navbar";
@@ -28,8 +28,8 @@ const fetchUnassigned = async () => {
   return response.data;
 };
 
-const fetchArchives = async () => {
-  const response = await axios.get("/api/reports/moderator/archived/reports");
+const fetchHidden = async () => {
+  const response = await axios.get("/api/reports/moderator/hidden/reports");
   return response.data;
 };
 
@@ -38,9 +38,9 @@ const ModeratorDashboardScreen = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [reports, setReports] = useState([]);
   const [unassigned, setUnassigned] = useState([]);
-  const [archives, setArchives] = useState([]);
+  const [hidden, setHidden] = useState([]);
   const [loadingReports, setLoadingReports] = useState(true);
-  const [loadingArchives, setLoadingArchives] = useState(true);
+  const [loadingHidden, setLoadingHidden] = useState(true);
   const [loadingUnassigned, setLoadingUnassigned] = useState(true);
   const [highlightedId, setHighlightedId] = useState();
 
@@ -48,7 +48,7 @@ const ModeratorDashboardScreen = () => {
     socket.on("reportChange", (change) => {
       console.log("Received report change:", change);
       loadReports();
-      loadArchives();
+      loadHidden();
       loadUnassigned();
     });
 
@@ -82,15 +82,15 @@ const ModeratorDashboardScreen = () => {
     }
   };
 
-  const loadArchives = async () => {
-    setLoadingArchives(true);
+  const loadHidden = async () => {
+    setLoadingHidden(true);
     try {
-      const data = await fetchArchives();
-      setArchives(data);
+      const data = await fetchHidden();
+      setHidden(data);
     } catch (error) {
-      console.error("Failed to fetch archives", error);
+      console.error("Failed to fetch hidden", error);
     } finally {
-      setLoadingArchives(false);
+      setLoadingHidden(false);
     }
   };
 
@@ -98,7 +98,7 @@ const ModeratorDashboardScreen = () => {
   useEffect(() => {
     loadReports();
     loadUnassigned();
-    loadArchives();
+    loadHidden();
   }, []);
 
   const goToUnassignedTab = () => {
@@ -178,16 +178,16 @@ const ModeratorDashboardScreen = () => {
               />
             </TabsContent>
 
-            {/* ARCHIVES/HIDDEN 
+            {/* HIDDEN
                 Contains reports that are hidden to the public view.
             */}
             <TabsContent value="hidden" className="h-[calc(100vh-11rem)]">
-              {loadingArchives ? (
-                <SkeletonTable columns={columnsModArchives} />
+              {loadingHidden ? (
+                <SkeletonTable columns={columnsModHidden} />
               ) : (
                 <HiddenReports
-                  data={archives}
-                  columns={columnsModArchives}
+                  data={hidden}
+                  columns={columnsModHidden}
                   userInfo={userInfo}
                   activeTab={activeTab}
                 />

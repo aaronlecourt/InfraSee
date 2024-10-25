@@ -12,7 +12,7 @@ import { Reports } from "@/components/elements/reports";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import axios from "axios";
 import { columnsModReports } from "@/components/data-table/columns/columnsModReports";
-import { columnsModArchives } from "@/components/data-table/columns/columnsModArchives";
+import { columnsModHidden } from "@/components/data-table/columns/columnsModHidden";
 import { Button } from "@/components/ui/button";
 import { SkeletonTable } from "@/components/elements/skeletontable";
 import ModNavbar from "@/components/elements/mod-navbar/navbar";
