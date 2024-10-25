@@ -281,8 +281,9 @@ const AdminReportsScreen = () => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="default"
+                    variant="outline"
                     size="filter"
+                    className="rounded-full"
                     onClick={() => {
                       handleRefresh();
                     }}
