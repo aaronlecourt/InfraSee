@@ -87,7 +87,7 @@ function HomeScreen() {
       <Helmet>
         <title>{"InfraSee | Home"}</title>
       </Helmet>
-      <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400 backdrop-blur-sm bg-white/80 sticky top-0 z-20">
+      <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400 bg-white sticky top-0 z-20">
         <div
           className="w-[6rem] mt-1 cursor-pointer"
           onClick={() => navigate("/")}
@@ -191,9 +191,9 @@ function HomeScreen() {
               their reported issues.
             </p>
             <br />
-            <p>To learn more about Infrasee, go check out our FAQs page</p>
+            <p>If you have questions or want to learn more about InfraSee, go check out our 'Frequently Asked Questions' page</p>
             <Button
-              variant="default"
+              variant="link"
               className="mt-3 relative z-20"
               onClick={() => {
                 console.log("Button clicked!");
