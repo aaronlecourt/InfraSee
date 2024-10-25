@@ -49,17 +49,21 @@ export const columnsAccounts = [
     enableHiding: true,
   },
   {
-    accessorKey: "infra_type",
-    title: "Infrastructure Type",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Infrastructure Type" />
-    ),
-    cell: ({ row }) => (
-      <div className="">{row.getValue("infra_type")?.infra_name || "N/A"}</div>
-    ),
-    enableSorting: true,
-    enableHiding: true,
+  accessorKey: "infra_type",
+  title: "Infrastructure Type",
+  header: ({ column }) => (
+    <DataTableColumnHeader column={column} title="Infrastructure Type" />
+  ),
+  cell: ({ row }) => (
+    <div className="">{row.getValue("infra_type")?.infra_name || "N/A"}</div>
+  ),
+  filterFn: (row, id, value) => {
+    return value.includes(row.getValue("infra_type")?._id);
   },
+  enableSorting: true,
+  enableHiding: true,
+},
+
   {
     accessorKey: "createdAt",
     title: "Created On",

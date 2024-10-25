@@ -31,6 +31,9 @@ export const columnsReports = [
     cell: ({ row }) => (
       <div className="">{row.getValue("report_mod")?.name || "Unassigned"}</div> // Access the 'name' field
     ),
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue("report_mod")?._id);
+    },
     enableSorting: true,
     enableHiding: true,
   },
@@ -55,6 +58,9 @@ export const columnsReports = [
     cell: ({ row }) => (
       <div className="">{row.getValue("report_status")?.stat_name || "Unknown"}</div> // Access the stat_name field from the populated data
     ),
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue("report_status")?._id);
+    },
     enableSorting: true,
     enableHiding: true,
   },

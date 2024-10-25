@@ -41,6 +41,9 @@ export const columnsModArchives = [
         {row.getValue("report_status")?.stat_name || "Unknown"}
       </Badge>
     ),
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue("report_status")?._id);
+    },
     enableSorting: true,
     enableHiding: true,
   },

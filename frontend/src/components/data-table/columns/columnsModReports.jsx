@@ -88,8 +88,7 @@ export const columnsModReports = [
       </Badge>
     ),
     filterFn: (row, id, value) => {
-      console.log(id)
-      return value.includes(row.getValue(id));
+      return value.includes(row.getValue("report_status")?._id);
     },
     enableSorting: true,
     enableHiding: true,
