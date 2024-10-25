@@ -18,7 +18,7 @@ const statusIcons = {
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return format(date, "MMMM dd, yyyy hh:mm:ss aa"); // Corrected to use 'mm' for minutes and 'ss' for seconds
+  return format(date, "MMMM dd, yyyy hh:mm:ss aa");
 };
 
 export const ReportMarker = ({
@@ -117,22 +117,26 @@ export const ReportMarker = ({
               </div>
             </div>
             <div className="mt-3 relative">
-  <a href={report.report_img} target="_blank" rel="noopener noreferrer">
-    <img
-      src={report.report_img}
-      alt={report.report_desc}
-      className="rounded-md border max-h-[200px] w-full object-cover mb-3"
-    />
-  </a>
-  <Button
-    variant="ghost"
-    onClick={() => window.open(report.report_img, "_blank")}
-    className="absolute bottom-2 right-2 text-white"
-    title="View Fullscreen"
-  >
-    <Maximize size={14}/>
-  </Button>
-</div>
+              <a
+                href={report.report_img}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  src={report.report_img}
+                  alt={report.report_desc}
+                  className="rounded-md border max-h-[200px] w-full object-cover mb-3"
+                />
+              </a>
+              <Button
+                variant="ghost"
+                onClick={() => window.open(report.report_img, "_blank")}
+                className="absolute bottom-2 right-2 text-white"
+                title="View Fullscreen"
+              >
+                <Maximize size={14} />
+              </Button>
+            </div>
 
             {report.report_mod && (
               <div className="flex">
@@ -154,15 +158,16 @@ export const ReportMarker = ({
                 </div>
               </div>
             )}
-            <div className="flex">
-                <div className="font-medium text-[0.7rem] bg-muted  border-gray-300 p-1">
-                  STATUS REMARKS:
-                </div>
-                <div className="flex-grow font-medium text-[0.7rem] border-gray-300 p-1">
-                  {report.status_remark}
-                </div>
+            {!isPublicMap && report.status_remark && (
+              <div className="flex">
+              <div className="font-medium text-[0.7rem] bg-muted  border-gray-300 p-1">
+                STATUS REMARKS:
               </div>
-            
+              <div className="flex-grow font-medium text-[0.7rem] border-gray-300 p-1">
+                {report.status_remark}
+              </div>
+            </div>
+            )}
           </div>
         </InfoWindow>
       )}

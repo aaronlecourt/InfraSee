@@ -148,7 +148,7 @@ export function DataTableToolbar({
           )}
           {userInfo.isAdmin && activeButton === "reports" && (
             <Input
-              placeholder="Search ADMIN reporter name..."
+              placeholder="Filter reporter name..."
               value={table.getColumn("report_by")?.getFilterValue() ?? ""}
               className="h-9"
               onChange={(event) => {
