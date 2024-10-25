@@ -8,6 +8,7 @@ import { useFormContext } from 'react-hook-form';
 const InfraTypeForm = ({ infraType, setInfraType }) => {
   const [infrastructureTypes, setInfrastructureTypes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [moderatedTypes, setModeratedTypes] = useState([]);
   const { setValue } = useFormContext();
 
   const iconMapping = {
@@ -21,7 +22,7 @@ const InfraTypeForm = ({ infraType, setInfraType }) => {
   const descriptionMapping = {
     "Power and Energy": "For reports on broken power infrastructure—such as electrical posts, live wires, transformers, and more—service disconnections for non-payment are excluded.",
     "Water and Waste": "For reports on broken water or waste infrastructure, including pipes, canals, pumps, and more—service disconnections for non-payment are excluded.",
-    "Transportation": "For reports on broken transportation infrastructure—such as damaged roads, traffic signals, brigdes, and more.",
+    "Transportation": "For reports on broken transportation infrastructure—such as damaged roads, traffic signals, bridges, and more.",
     "Telecommunications": "For reports on broken telecommunications infrastructure—such as downed cables, cell towers, and network outages—service disconnections for non-payment are excluded.",
     "Commercial": "For reports on damaged or broken commercial infrastructure—such as retail spaces, parking lots, office buildings, and more.",
   };
@@ -40,7 +41,18 @@ const InfraTypeForm = ({ infraType, setInfraType }) => {
       }
     };
 
+    const fetchModerators = async () => {
+      try {
+        const response = await fetch("/api/users/moderators");
+        const data = await response.json();
+        setModeratedTypes(data.map(moderator => moderator.infra_type._id)); // Extracting infra_type._id
+      } catch (error) {
+        console.error("Error fetching moderators:", error);
+      }
+    };
+
     fetchInfrastructureTypes();
+    fetchModerators();
   }, []);
 
   const handleValueChange = (value) => {
@@ -60,15 +72,19 @@ const InfraTypeForm = ({ infraType, setInfraType }) => {
             {infrastructureTypes.map((infra) => (
               <div
                 key={infra._id}
-                className={`flex flex-col justify-top p-4 border rounded-lg cursor-pointer min-w-56 sm:mb-0 mb-2 text-wrap transition ${
+                className={`flex flex-col justify-top p-4 border rounded-lg cursor-pointer min-w-56 sm:mb-0 mb-2 text-wrap transition ${ 
                   infraType === infra._id ? "border-gray-300 bg-gray-100" : "border"
-                } max-w-[250px] min-h-[100px]`}
-                onClick={() => handleValueChange(infra._id)}
+                } max-w-[250px] min-h-[100px] ${!moderatedTypes.includes(infra._id) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={() => {
+                  if (moderatedTypes.includes(infra._id)) {
+                    handleValueChange(infra._id);
+                  }
+                }}
               >
                 <RadioGroupItem value={infra._id} id={infra._id} className="hidden" />
                 <div className="flex items-center gap-x-2">
                   <div>{iconMapping[infra.infra_name] || null}</div>
-                  <Label htmlFor={infra._id} className="font-bold text-base">
+                  <Label htmlFor={infra._id} className={`font-bold text-base ${!moderatedTypes.includes(infra._id) ? 'text-gray-400' : ''}`}>
                     {infra.infra_name}
                   </Label>
                 </div>
