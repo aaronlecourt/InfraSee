@@ -69,6 +69,12 @@ const moderatorUser = asyncHandler(async (req, res) => {
   // Find the user by email
   const user = await User.findOne({ email }).populate("infra_type", "infra_name");
 
+  // Check if user exists
+  if (!user) {
+    res.status(401);
+    throw new Error("No registered accounts were found with that email.");
+  }
+
   // Check if user exists, is deactivated, or password is incorrect
   if (!user || user.deactivated) {
     res.status(401);
