@@ -174,10 +174,21 @@ const questions = [
     answer: (
       <div className="flex flex-col gap-2">
         <div>
-        To become a moderator, an individual must first be employed by an existing, registered utility provider company. They are then required to download and complete the form below, then submit the filled copy to <b>i.iirs.infrasee@gmail.com</b>.
+          To become a moderator, an individual must first be employed by an existing, registered utility provider company. They are then required to download and complete the PDF form below, then submit the filled copy to <b>i.iirs.infrasee@gmail.com</b>. An email will be sent upon request verification and account creation.
         </div>
-        <Button variant="ghost" className="flex gap-2 border-muted-foreground border-dashed border">
-          <Download size={15}/>
+        <Button 
+          variant="ghost" 
+          className="flex gap-2 border-muted-foreground border-dashed border" 
+          onClick={() => {
+            const link = document.createElement('a');
+            link.href = '/infrasee_registration_form.pdf';
+            link.download = 'INFRASEE_Registration_Form.pdf';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }}
+        >
+          <Download size={15} />
           Download Registration Form
         </Button>
       </div>
