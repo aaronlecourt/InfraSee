@@ -60,39 +60,48 @@ export function DataTableToolbar({
   };
 
   const handleHideReports = async () => {
-    const reportIds = selectedRows.map(report => report.original._id).join(','); // Join IDs into a comma-separated string
-    const count = selectedRows.length; // Get the count of selected reports
+    const reportIds = selectedRows
+      .map((report) => report.original._id)
+      .join(",");
+    const count = selectedRows.length;
     try {
-      await axios.put(`/api/reports/hide/${reportIds}`); // Pass the report IDs in the URL
-      toast.success(`${count} report${count > 1 ? 's' : ''} hidden successfully.`); // Include count in toast
+      await axios.put(`/api/reports/hide/${reportIds}`);
+      toast.success(
+        `${count} report${count > 1 ? "s" : ""} hidden successfully.`
+      );
     } catch (error) {
       toast.error("Error hiding reports. Please try again.");
     } finally {
       setIsHideDialogOpen(false);
     }
   };
-  
+
   const handleRestoreReports = async () => {
-    const reportIds = selectedRows.map(report => report.original._id).join(','); // Join IDs into a comma-separated string
-    const count = selectedRows.length; // Get the count of selected reports
+    const reportIds = selectedRows
+      .map((report) => report.original._id)
+      .join(",");
+    const count = selectedRows.length;
     try {
-      await axios.put(`/api/reports/restore/${reportIds}`); // Pass the report IDs in the URL
-      toast.success(`${count} report${count > 1 ? 's' : ''} restored successfully.`); // Include count in toast
+      await axios.put(`/api/reports/restore/${reportIds}`);
+      toast.success(
+        `${count} report${count > 1 ? "s" : ""} restored successfully.`
+      );
     } catch (error) {
       toast.error("Error restoring reports. Please try again.");
     } finally {
       setIsRestoreDialogOpen(false);
     }
   };
-  
 
   useEffect(() => {
     const initializeData = async () => {
       const options = await fetchFilterOptions();
       setFilterOptions(options);
+      console.log("Fetched Filter Options:", options.reportStatus);
     };
     initializeData();
   }, []);
+  
 
   useEffect(() => {
     if (activeTab === "unassigned" && highlightedId) {
@@ -196,13 +205,19 @@ export function DataTableToolbar({
           <div className="flex items-center">
             {/* MODSIDE REPORT STATUS */}
             {userInfo.isModerator &&
-              (activeTab === "reports" || activeTab === "hidden") && (
-                <DataTableFacetedFilter
-                  column={table.getColumn("report_status")}
-                  title="Status"
-                  options={filterOptions.reportStatus}
-                />
-              )}
+  (activeTab === "reports" || activeTab === "hidden") && (
+    <DataTableFacetedFilter
+      column={table.getColumn("report_status")}
+      title="Status"
+      options={
+        activeTab === "hidden"
+          ? filterOptions.reportStatus // Show all statuses, including "Unassigned" in hidden tab
+          : filterOptions.reportStatus.filter(
+              (status) => status.label !== "Unassigned" // Exclude "Unassigned" in reports tab
+            )
+      }
+    />
+  )}
             {/* SUBMOD SIDE REPORT STATUS */}
             {userInfo.isSubModerator && activeTab === "reports" && (
               <DataTableFacetedFilter
