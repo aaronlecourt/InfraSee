@@ -21,24 +21,22 @@ export function AccountDetailsDialog({ isOpen, onClose, data }) {
               <div className="flex flex-col gap-y-1">
                 <div className="flex justify-between items-center pt-2">
                   <p className="text-base font-bold text-primary leading-tight">
-                    {data.account_name}
+                    {data.name}
                   </p>
-                  <p className="text-primary">{data.account_status}</p>
+                  <p className="text-primary">{data.isModerator ? "Moderator" : "Sub Moderator"}</p>
                 </div>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center justify-between gap-1">
                     <UserCircleIcon size={15} />
-                    {data.account_owner}
+                    {data.email}
                   </div>
-                  <p>{data.account_number}</p>
                 </div>
                 <div className="w-full pt-2 text-primary flex flex-col gap-y-1">
                   <p>Email: {data.email}</p>
-                  <p>Phone: {data.phone}</p>
-                  <p>Address: {data.address}</p>
+                  <p>Account Type: {data.infra_type?.infra_name}</p>
                   <div className="flex gap-3 text-muted-foreground text-xs font-normal">
-                    <p>Created On: {data.created_at}</p>
-                    <p>Last Active: {data.last_active}</p>
+                    <p>Created On: {new Date(data.createdAt).toLocaleString()}</p>
+                    <p>Last Updated: {new Date(data.updatedAt).toLocaleString()}</p>
                   </div>
                 </div>
               </div>

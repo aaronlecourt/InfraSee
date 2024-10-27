@@ -16,7 +16,7 @@ export const columnsModUnassigned = [
   {
     accessorKey: "_id",
     title: "",
-    header: ({ column }) => <DataTableColumnHeader column={column} title=""/>,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: () => null,
     enableSorting: false,
     enableHiding: false,
@@ -25,15 +25,27 @@ export const columnsModUnassigned = [
   {
     accessorKey: "is_new",
     title: "",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="" className="text-[0.75rem]"/>,
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        column={column}
+        title=""
+        className="text-[0.75rem]"
+      />
+    ),
     cell: ({ row }) => (
-      <div className="">
+      <div className="whitespace-nowrap">
         {row.getValue("is_new") ? (
-          <Badge variant="outline" className="w-full rounded-md border-muted-foreground/20 text-muted-foreground">
+          <Badge
+            variant="outline"
+            className="px-2 rounded-md border-none bg-muted-foreground text-white"
+          >
             Unread
           </Badge>
         ) : (
-          <Badge variant="outline" className="w-full rounded-md border-muted-foreground/20 text-muted-foreground">
+          <Badge
+            variant="outline"
+            className="px-2 rounded-md border-muted-foreground/20 text-muted-foreground"
+          >
             Read
           </Badge>
         )}
@@ -46,7 +58,11 @@ export const columnsModUnassigned = [
     accessorKey: "report_by",
     title: "Reported By",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Reported By" className="text-[0.75rem]"/>
+      <DataTableColumnHeader
+        column={column}
+        title="Reported By"
+        className="text-[0.75rem]"
+      />
     ),
     cell: ({ row }) => <div className="">{row.getValue("report_by")}</div>,
     enableSorting: false,
@@ -56,7 +72,11 @@ export const columnsModUnassigned = [
     accessorKey: "report_desc",
     title: "Description",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Description" className="text-[0.75rem]"/>
+      <DataTableColumnHeader
+        column={column}
+        title="Description"
+        className="text-[0.75rem]"
+      />
     ),
     cell: ({ row }) => <div className="">"{row.getValue("report_desc")}"</div>,
     enableSorting: false,
@@ -66,7 +86,11 @@ export const columnsModUnassigned = [
     accessorKey: "report_status",
     title: "Status",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Status" className="text-[0.75rem]"/>
+      <DataTableColumnHeader
+        column={column}
+        title="Status"
+        className="text-[0.75rem]"
+      />
     ),
     cell: ({ row }) => (
       <Badge className="px-2" variant="default">
@@ -80,7 +104,11 @@ export const columnsModUnassigned = [
     accessorKey: "report_address",
     title: "Address",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Address" className="text-[0.75rem]"/>
+      <DataTableColumnHeader
+        column={column}
+        title="Address"
+        className="text-[0.75rem]"
+      />
     ),
     cell: ({ row }) => <div className="">{row.getValue("report_address")}</div>,
     enableSorting: false,
@@ -90,7 +118,11 @@ export const columnsModUnassigned = [
     accessorKey: "createdAt",
     title: "Created On",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Created On" className="text-[0.75rem]"/>
+      <DataTableColumnHeader
+        column={column}
+        title="Created On"
+        className="text-[0.75rem]"
+      />
     ),
     cell: ({ row }) => (
       <div className="">{formatDate(row.getValue("createdAt"))}</div>

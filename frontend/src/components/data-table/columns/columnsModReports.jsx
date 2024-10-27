@@ -41,11 +41,17 @@ export const columnsModReports = [
     cell: ({ row }) => (
       <div className="whitespace-nowrap">
         {row.getValue("is_new") ? (
-          <Badge variant="outline" className="w-full rounded-md border-muted-foreground/20 text-muted-foreground">
+          <Badge
+            variant="outline"
+            className="px-2 rounded-md border-none bg-muted-foreground text-white"
+          >
             Unread
           </Badge>
         ) : (
-          <Badge variant="outline" className="w-full rounded-md border-muted-foreground/20 text-muted-foreground">
+          <Badge
+            variant="outline"
+            className="px-2 rounded-md border-muted-foreground/20 text-muted-foreground"
+          >
             Read
           </Badge>
         )}
@@ -79,7 +85,7 @@ export const columnsModReports = [
     title: "Status",
     header: ({ column }) => (
       <>
-      <DataTableColumnHeader column={column} title="Status" />
+        <DataTableColumnHeader column={column} title="Status" />
       </>
     ),
     cell: ({ row }) => (
