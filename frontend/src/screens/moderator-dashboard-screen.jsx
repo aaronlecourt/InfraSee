@@ -168,14 +168,18 @@ const ModeratorDashboardScreen = () => {
                 e.g BAWADI will only see unassigned water infra related reports
             */}
             <TabsContent value="unassigned" className="h-[calc(100vh-11rem)]">
-              <Unassigned
-                data={unassigned}
-                userInfo={userInfo}
-                columns={columnsModUnassigned}
-                activeTab={activeTab}
-                highlightedId={highlightedId}
-                setHighlightedId={setHighlightedId}
-              />
+              {loadingUnassigned ? (
+                <SkeletonTable columns={columnsModUnassigned} />
+              ) : (
+                <Unassigned
+                  data={unassigned}
+                  userInfo={userInfo}
+                  columns={columnsModUnassigned}
+                  activeTab={activeTab}
+                  highlightedId={highlightedId}
+                  setHighlightedId={setHighlightedId}
+                />
+              )}
             </TabsContent>
 
             {/* HIDDEN
