@@ -19,13 +19,18 @@ import { toast } from "sonner";
 
 // Schema validation
 const detailsSchema = z.object({
-  report_by: z.string().min(1).max(50),
+  report_by: z.string().min(2, "Your full name is required.").max(50),
   report_contactNum: z
     .string()
-    .length(11)
-    .regex(/^09\d{9}$/),
-  report_desc: z.string().min(25).max(150),
-  report_img: z.string().url(),
+    .min(1, "Your contact number is required.")
+    .length(11, "Your contact number must only be 11 digits.")
+    .regex(/^09\d{9}$/, "Your contact number must begin with 09."),
+  report_desc: z
+    .string()
+    .min(1, "Report description is required.")
+    .min(25, "Report description must contain at least 25 characters.")
+    .max(150, "Report description is limited to 150 characters only."),
+  report_img: z.string().url().min(1, "Image is required."),
 });
 
 const MultiStepForm = ({ open, onClose }) => {
@@ -79,7 +84,7 @@ const MultiStepForm = ({ open, onClose }) => {
       report_desc: data.report_desc,
       report_img: data.report_img,
     };
-  
+
     try {
       setIsUploading(true);
       const response = await axios.post("/api/reports/create", submitData);
@@ -95,18 +100,17 @@ const MultiStepForm = ({ open, onClose }) => {
         toast.error(`Error: ${response.data.message}`);
       }
     } catch (error) {
-      
       let errorMessage = "An unknown error occurred. Please try again later.";
       if (error.response) {
         errorMessage = error.response.data.message || "An error occurred.";
       }
-  
+
       toast.error(errorMessage);
     } finally {
       setIsUploading(false);
     }
   };
-  
+
   return (
     <Sheet open={open} onOpenChange={onClose}>
       <FormProvider {...methods}>
@@ -141,10 +145,10 @@ const MultiStepForm = ({ open, onClose }) => {
           )}
           {currentStep === 3 && (
             <DetailsForm
-            onSubmit={methods.handleSubmit(onSubmit)}
-            imagePreview={imagePreview}
-            setImagePreview={setImagePreview} // Ensure this is passed
-          />
+              onSubmit={methods.handleSubmit(onSubmit)}
+              imagePreview={imagePreview}
+              setImagePreview={setImagePreview} // Ensure this is passed
+            />
           )}
 
           <div className="flex justify-between mt-4">
@@ -155,7 +159,7 @@ const MultiStepForm = ({ open, onClose }) => {
             {currentStep === 3 && (
               <Button
                 onClick={methods.handleSubmit(onSubmit)}
-                disabled={isUploading}
+                disabled={isUploading || !imagePreview} // Disable if uploading or no image
               >
                 {isUploading ? "Submitting..." : "Submit"}
               </Button>
