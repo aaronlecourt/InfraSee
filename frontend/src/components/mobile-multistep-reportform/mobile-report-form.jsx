@@ -19,13 +19,14 @@ import { toast } from "sonner";
 
 // Schema validation
 const detailsSchema = z.object({
-  report_by: z.string().min(1).max(50),
+  report_by: z.string().min(2, "Your full name is required.").max(50),
   report_contactNum: z
     .string()
-    .length(11)
-    .regex(/^09\d{9}$/),
-  report_desc: z.string().min(25).max(150),
-  report_img: z.string().url(),
+    .min(1, "Your contact number is required.")
+    .length(11, "Your contact number must only be 11 digits.")
+    .regex(/^09\d{9}$/, "Your contact number must begin with 09."),
+  report_desc: z.string().min(1, "Report description is required.").min(25, "Report description must contain at least 25 characters.").max(150, "Report description is limited to 150 characters only."),
+  report_img: z.string().url().min(1, "Image is required."),
 });
 
 const MultiStepForm = ({ open, onClose }) => {
