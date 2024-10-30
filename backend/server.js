@@ -10,6 +10,7 @@ import userRoutes from './routes/user-routes.js';
 import infrastructureRoutes from './routes/infrastructure-routes.js';
 import reportRoutes from './routes/reports-routes.js'
 import statusRoutes from './routes/status-routes.js'
+import notificationRoutes from './routes/notifications-routes.js'
 import mongoose from 'mongoose';
 import { createSocketServer, setupChangeStream } from './config/socket.js';
 
@@ -19,22 +20,21 @@ connectDB();
 
 const app = express();
 const server = http.createServer(app);
-
 const io = createSocketServer(server);
 
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(cookieParser());
 
 
 // API routes
 app.use('/api/users', userRoutes);
-
 app.use('/api/infrastructure-types', infrastructureRoutes);
 app.use('/api/reports', reportRoutes)
 app.use('/api/status', statusRoutes)
+app.use('/api/notification', notificationRoutes)
+
 
 if (process.env.NODE_ENV === 'production') {
   const __dirname = path.resolve();
