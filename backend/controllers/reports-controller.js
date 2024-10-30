@@ -52,19 +52,18 @@ const createReport = asyncHandler(async (req, res) => {
       return R * c; // Distance in meters
     };
 
-    // Check for existing reports within 10 meters
-    const existingReports = await Report.find({ infraType }).populate(
-      "report_status"
-    ); // Populate status
+    // Check for existing reports within 10 meters or at the same location
+    const existingReports = await Report.find({ infraType }).populate("report_status");
     for (const report of existingReports) {
       const distance = haversineDistance(
         [latitude, longitude],
         [report.latitude, report.longitude]
       );
-      if (distance < 10 && report.report_status.stat_name !== "Resolved") {
-        // Adjust based on your status naming
+
+      // Check if the distance is less than or equal to 10 meters
+      if (distance <= 10 && report.report_status.stat_name !== "Resolved") {
         return res.status(409).json({
-          message: "A similar report has already been reported. ",
+          message: "A similar report has already been reported.",
           // existingReport: `Address: ${report.report_address}, Description: ${report.report_desc}, Status: ${report.report_status.stat_name}`,
         });
       }

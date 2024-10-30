@@ -15,7 +15,7 @@ module.exports = {
     },
     fontSize: {
       xs: ['0.8rem', { lineHeight: '1rem', letterSpacing: '-0.01em', fontWeight: '700' }],
-      sm: ['0.85rem', { lineHeight: '1rem', letterSpacing: '-0.01em', fontWeight: '500' }],
+      sm: ['0.87rem', { lineHeight: '1rem', letterSpacing: '-0.01em', fontWeight: '500' }],
       base: ['1rem', { lineHeight: '1.6rem', letterSpacing: '-0.02em', fontWeight: '500' }],
       md: ['1.2rem', { lineHeight: '1.6rem', letterSpacing: '-0.02em', fontWeight: '600' }],
       xl: ['1.5rem', { lineHeight: '1.2rem', letterSpacing: '-0.01em', fontWeight: '800' }],
