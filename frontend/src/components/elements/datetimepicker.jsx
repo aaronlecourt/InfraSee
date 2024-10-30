@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
-export function DateTimePicker({ value, onChange, minDate }) {
+export function DateTimePicker({ value, onChange, minDate, maxDate }) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [date, setDate] = React.useState(value ? new Date(value) : undefined);
 
@@ -21,6 +21,11 @@ export function DateTimePicker({ value, onChange, minDate }) {
   const handleDateSelect = (selectedDate) => {
     if (selectedDate) {
       const newDate = new Date(selectedDate);
+      
+      // Prevent selecting a date beyond maxDate
+      if (maxDate && newDate > new Date(maxDate)) {
+        return;
+      }
       
       // Set the time to one hour later than minDate while preserving minutes
       if (minDate) {
@@ -45,7 +50,7 @@ export function DateTimePicker({ value, onChange, minDate }) {
       onChange(newDate.toISOString());
     }
   };
-  
+
   const handleTimeChange = (type, value) => {
     const newDate = date ? new Date(date) : new Date();
 
@@ -58,7 +63,7 @@ export function DateTimePicker({ value, onChange, minDate }) {
       newDate.setHours(value === "PM" ? currentHours + 12 : currentHours - 12);
     }
 
-    // Ensure the selected time is valid based on minDate
+    // Ensure the selected time is valid based on minDate and maxDate
     if (minDate && date) {
       const minSelectableTime = new Date(minDate);
       minSelectableTime.setHours(minSelectableTime.getHours() + 1); // At least one hour later
@@ -66,6 +71,10 @@ export function DateTimePicker({ value, onChange, minDate }) {
         newDate.setHours(minSelectableTime.getHours());
         newDate.setMinutes(0); // Reset minutes to 0 for the new time
       }
+    }
+
+    if (maxDate && newDate > new Date(maxDate)) {
+      return;
     }
 
     setDate(newDate);
@@ -91,6 +100,7 @@ export function DateTimePicker({ value, onChange, minDate }) {
             onSelect={handleDateSelect}
             initialFocus
             fromDate={minDate} // Disable past dates based on minDate
+            toDate={maxDate} // Disable future dates based on maxDate
           />
           <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
             <ScrollArea className="scroll-area w-72 sm:w-auto overflow-auto">
@@ -106,7 +116,10 @@ export function DateTimePicker({ value, onChange, minDate }) {
                       variant={date && date.getHours() % 12 === hour % 12 ? "default" : "ghost"}
                       className="sm:w-full shrink-0 aspect-square"
                       onClick={() => handleTimeChange("hour", hour.toString())}
-                      disabled={isMinDate && hour <= minHour}
+                      disabled={
+                        (isMinDate && hour <= minHour) ||
+                        (maxDate && date && date.toDateString() === new Date(maxDate).toDateString() && hour > new Date(maxDate).getHours() % 12)
+                      }
                     >
                       {hour}
                     </Button>
@@ -128,7 +141,10 @@ export function DateTimePicker({ value, onChange, minDate }) {
                       variant={date && date.getMinutes() === minute ? "default" : "ghost"}
                       className="sm:w-full shrink-0 aspect-square"
                       onClick={() => handleTimeChange("minute", minute.toString().padStart(2, '0'))}
-                      disabled={isMinDate && date.getHours() === minHour && minute < new Date(minDate).getMinutes()}
+                      disabled={
+                        (isMinDate && date.getHours() === minHour && minute < new Date(minDate).getMinutes()) ||
+                        (maxDate && date && date.toDateString() === new Date(maxDate).toDateString() && minute > new Date(maxDate).getMinutes())
+                      }
                     >
                       {minute.toString().padStart(2, '0')}
                     </Button>

@@ -34,13 +34,13 @@ export function ModReportDataTableRowActions({ row }) {
   };
 
   const handleHide = async () => {
-    const reportId = reportIdToHide; 
+    const reportId = reportIdToHide;
     try {
       const response = await axios.put(`/api/reports/hide/${reportId}`);
       console.log(response.data.message);
       toast.success("Report hid successfully!");
       setHideDialogOpen(false);
-      setReportIdToHide(null); 
+      setReportIdToHide(null);
     } catch (error) {
       console.error("Error hiding report:", error);
       toast.error(error.response?.data?.message || "Failed to hide report.");
@@ -51,14 +51,13 @@ export function ModReportDataTableRowActions({ row }) {
     setDialogData(row.original);
     setShowDetailsDialogOpen(true);
   };
-  
+
   const handleCloseDialog = () => {
-    setShowDetailsDialogOpen(false)
+    setShowDetailsDialogOpen(false);
     setUpdateStatusDialogOpen(false);
     setHideDialogOpen(false);
-    setReportIdToHide(null); 
+    setReportIdToHide(null);
   };
-
 
   const handleMarkAsRead = async () => {
     const reportId = row.original._id;
@@ -95,36 +94,43 @@ export function ModReportDataTableRowActions({ row }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
-        <DropdownMenuItem onClick={handleShowDetails} className="flex gap-2">
-            <Eye size={14} className="text-muted-foreground"/>
+          <DropdownMenuItem onClick={handleShowDetails} className="flex gap-2">
+            <Eye size={14} className="text-muted-foreground" />
             Show Details
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleUpdateStatus} className="flex gap-2">
-            <Edit size={14} className="text-muted-foreground"/>
-            Update Status
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
+          {row.original.report_status.stat_name != "Resolved" &&
+            row.original.report_status.stat_name != "Dismissed" && (
+              <>
+                <DropdownMenuItem
+                  onClick={handleUpdateStatus}
+                  className="flex gap-2"
+                >
+                  <Edit size={14} className="text-muted-foreground" />
+                  Update Status
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
           {row.original.is_new ? (
             <DropdownMenuItem onClick={handleMarkAsRead} className="flex gap-2">
-            <Eye size={14} className="text-muted-foreground" />
-            Mark as Read
-          </DropdownMenuItem>
-          ):
-          (
-            <DropdownMenuItem onClick={handleMarkAsUnread} className="flex gap-2">
-            <EyeOff size={14} className="text-muted-foreground" />
-            Mark as Unread
-          </DropdownMenuItem>
+              <Eye size={14} className="text-muted-foreground" />
+              Mark as Read
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem
+              onClick={handleMarkAsUnread}
+              className="flex gap-2"
+            >
+              <EyeOff size={14} className="text-muted-foreground" />
+              Mark as Unread
+            </DropdownMenuItem>
           )}
 
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem
-            className="flex gap-2"
-            onClick={openHideDialog}
-          >
-            <ArchiveIcon size={14} className="text-muted-foreground"/>
+          <DropdownMenuItem className="flex gap-2" onClick={openHideDialog}>
+            <ArchiveIcon size={14} className="text-muted-foreground" />
             Hide Report
           </DropdownMenuItem>
         </DropdownMenuContent>

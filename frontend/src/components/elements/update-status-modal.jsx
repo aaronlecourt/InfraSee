@@ -44,6 +44,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
   const [statusOptions, setStatusOptions] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState(data?.report_status.stat_name || "");
   const currentStatus = data?.report_status.stat_name || "";
+  const today = new Date();
 
   const methods = useForm({
     resolver: zodResolver(getSchema(selectedStatus)),
@@ -131,7 +132,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
   const getAllowedStatusOptions = () => {
     const restrictedStatuses = {
       "Pending": ["In Progress", "Dismissed", "Unassigned"],
-      "In Progress": ["Resolved"],
+      "In Progress": ["Resolved", "Pending"],
       "For Revision": ["Resolved"],
       "Dismissed": [],
       "Resolved": [],
@@ -249,6 +250,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                                   }
                                 }}
                                 minDate={createdAt}
+                                maxDate={today}
                               />
                             )}
                           />
