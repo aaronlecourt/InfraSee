@@ -26,6 +26,15 @@ const statusIcons = {
   "Dismissed": "/pins/pins_-05.png",
 };
 
+const statusDescriptions = {
+  All: "All",
+  Pending: "Pending",
+  "In Progress": "In Progress",
+  Resolved: "Resolved",
+  Dismissed: "Dismissed",
+  Unassigned: "Unassigned",
+};
+
 const fetchReports = async () => {
   const response = await axios.get("/api/reports/");
   return response.data;
@@ -109,32 +118,32 @@ function ReportScreen() {
       setDateRange({ from: null, to: null });
     }
   };
-  
+
   const filteredData = data.filter(report => {
     // Exclude reports with status "Under Review" or "For Revision"
     if (report.report_status.stat_name === "Under Review" || report.report_status.stat_name === "For Revision") {
       return false;
     }
-  
+
     const reportDate = new Date(report.createdAt);
     // Normalize report date to UTC
     const normalizedReportDate = new Date(reportDate.setUTCHours(0, 0, 0, 0));
-  
+
     const { from, to } = dateRange;
-  
+
     const fromDate = from ? new Date(from).setUTCHours(0, 0, 0, 0) : null;
     const toDate = to ? new Date(to).setUTCHours(23, 59, 59, 999) : null;
-  
+
     const isInDateRange =
       (fromDate === null || normalizedReportDate >= fromDate) &&
       (toDate === null || normalizedReportDate <= toDate);
-  
+
     const isStatusMatch = 
       selectedStatus === "All" || 
       report.report_status.stat_name === selectedStatus;
-    
+
     return isInDateRange && isStatusMatch;
-  });  
+  });
 
   return (
     <HelmetProvider>
@@ -184,21 +193,30 @@ function ReportScreen() {
               <DatePickerWithRange onDateSelect={handleDateRangeChange} />
             </div>
             <div className="flex gap-2 flex-wrap items-center">
+              {/* STATUS FILTERS */}
               {["All", "Pending", "Resolved", "In Progress", "Dismissed", "Unassigned"].map(status => (
-                <Button
-                  key={status}
-                  className="h-8 flex items-center gap-x-2 sm:w-auto sm:p-3 p-0 w-8 rounded-full text-xs"
-                  variant={selectedStatus === status ? "default" : "outline"}
-                  onClick={() => handleStatusChange(status)}
-                >
-                  {status !== "All" && (
-                    <>
-                      <img src={statusIcons[status]} alt={status} className="h-4" />
-                      <span className="sm:block hidden">{status}</span>
-                    </>
+                <div key={status} className="relative">
+                  {/* Show description on mobile */}
+                  {isMobile && selectedStatus === status && (
+                    <div className="absolute left-0 -top-5 text-nowrap bg-white rounded-full border p-0.8 px-2 font-medium z-10 text-[0.7rem]">
+                      {statusDescriptions[status]}
+                    </div>
                   )}
-                  {status === "All" && <span>{status}</span>}
-                </Button>
+                  <Button
+                    className="h-8 flex items-center gap-x-2 sm:w-auto sm:p-3 p-0 w-8 rounded-full text-xs"
+                    variant={selectedStatus === status ? "default" : "outline"}
+                    onClick={() => handleStatusChange(status)}
+                  >
+                    {status !== "All" && (
+                      <>
+                        <img src={statusIcons[status]} alt={status} className="h-4" />
+                        <span className="sm:block hidden">{status}</span>
+                      </>
+                    )}
+                    {status === "All" && <span>{status}</span>}
+                  </Button>
+                  
+                </div>
               ))}
               <Button
                 variant="default"
