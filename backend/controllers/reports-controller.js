@@ -3,7 +3,11 @@ import Report from "../models/reports-model.js";
 import User from "../models/user-model.js";
 import Status from "../models/status-model.js";
 import Notification from "../models/notifications-model.js";
-import { notifySubmoderatorOnStatusChange, notifyModeratorOnNewReport } from "./notifications-controller.js";
+import {
+  notifySubmoderatorOnStatusChange,
+  notifyModeratorOnNewReport,
+  notifyModeratorOnSubmodAction,
+} from "./notifications-controller.js";
 
 const createReport = asyncHandler(async (req, res) => {
   try {
@@ -53,7 +57,9 @@ const createReport = asyncHandler(async (req, res) => {
     };
 
     // Check for existing reports within 10 meters or at the same location
-    const existingReports = await Report.find({ infraType }).populate("report_status");
+    const existingReports = await Report.find({ infraType }).populate(
+      "report_status"
+    );
     for (const report of existingReports) {
       const distance = haversineDistance(
         [latitude, longitude],
@@ -680,15 +686,18 @@ const submodApproval = async (req, res) => {
       report.report_status = resolvedStatus._id;
       report.is_requested = false;
       report.is_new = true; // Optionally reset the "new" flag
+      await report.save();
+
+      // Notify moderator on submoderator approval
+      await notifyModeratorOnSubmodAction(report, true, user.name);
+
+      res.status(200).json({ message: "Report approval processed", report });
     } else {
       // If rejected or not approved, keep as pending or modify based on your requirements
       return res
         .status(400)
         .json({ message: "Report not approved by submoderator" });
     }
-
-    await report.save();
-    res.status(200).json({ message: "Report approval processed", report });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "An error occurred", error });
@@ -725,14 +734,17 @@ const submodReject = async (req, res) => {
       report.report_status = forRevisionStatus._id;
       report.is_requested = false; // Set to false since it's no longer requested
       report.is_new = true; // Optionally reset the "new" flag
+      await report.save();
+
+      // Notify moderator on submoderator rejection
+      await notifyModeratorOnSubmodAction(report, false, user.name);
+
+      res.status(200).json({ message: "Report rejection processed", report });
     } else {
       return res
         .status(400)
         .json({ message: "Report not rejected by submoderator" });
     }
-
-    await report.save();
-    res.status(200).json({ message: "Report rejection processed", report });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "An error occurred", error });

@@ -43,6 +43,19 @@ const notifySubmoderatorOnStatusChange = asyncHandler(async (report) => {
   }
 });
 
+const notifyModeratorOnSubmodAction = asyncHandler(async (report, isApproved, submodName) => {
+  const message = isApproved
+    ? `Your report "${report.report_desc}" has been approved by ${submodName}.`
+    : `Your report "${report.report_desc}" was rejected by ${submodName}.`;
+
+  const notification = new Notification({
+    user: report.report_mod, // Assuming `report_mod` is the moderator's ID
+    report: report._id,
+    message,
+    notification_type: isApproved ? "reportApproval" : "reportRejection",
+  });
+  await notification.save();
+});
 // Fetch notifications for a user
 const getUserNotifications = asyncHandler(async (req, res) => {
   try {
@@ -81,6 +94,7 @@ const markNotificationAsRead = asyncHandler(async (req, res) => {
 export {
   notifyModeratorOnNewReport,
   notifySubmoderatorOnStatusChange,
+  notifyModeratorOnSubmodAction,
   getUserNotifications,
   markNotificationAsRead,
 };
