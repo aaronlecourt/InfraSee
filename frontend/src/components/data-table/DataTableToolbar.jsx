@@ -101,7 +101,6 @@ export function DataTableToolbar({
     };
     initializeData();
   }, []);
-  
 
   useEffect(() => {
     if (activeTab === "unassigned" && highlightedId) {
@@ -205,25 +204,25 @@ export function DataTableToolbar({
           <div className="flex items-center">
             {/* MODSIDE REPORT STATUS */}
             {userInfo.isModerator &&
-  (activeTab === "reports" || activeTab === "hidden") && (
-    <DataTableFacetedFilter
-      column={table.getColumn("report_status")}
-      title="Status"
-      options={
-        activeTab === "hidden"
-          ? filterOptions.reportStatus // Show all statuses, including "Unassigned" in hidden tab
-          : filterOptions.reportStatus.filter(
-              (status) => status.label !== "Unassigned" // Exclude "Unassigned" in reports tab
-            )
-      }
-    />
-  )}
+              (activeTab === "reports" || activeTab === "hidden") && (
+                <DataTableFacetedFilter
+                  column={table.getColumn("report_status")}
+                  title="Status"
+                  options={filterOptions.reportStatus.filter(
+                    (status) => status.label !== "Unassigned" // Exclude "Unassigned" in reports tab
+                  )}
+                />
+              )}
             {/* SUBMOD SIDE REPORT STATUS */}
             {userInfo.isSubModerator && activeTab === "reports" && (
               <DataTableFacetedFilter
                 column={table.getColumn("report_status")}
                 title="Status"
-                options={filterOptions.reportStatus}
+                options={filterOptions.reportStatus.filter((status) =>
+                  ["Under Review", "For Revision", "Resolved"].includes(
+                    status.label
+                  )
+                )}
               />
             )}
 
