@@ -69,7 +69,10 @@ const moderatorUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   // Find the user by email
-  const user = await User.findOne({ email }).populate("infra_type", "_id infra_name");
+  const user = await User.findOne({ email }).populate(
+    "infra_type",
+    "_id infra_name"
+  );
 
   // Check if user exists
   if (!user) {
@@ -111,8 +114,6 @@ const moderatorUser = asyncHandler(async (req, res) => {
     throw new Error("Access denied: Not a moderator or submoderator");
   }
 });
-
-
 
 // @desc    Register a new user
 // @route   POST /api/users
@@ -170,8 +171,6 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-
-
 // @desc    Create a new submoderator
 // @route   POST /api/users/submoderators
 // @access  Private (only moderators or admins should access this)
@@ -216,7 +215,9 @@ const createSubModerator = asyncHandler(async (req, res) => {
     });
 
     // Populate the assignedModerator details
-    const populatedModerator = await User.findById(assignedModeratorId).select('_id name');
+    const populatedModerator = await User.findById(assignedModeratorId).select(
+      "_id name"
+    );
 
     res.status(201).json({
       _id: submoderator._id,
@@ -233,7 +234,6 @@ const createSubModerator = asyncHandler(async (req, res) => {
     res.status(400).json({ message: "Invalid submoderator data" });
   }
 });
-
 
 // @desc    Delete a user
 // @route   DELETE /api/users/:id
@@ -264,7 +264,6 @@ const deleteUser = asyncHandler(async (req, res) => {
   }
 });
 
-
 const deactivateModerator = asyncHandler(async (req, res) => {
   const { moderatorId } = req.params;
 
@@ -277,19 +276,23 @@ const deactivateModerator = asyncHandler(async (req, res) => {
 
     // Retrieve status IDs for "Under Review" and "For Revision"
     const statuses = await Status.find({
-      stat_name: { $in: ["Under Review", "For Revision"] }
+      stat_name: { $in: ["Under Review", "For Revision"] },
     });
-    const statusIds = statuses.map(status => status._id);
+    const statusIds = statuses.map((status) => status._id);
 
     if (user.isModerator) {
       // Check if there are any reports with "Under Review" or "For Revision" assigned to this moderator
       const pendingReports = await Report.find({
         report_mod: moderatorId,
-        report_status: { $in: statusIds }
+        report_status: { $in: statusIds },
       });
 
       if (pendingReports.length > 0) {
-        return res.status(400).json({ message: "Cannot deactivate moderator with pending reports." });
+        return res
+          .status(400)
+          .json({
+            message: "Cannot deactivate moderator with pending reports.",
+          });
       }
 
       // Deactivate the moderator and their submoderators
@@ -299,40 +302,55 @@ const deactivateModerator = asyncHandler(async (req, res) => {
         { deactivated: true }
       );
 
-      const message = modifiedCount > 0
-        ? "Moderator and submoderators deactivated successfully"
-        : "Moderator deactivated successfully. No submoderators found.";
-        
-      return res.status(200).json({ message });
+      const message =
+        modifiedCount > 0
+          ? "Moderator and submoderators deactivated successfully"
+          : "Moderator deactivated successfully. No submoderators found.";
 
+      return res.status(200).json({ message });
     } else if (user.isSubModerator) {
       // Check if the assigned moderator has any reports with "Under Review" status
-      const underReviewStatus = statuses.find(status => status.stat_name === "Under Review")?._id;
-      
+      const underReviewStatus = statuses.find(
+        (status) => status.stat_name === "Under Review"
+      )?._id;
+      const forRevisionStatus = statuses.find(
+        (status) => status.stat_name === "For Revision"
+      )?._id;
+
       const pendingReports = await Report.find({
         report_mod: user.assignedModerator,
-        report_status: underReviewStatus
+        $or: [
+          { report_status: underReviewStatus },
+          { report_status: forRevisionStatus },
+        ],
       });
 
       if (pendingReports.length > 0) {
-        return res.status(400).json({ message: "Cannot deactivate the submoderator due to pending reports awaiting approval or rejection" });
+        return res
+          .status(400)
+          .json({
+            message:
+              "Cannot deactivate the submoderator due to pending reports under review or for revision.",
+          });
       }
 
       // Proceed with deactivation of submoderator
       await User.findByIdAndUpdate(moderatorId, { deactivated: true });
-      return res.status(200).json({ message: "Submoderator deactivated successfully" });
-
+      return res
+        .status(200)
+        .json({ message: "Submoderator deactivated successfully" });
     } else {
-      return res.status(400).json({ message: "User is neither a moderator nor a submoderator." });
+      return res
+        .status(400)
+        .json({ message: "User is neither a moderator nor a submoderator." });
     }
-
   } catch (error) {
     console.error(`Error deactivating user: ${error.message}`);
-    return res.status(500).json({ message: "Server error. Please try again later." });
+    return res
+      .status(500)
+      .json({ message: "Server error. Please try again later." });
   }
 });
-
-
 
 // @desc Reactivate a moderator, their submoderators, or a single submoderator
 // @route PUT /api/moderators/:moderatorId/reactivate
@@ -360,9 +378,10 @@ const reactivateModerator = asyncHandler(async (req, res) => {
         { deactivated: false }
       );
 
-      const message = modifiedCount > 0
-        ? "Moderator and submoderators reactivated successfully"
-        : "Moderator reactivated successfully. No submoderators found.";
+      const message =
+        modifiedCount > 0
+          ? "Moderator and submoderators reactivated successfully"
+          : "Moderator reactivated successfully. No submoderators found.";
 
       return res.status(200).json({ message });
     }
@@ -370,18 +389,21 @@ const reactivateModerator = asyncHandler(async (req, res) => {
     // Reactivate a single submoderator
     if (user.isSubModerator) {
       await User.findByIdAndUpdate(moderatorId, { deactivated: false });
-      return res.status(200).json({ message: "Submoderator reactivated successfully" });
+      return res
+        .status(200)
+        .json({ message: "Submoderator reactivated successfully" });
     }
 
-    return res.status(400).json({ message: "User is neither a moderator nor a submoderator" });
+    return res
+      .status(400)
+      .json({ message: "User is neither a moderator nor a submoderator" });
   } catch (error) {
     console.error(`Error reactivating user: ${error.message}`);
-    return res.status(500).json({ message: "Server error. Please try again later." });
+    return res
+      .status(500)
+      .json({ message: "Server error. Please try again later." });
   }
 });
-
-
-
 
 // @desc Get all deactivated moderators and submoderators
 // @route GET /api/users/deactivated
@@ -392,18 +414,19 @@ const getDeactivatedUsers = asyncHandler(async (req, res) => {
     const deactivatedUsers = await User.find({
       $or: [
         { isModerator: true, deactivated: true },
-        { isSubModerator: true, deactivated: true }
-      ]
+        { isSubModerator: true, deactivated: true },
+      ],
     }).populate("infra_type", "infra_name");
 
     // Return deactivated users, even if the array is empty
     return res.status(200).json(deactivatedUsers);
   } catch (error) {
     console.error(`Error fetching deactivated users: ${error.message}`);
-    return res.status(500).json({ message: "Server error. Please try again later." });
+    return res
+      .status(500)
+      .json({ message: "Server error. Please try again later." });
   }
 });
-
 
 // @desc    Logout user / clear cookie
 // @route   POST /api/users/logout
@@ -420,7 +443,10 @@ const logoutUser = (req, res) => {
 // @route   GET /api/users/profile
 // @access  Private
 const getUserProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id).populate("infra_type", "infra_name");
+  const user = await User.findById(req.user._id).populate(
+    "infra_type",
+    "infra_name"
+  );
 
   if (user) {
     return res.status(200).json(user);
@@ -429,7 +455,6 @@ const getUserProfile = asyncHandler(async (req, res) => {
     throw new Error("User not found");
   }
 });
-
 
 // @desc    Update user profile
 // @route   PUT /api/users/profile
@@ -444,7 +469,8 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     }
 
     // Destructure the request body
-    const { name, email, isAdmin, isModerator, isSubModerator, password } = req.body;
+    const { name, email, isAdmin, isModerator, isSubModerator, password } =
+      req.body;
 
     // Update user properties only if they exist in the request body
     if (name) user.name = name;
@@ -473,8 +499,6 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
-
 
 // @desc    Verify OTP
 // @route   POST /api/users/verify-otp
@@ -558,7 +582,7 @@ const changePassword = asyncHandler(async (req, res) => {
     }
 
     const isMatch = await user.matchPassword(currentPassword);
-    
+
     if (!isMatch) {
       return res.status(400).json({ message: "Current password is incorrect" });
     }
@@ -571,10 +595,11 @@ const changePassword = asyncHandler(async (req, res) => {
     });
   } catch (error) {
     console.error("Error changing password:", error);
-    return res.status(500).json({ message: "An error occurred while changing the password" });
+    return res
+      .status(500)
+      .json({ message: "An error occurred while changing the password" });
   }
 });
-
 
 // @desc    Get moderators and submoderators by infrastructure type
 // @route   GET /api/moderators
@@ -584,25 +609,9 @@ const getModerators = asyncHandler(async (req, res) => {
     const moderators = await User.find({
       $or: [
         { isModerator: true, deactivated: false },
-        { isSubModerator: true, deactivated: false }
+        { isSubModerator: true, deactivated: false },
       ],
     })
-    .populate("infra_type", "infra_name")
-    .populate("assignedModerator", "name"); 
-
-    res.status(200).json(moderators.length ? moderators : []);
-  } catch (error) {
-    console.error("Error fetching moderators:", error); 
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// @desc    Get moderators by infrastructure type
-// @route   GET /api/moderators
-// @access  Public or Private based on your requirement
-const getModeratorList = asyncHandler(async (req, res) => {
-  try {
-    const moderators = await User.find({ isModerator: true, deactivated: false })
       .populate("infra_type", "infra_name")
       .populate("assignedModerator", "name");
 
@@ -613,15 +622,36 @@ const getModeratorList = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Get moderators by infrastructure type
+// @route   GET /api/moderators
+// @access  Public or Private based on your requirement
+const getModeratorList = asyncHandler(async (req, res) => {
+  try {
+    const moderators = await User.find({
+      isModerator: true,
+      deactivated: false,
+    })
+      .populate("infra_type", "infra_name")
+      .populate("assignedModerator", "name");
+
+    res.status(200).json(moderators.length ? moderators : []);
+  } catch (error) {
+    console.error("Error fetching moderators:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 // @desc    Get submoderators by infrastructure type
 // @route   GET /api/submoderators
 // @access  Public or Private based on your requirement
 const getSubModeratorList = asyncHandler(async (req, res) => {
   try {
-    const subModerators = await User.find({ isSubModerator: true, deactivated: false })
-      .populate("infra_type", "infra_name") 
-      .populate("assignedModerator", "name"); 
+    const subModerators = await User.find({
+      isSubModerator: true,
+      deactivated: false,
+    })
+      .populate("infra_type", "infra_name")
+      .populate("assignedModerator", "name");
 
     res.status(200).json(subModerators.length ? subModerators : []);
   } catch (error) {
@@ -629,7 +659,6 @@ const getSubModeratorList = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 
 // @desc    Check if email exists
 // @route   GET /api/users/check-email/:email
