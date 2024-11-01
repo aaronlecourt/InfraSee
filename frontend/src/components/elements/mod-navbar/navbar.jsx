@@ -39,7 +39,12 @@ const fetchNotifications = async () => {
   return response.data;
 };
 
-const ModNavbar = ({ userInfo, activeTab, setActiveTab }) => {
+const ModNavbar = ({
+  userInfo,
+  activeTab,
+  setActiveTab,
+  setSelectedNotificationId,
+}) => {
   const navigate = useNavigate();
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
@@ -133,7 +138,54 @@ const ModNavbar = ({ userInfo, activeTab, setActiveTab }) => {
     if (!notif.is_read) {
       await markAsRead(notif._id);
     }
-    setActiveTab("reports");
+
+    // Fetch all reports
+    const reports = await fetchAllReports();
+    // Fetch hidden reports
+    const hiddenReports = await fetchHiddenReports();
+
+    // Find the specific report based on the notification
+    const report = reports.find((report) => report._id === notif.report._id);
+    const hiddenReport = hiddenReports.find(
+      (report) => report._id === notif.report._id
+    );
+
+    console.log("REPORT: ", report);
+    console.log("HIDDEN REPORT: ", hiddenReport);
+
+    // Determine the active tab based on the report's status
+    if (hiddenReport) {
+      setActiveTab("hidden"); // Set to hidden if the report is found in hidden reports
+    } else if (report && report.report_status.stat_name === "Unassigned") {
+      setActiveTab("unassigned");
+    } else {
+      setActiveTab("reports");
+    }
+
+    // Set the selected notification ID
+    setSelectedNotificationId(notif.report._id);
+  };
+
+  // Function to fetch all reports
+  const fetchAllReports = async () => {
+    try {
+      const response = await axios.get(`/api/reports`);
+      return response.data; // Assume the report data is in the response
+    } catch (error) {
+      console.error("Error fetching reports:", error);
+      return []; // Return an empty array on error
+    }
+  };
+
+  // Function to fetch hidden reports
+  const fetchHiddenReports = async () => {
+    try {
+      const response = await axios.get(`/api/reports/hidden/reports`);
+      return response.data; // Assume the hidden report data is in the response
+    } catch (error) {
+      console.error("Error fetching hidden reports:", error);
+      return []; // Return an empty array on error
+    }
   };
 
   const deleteNotification = async (notifId) => {

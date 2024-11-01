@@ -2,7 +2,7 @@ import React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ReportCard from "./report-card";
 
-export function ReportList({ data, setHighlightedId, goToUnassignedTab }) {
+export function ReportList({ data, goToUnassignedTab, setSelectedNotificationId }) {
   return (
     <ScrollArea className="max-h-[500px] overflow-y-auto">
       {data.length === 0 ? (
@@ -14,8 +14,8 @@ export function ReportList({ data, setHighlightedId, goToUnassignedTab }) {
           <ReportCard
             key={report._id}
             report={report}
-            setHighlightedId={setHighlightedId}
             goToUnassignedTab={goToUnassignedTab}
+            setSelectedNotificationId={setSelectedNotificationId}
           />
         ))
       )}

@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DataTable } from "../ui/DataTable";
 export function Unassigned({
   userInfo,
   data,
   columns,
   activeTab,
-  highlightedId,
-  setHighlightedId,
+  selectedNotificationId,
+  setSelectedNotificationId,
 }) {
+  useEffect(() => {
+    setSelectedNotificationId(null);
+  }, [activeTab]);
   return (
     <div className="h-full">
       <DataTable
@@ -15,8 +18,8 @@ export function Unassigned({
         userInfo={userInfo}
         columns={columns}
         activeTab={activeTab}
-        highlightedId={highlightedId}
-        setHighlightedId={setHighlightedId}
+        selectedNotificationId={selectedNotificationId}
+        setSelectedNotificationId={setSelectedNotificationId}
       />
     </div>
   );

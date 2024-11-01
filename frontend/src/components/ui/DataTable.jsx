@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
   flexRender,
@@ -32,8 +32,7 @@ export function DataTable({
   data,
   activeTab,
   activeButton,
-  highlightedId,
-  setHighlightedId,
+  selectedNotificationId
 }) {
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState({});
@@ -54,6 +53,7 @@ export function DataTable({
       rowSelection,
       columnFilters,
     },
+    getRowId: row => row._id,
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
@@ -66,6 +66,16 @@ export function DataTable({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
+
+  // Effect to select the row matching selectedNotificationId
+  useEffect(() => {
+    if (selectedNotificationId) {
+      const rowToSelect = data.find(row => row._id === selectedNotificationId);
+      if (rowToSelect) {
+        setRowSelection({ [rowToSelect._id]: true });
+      }
+    }
+  }, [selectedNotificationId, data]);
 
   const handleCloseDialog = (reportId) => {
     setShowDetailsDialogOpen(false);
@@ -117,8 +127,6 @@ export function DataTable({
         table={table}
         activeTab={activeTab}
         activeButton={activeButton}
-        highlightedId={highlightedId}
-        setHighlightedId={setHighlightedId}
       />
 
       <div className="overflow-y-auto rounded-md border">

@@ -20,7 +20,7 @@ export function Overview({
   userInfo,
   unassigned,
   activeTab,
-  setHighlightedId,
+  setSelectedNotificationId
 }) {
   return (
     <div className="h-full flex flex-col">
@@ -48,8 +48,8 @@ export function Overview({
               <ScrollArea className="h-full px-5">
                 <ReportList
                   data={unassigned}
-                  setHighlightedId={setHighlightedId}
                   goToUnassignedTab={goToUnassignedTab}
+                  setSelectedNotificationId={setSelectedNotificationId}
                 />
               </ScrollArea>
             </CardContent>

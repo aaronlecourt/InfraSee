@@ -42,6 +42,7 @@ const ModeratorDashboardScreen = () => {
   const [loadingHidden, setLoadingHidden] = useState(true);
   const [loadingUnassigned, setLoadingUnassigned] = useState(true);
   const [highlightedId, setHighlightedId] = useState();
+  const [selectedNotificationId, setSelectedNotificationId] = useState(null);
 
   useEffect(() => {
     socket.on("reportChange", (change) => {
@@ -93,6 +94,7 @@ const ModeratorDashboardScreen = () => {
     }
   };
 
+  console.log("UPDATED SELECT:", selectedNotificationId);
   // Initial load
   useEffect(() => {
     loadReports();
@@ -113,7 +115,12 @@ const ModeratorDashboardScreen = () => {
         <Helmet>
           <title>{"InfraSee | Moderator Dashboard"}</title>
         </Helmet>
-        <ModNavbar userInfo={userInfo} activeTab={activeTab} setActiveTab={setActiveTab}/>
+        <ModNavbar
+          userInfo={userInfo}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          setSelectedNotificationId={setSelectedNotificationId}
+        />
         <main className="p-4">
           <h1 className="text-3xl">Dashboard</h1>
 
@@ -140,8 +147,7 @@ const ModeratorDashboardScreen = () => {
                   userInfo={userInfo}
                   unassigned={unassigned}
                   activeTab={activeTab}
-                  highlightedId={highlightedId}
-                  setHighlightedId={setHighlightedId}
+                  setSelectedNotificationId={setSelectedNotificationId}
                 />
               )}
             </TabsContent>
@@ -158,6 +164,8 @@ const ModeratorDashboardScreen = () => {
                   userInfo={userInfo}
                   columns={columnsModReports}
                   activeTab={activeTab}
+                  selectedNotificationId={selectedNotificationId}
+                  setSelectedNotificationId={setSelectedNotificationId}
                 />
               )}
             </TabsContent>
@@ -177,6 +185,8 @@ const ModeratorDashboardScreen = () => {
                   activeTab={activeTab}
                   highlightedId={highlightedId}
                   setHighlightedId={setHighlightedId}
+                  selectedNotificationId={selectedNotificationId}
+                  setSelectedNotificationId={setSelectedNotificationId}
                 />
               )}
             </TabsContent>
@@ -193,6 +203,8 @@ const ModeratorDashboardScreen = () => {
                   columns={columnsModHidden}
                   userInfo={userInfo}
                   activeTab={activeTab}
+                  selectedNotificationId={selectedNotificationId}
+                  setSelectedNotificationId={setSelectedNotificationId}
                 />
               )}
             </TabsContent>

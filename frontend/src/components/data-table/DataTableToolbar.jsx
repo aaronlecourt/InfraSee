@@ -28,8 +28,6 @@ export function DataTableToolbar({
   table,
   activeTab,
   activeButton,
-  highlightedId,
-  setHighlightedId,
 }) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -96,12 +94,6 @@ export function DataTableToolbar({
     initializeData();
   }, []);
 
-  useEffect(() => {
-    if (activeTab === "unassigned" && highlightedId) {
-      table.getColumn("_id")?.setFilterValue(highlightedId);
-    }
-  }, [activeTab, highlightedId, table]);
-
   return (
     <div className="mt-2 flex flex-col gap-2">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-2">
@@ -127,7 +119,6 @@ export function DataTableToolbar({
                   table.getColumn("report_by")?.setFilterValue(event.target.value);
                 }}
                 onFocus={() => {
-                  setHighlightedId();
                   table.resetColumnFilters();
                 }}
               />
