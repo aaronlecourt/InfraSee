@@ -49,6 +49,9 @@ export const columnsSubMod = [
     cell: ({ row }) => (
       <div className="">{row.getValue("infra_type")?.infra_name || "N/A"}</div>
     ),
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue("infra_type")?._id);
+    },
     enableSorting: true,
     enableHiding: true,
   },
@@ -61,6 +64,9 @@ export const columnsSubMod = [
     cell: ({ row }) => (
       <div className="">{row.getValue("assignedModerator")?.name || "N/A"}</div>
     ),
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue("assignedModerator")?._id);
+    },
     enableSorting: true,
     enableHiding: true,
   },
