@@ -611,38 +611,6 @@ const updateReportStatus = async (req, res) => {
       new: true,
     });
 
-    // Use the updated report's status for the notification
-    const updatedStatusId = updatedReport.report_status; // Get the status ID from the updated report
-    const status = await Status.findById(updatedStatusId); // Get status from the Status collection
-
-    // Create notification with the retrieved status name if the status exists
-    if (status) {
-      const statusName = status.stat_name;
-
-      console.log("Creating notification with data:", {
-        userId: report.report_mod,
-        message: `Report status updated to ${statusName}`,
-        reportId: reportId,
-        notificationType: "reportStatusChange",
-      });
-
-      // Create notification directly without NotificationService
-      const notification = new Notification({
-        user: report.report_mod,
-        report: reportId,
-        message: `Report status updated to ${statusName}`,
-        notification_type: "reportStatusChange",
-      });
-
-      // Save the notification
-      await notification.save();
-    } else {
-      console.error(
-        "Status not found for the updated report's status ID:",
-        updatedStatusId
-      );
-    }
-
     // Notify submoderators if the report status is requested
     await notifySubmoderatorOnStatusChange(updatedReport);
 
@@ -651,6 +619,7 @@ const updateReportStatus = async (req, res) => {
       message: "Report status updated successfully",
       report: updatedReport,
     });
+    
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "An error occurred", error });
