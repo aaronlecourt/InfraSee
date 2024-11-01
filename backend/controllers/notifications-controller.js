@@ -56,6 +56,7 @@ const notifyModeratorOnSubmodAction = asyncHandler(async (report, isApproved, su
   });
   await notification.save();
 });
+
 // Fetch notifications for a user
 const getUserNotifications = asyncHandler(async (req, res) => {
   try {

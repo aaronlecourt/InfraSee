@@ -24,7 +24,7 @@ const notificationSchema = mongoose.Schema(
     },
     notification_type: {
       type: String,
-      enum: ["reportStatusChange", "newReport", "accountUpdate", "reportApproval"], 
+      enum: ["reportStatusChange", "newReport", "accountUpdate", "reportApproval", "reportRejection"], 
       required: true,
     },
     createdAt: {
