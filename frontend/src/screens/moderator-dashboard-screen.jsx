@@ -115,12 +115,15 @@ const ModeratorDashboardScreen = () => {
         <Helmet>
           <title>{"InfraSee | Moderator Dashboard"}</title>
         </Helmet>
-        <ModNavbar
-          userInfo={userInfo}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          setSelectedNotificationId={setSelectedNotificationId}
-        />
+        <div className="sticky top-0 z-10 bg-white">
+          <ModNavbar
+            userInfo={userInfo}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            setSelectedNotificationId={setSelectedNotificationId}
+          />
+        </div>
+
         <main className="p-4">
           <h1 className="text-3xl">Dashboard</h1>
 

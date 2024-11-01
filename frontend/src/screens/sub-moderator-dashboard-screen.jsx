@@ -73,12 +73,14 @@ const SubModeratorDashboardScreen = () => {
         <Helmet>
           <title>{"InfraSee | Sub-Moderator Dashboard"}</title>
         </Helmet>
-        <SubModNavbar
-          userInfo={userInfo}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          setSelectedNotificationId={setSelectedNotificationId}
-        />
+        <div className="sticky top-0 z-10 bg-white">
+          <SubModNavbar
+            userInfo={userInfo}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            setSelectedNotificationId={setSelectedNotificationId}
+          />
+        </div>
         <main className="p-4">
           <h1 className="text-3xl">Dashboard</h1>
 

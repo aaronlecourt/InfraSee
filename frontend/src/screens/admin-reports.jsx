@@ -198,7 +198,7 @@ const AdminReportsScreen = () => {
         </div>
 
         {/* mobile div */}
-        <div className="border-b p-3 xl:hidden block">
+        <div className="border-b p-3 xl:hidden block z-10 sticky top-0 bg-white">
           <div className="border rounded-lg p-2 flex gap-2 items-center justify-start">
             <div>
               <Avatar className="h-8 w-8 hover:ring-4 ring-slate-300 cursor-pointer">
