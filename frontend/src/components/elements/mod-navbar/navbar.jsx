@@ -1,7 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,51 +13,32 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Settings, LogOut, LucideLayoutDashboard, Bell } from "lucide-react";
-
+import {
+  Settings,
+  LogOut,
+  LucideLayoutDashboard,
+  Bell,
+  Ellipsis,
+  DeleteIcon,
+  Check,
+} from "lucide-react";
 import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
+import axios from "axios";
+import { format } from "date-fns";
+import { toast } from "sonner";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 
-const ModNavbar = ({ userInfo }) => {
+const ModNavbar = ({ userInfo, activeTab, setActiveTab }) => {
   const navigate = useNavigate();
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
 
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      message: "New report submitted.",
-      time: "2024-10-14T10:21:42.729+00:00",
-    },
-    {
-      id: 2,
-      message: "User JohnDoe commented on your report.",
-      time: "2024-10-14T11:20:42.729+00:00",
-    },
-    {
-      id: 3,
-      message: "System maintenance scheduled for tonight.",
-      time: "2024-10-14T11:31:42.729+00:00",
-    },
-    {
-      id: 4,
-      message: "New report submitted.",
-      time: "2024-10-14T10:31:42.729+00:00",
-    },
-    {
-      id: 5,
-      message: "User JaneDoe commented on your report.",
-      time: "2024-10-14T11:00:42.729+00:00",
-    },
-    {
-      id: 6,
-      message: "System maintenance scheduled for yesterday.",
-      time: "2024-10-13T14:15:42.729+00:00",
-    },
-  ]);
-
-  const [showNotifications, setShowNotifications] = useState(false);
-  const dropdownRef = useRef(null);
+  const [notifications, setNotifications] = useState([]);
 
   const handleLogoClick = () => {
     navigate("/");
@@ -74,41 +54,65 @@ const ModNavbar = ({ userInfo }) => {
     }
   };
 
-  const toggleNotifications = () => {
-    setShowNotifications((prev) => !prev);
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return format(date, "MMMM dd, yyyy - hh:mm aa");
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowNotifications(false);
+    const fetchNotifications = async () => {
+      try {
+        const response = await axios.get("/api/notification/notifications");
+        setNotifications(response.data);
+      } catch (error) {
+        console.error("Failed to fetch notifications", error);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [dropdownRef]);
+    fetchNotifications();
+  }, []);
 
-  const formatDateTime = (isoDate) => {
-    const date = new Date(isoDate);
-    const options = {
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    };
-    const formattedDate = date.toLocaleString("en-US", options);
-
-    // Transform to "MMM DD YYYY hh:mm AM/PM"
-    const [month, dayYear, time] = formattedDate.split(", ");
-    const [year] = dayYear.split(" ");
-    return `${month} ${dayYear} ${time}`;
+  const markAsRead = async (notifId) => {
+    try {
+      await axios.put(`/api/notification/notifications/${notifId}/read`);
+      toast.success("Successfully marked notification as read");
+    } catch (error) {
+      toast.error("Failed to mark notification as read");
+    }
   };
+
+  const markAsUnread = async (notifId) => {
+    try {
+      await axios.put(`/api/notification/notifications/${notifId}/unread`);
+      toast.success("Successfully marked notification as unread");
+      setNotifications((prev) =>
+        prev.map((notif) =>
+          notif._id === notifId ? { ...notif, is_read: false } : notif
+        )
+      );
+    } catch (error) {
+      toast.error("Failed to mark notification as unread");
+    }
+  };
+
+  const handleNotificationClick = async (notif) => {
+    if (!notif.is_read) {
+      await markAsRead(notif._id);
+    }
+    setActiveTab("reports");
+  };
+
+  const deleteNotification = async (notifId) => {
+    try {
+      await axios.delete(`/api/notification/notifications/${notifId}/delete`);
+      setNotifications(notifications.filter((notif) => notif._id !== notifId));
+      toast.success("Notification deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete notification");
+    }
+  };
+
+  const unreadCount = notifications.filter((notif) => !notif.is_read).length;
 
   return (
     <header className="w-full h-fit p-3 flex items-center justify-between border-b border-slate-400">
@@ -116,37 +120,103 @@ const ModNavbar = ({ userInfo }) => {
         <img src="/infrasee_black.png" alt="Infrasee Logomark" />
       </div>
       <div className="flex items-center gap-3">
-        <div className="relative" ref={dropdownRef}>
-          <Button
-            variant="outline"
-            onClick={toggleNotifications}
-            className="flex items-center h-8 w-8 p-0 rounded-full"
+        {activeTab && (
+          <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className="notification-button relative flex items-center h-8 w-8 p-0 rounded-full"
+            >
+              <Bell size={18} />
+              {unreadCount > 0 && (
+                <Badge
+                  variant="destructive"
+                  className="absolute -top-1 -right-1"
+                >
+                  {unreadCount}
+                </Badge>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            align="end"
+            side="bottom"
+            className="shadow-sm absolute right-0 z-10 max-h-[350px] min-w-60 max-w-72 bg-white border rounded-md overflow-y-auto cursor-default p-0"
           >
-            <Bell size={18} />
-            {notifications.length > 0 && (
-              <Badge variant="destructive" className="absolute -top-1 -right-2">
-                {notifications.length}
-              </Badge>
-            )}
-          </Button>
-          {showNotifications && (
-            <div className="absolute right-0 z-10 max-h-[350px] w-48 bg-white border rounded-md overflow-y-auto cursor-default">
-              <ul className="p-1">
-                {notifications.map((notif) => (
+            <ul className="p-1 flex flex-col gap-1">
+              {notifications.length === 0 ? (
+                <li className="p-2 text-xs text-gray-500 font-medium">
+                  You have no notifications.
+                </li>
+              ) : (
+                notifications.map((notif) => (
                   <li
-                    key={notif.id}
-                    className="p-2 hover:bg-gray-100 text-xs font-medium border-b"
+                    key={notif._id}
+                    className={`p-2 hover:bg-gray-100 text-sm font-medium cursor-pointer`}
+                    onClick={() => handleNotificationClick(notif)}
                   >
-                    <span>{notif.message}</span>
-                    <div className="text-[0.7rem] text-gray-500">
-                      {formatDateTime(notif.time)}
+                    <div className="flex items-start gap-2">
+                      <div className="flex flex-col gap-1">
+                        <span
+                          className={`${
+                            notif.is_read ? "text-gray-500/50" : ""
+                          }`}
+                        >
+                          {notif.message}
+                        </span>
+                        <div
+                          className={`text-xs font-normal ${
+                            notif.is_read ? "text-gray-500/50" : "text-gray-500"
+                          }`}
+                        >
+                          {formatDate(notif.createdAt)}
+                        </div>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            className="p-1 rounded-full text-primary"
+                          >
+                            <Ellipsis size={14} />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="shadow-sm">
+                          {notif.is_read && (
+                            <>
+                              <DropdownMenuItem
+                                className="flex gap-2"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  markAsUnread(notif._id);
+                                }}
+                              >
+                                <Check size={14} />
+                                Mark as Unread
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                            </>
+                          )}
+                          <DropdownMenuItem
+                            className="flex gap-2 text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteNotification(notif._id);
+                            }}
+                          >
+                            <DeleteIcon size={14} />
+                            Delete Notif
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
+                ))
+              )}
+            </ul>
+          </PopoverContent>
+        </Popover>
+        )}
 
         <div className="relative">
           <DropdownMenu>

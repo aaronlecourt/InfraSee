@@ -45,8 +45,8 @@ const notifySubmoderatorOnStatusChange = asyncHandler(async (report) => {
 
 const notifyModeratorOnSubmodAction = asyncHandler(async (report, isApproved, submodName) => {
   const message = isApproved
-    ? `Your report "${report.report_desc}" has been approved by ${submodName}.`
-    : `Your report "${report.report_desc}" was rejected by ${submodName}.`;
+    ? `The report "${report.report_desc}" has been approved by ${submodName}.`
+    : `The report "${report.report_desc}" was rejected by ${submodName}.`;
 
   const notification = new Notification({
     user: report.report_mod, // Assuming `report_mod` is the moderator's ID
@@ -61,7 +61,7 @@ const getUserNotifications = asyncHandler(async (req, res) => {
   try {
     const notifications = await Notification.find({
       user: req.user._id,
-    }).populate("report"); // Populate report if needed
+    }).populate("report");
     res.json(notifications);
   } catch (error) {
     console.error(error);
@@ -91,10 +91,52 @@ const markNotificationAsRead = asyncHandler(async (req, res) => {
   }
 });
 
+// Delete a notification
+const deleteNotification = asyncHandler(async (req, res) => {
+  const notificationId = req.params.id;
+
+  try {
+    const notification = await Notification.findByIdAndDelete(notificationId);
+
+    if (!notification) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+
+    res.json({ message: "Notification deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to delete notification." });
+  }
+});
+
+// Mark notification as unread
+const markNotificationAsUnread = asyncHandler(async (req, res) => {
+  const notificationId = req.params.id;
+
+  try {
+    const notification = await Notification.findByIdAndUpdate(
+      notificationId,
+      { is_read: false },
+      { new: true }
+    );
+
+    if (!notification) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+
+    res.json(notification);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to mark notification as unread." });
+  }
+});
+
 export {
   notifyModeratorOnNewReport,
   notifySubmoderatorOnStatusChange,
   notifyModeratorOnSubmodAction,
   getUserNotifications,
   markNotificationAsRead,
+  deleteNotification,
+  markNotificationAsUnread
 };
