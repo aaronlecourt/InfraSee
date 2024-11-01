@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import socket from "@/utils/socket-connect";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import {
@@ -33,12 +34,45 @@ import {
   PopoverContent,
 } from "@/components/ui/popover";
 
+const fetchNotifications = async () => {
+  const response = await axios.get("/api/notification/notifications");
+  return response.data;
+};
+
 const ModNavbar = ({ userInfo, activeTab, setActiveTab }) => {
   const navigate = useNavigate();
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
-
   const [notifications, setNotifications] = useState([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(true);
+
+  useEffect(() => {
+    socket.on("notificationChange", (change) => {
+      console.log("Received notification change:", change);
+      loadNotifications();
+    });
+
+    return () => {
+      socket.off("notificationChange");
+    };
+  }, []);
+
+  const loadNotifications = async () => {
+    setLoadingNotifications(true);
+    try {
+      const data = await fetchNotifications();
+      setNotifications(data);
+    } catch (error) {
+      console.error("Failed to fetch notifications", error);
+    } finally {
+      setLoadingNotifications(false);
+    }
+  };
+
+  // Initial load
+  useEffect(() => {
+    loadNotifications();
+  }, []);
 
   const handleLogoClick = () => {
     navigate("/");
@@ -59,18 +93,18 @@ const ModNavbar = ({ userInfo, activeTab, setActiveTab }) => {
     return format(date, "MMMM dd, yyyy - hh:mm aa");
   };
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const response = await axios.get("/api/notification/notifications");
-        setNotifications(response.data);
-      } catch (error) {
-        console.error("Failed to fetch notifications", error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchNotifications = async () => {
+  //     try {
+  //       const response = await axios.get("/api/notification/notifications");
+  //       setNotifications(response.data);
+  //     } catch (error) {
+  //       console.error("Failed to fetch notifications", error);
+  //     }
+  //   };
 
-    fetchNotifications();
-  }, []);
+  //   fetchNotifications();
+  // }, []);
 
   const markAsRead = async (notifId) => {
     try {
@@ -122,100 +156,105 @@ const ModNavbar = ({ userInfo, activeTab, setActiveTab }) => {
       <div className="flex items-center gap-3">
         {activeTab && (
           <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className="notification-button relative flex items-center h-8 w-8 p-0 rounded-full"
-            >
-              <Bell size={18} />
-              {unreadCount > 0 && (
-                <Badge
-                  variant="destructive"
-                  className="absolute -top-1 -right-1"
-                >
-                  {unreadCount}
-                </Badge>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            align="end"
-            side="bottom"
-            className="shadow-sm absolute right-0 z-10 max-h-[350px] min-w-60 max-w-72 bg-white border rounded-md overflow-y-auto cursor-default p-0"
-          >
-            <ul className="p-1 flex flex-col gap-1">
-              {notifications.length === 0 ? (
-                <li className="p-2 text-xs text-gray-500 font-medium">
-                  You have no notifications.
-                </li>
-              ) : (
-                notifications.map((notif) => (
-                  <li
-                    key={notif._id}
-                    className={`p-2 hover:bg-gray-100 text-sm font-medium cursor-pointer`}
-                    onClick={() => handleNotificationClick(notif)}
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="notification-button relative flex items-center h-8 w-8 p-0 rounded-full"
+              >
+                <Bell size={18} />
+                {unreadCount > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-1 -right-1"
                   >
-                    <div className="flex items-start gap-2">
-                      <div className="flex flex-col gap-1">
-                        <span
-                          className={`${
-                            notif.is_read ? "text-gray-500/50" : ""
-                          }`}
-                        >
-                          {notif.message}
-                        </span>
-                        <div
-                          className={`text-xs font-normal ${
-                            notif.is_read ? "text-gray-500/50" : "text-gray-500"
-                          }`}
-                        >
-                          {formatDate(notif.createdAt)}
-                        </div>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            className="p-1 rounded-full text-primary"
-                          >
-                            <Ellipsis size={14} />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="shadow-sm">
-                          {notif.is_read && (
-                            <>
-                              <DropdownMenuItem
-                                className="flex gap-2"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  markAsUnread(notif._id);
-                                }}
-                              >
-                                <Check size={14} />
-                                Mark as Unread
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                            </>
-                          )}
-                          <DropdownMenuItem
-                            className="flex gap-2 text-destructive"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteNotification(notif._id);
-                            }}
-                          >
-                            <DeleteIcon size={14} />
-                            Delete Notif
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+                    {unreadCount}
+                  </Badge>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              align="end"
+              side="bottom"
+              className="shadow-sm absolute right-0 z-10 max-h-[350px] min-w-60 max-w-72 bg-white border rounded-md overflow-y-auto cursor-default p-0"
+            >
+              <ul className="p-1 flex flex-col gap-1">
+                {notifications.length === 0 ? (
+                  <li className="p-2 text-xs text-gray-500 font-medium">
+                    You have no notifications.
                   </li>
-                ))
-              )}
-            </ul>
-          </PopoverContent>
-        </Popover>
+                ) : (
+                  notifications.map((notif) => (
+                    <li
+                      key={notif._id}
+                      className={`p-2 hover:bg-gray-100 text-sm font-medium cursor-pointer`}
+                      onClick={() => handleNotificationClick(notif)}
+                    >
+                      <div className="flex items-start gap-2">
+                        <div className="flex flex-col gap-1">
+                          <span
+                            className={`${
+                              notif.is_read ? "text-gray-500/50" : ""
+                            }`}
+                          >
+                            {notif.message}
+                          </span>
+                          <div
+                            className={`text-xs font-normal ${
+                              notif.is_read
+                                ? "text-gray-500/50"
+                                : "text-gray-500"
+                            }`}
+                          >
+                            {formatDate(notif.createdAt)}
+                          </div>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              className="p-1 rounded-full text-primary"
+                            >
+                              <Ellipsis size={14} />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="end"
+                            className="shadow-sm"
+                          >
+                            {notif.is_read && (
+                              <>
+                                <DropdownMenuItem
+                                  className="flex gap-2"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    markAsUnread(notif._id);
+                                  }}
+                                >
+                                  <Check size={14} />
+                                  Mark as Unread
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                              </>
+                            )}
+                            <DropdownMenuItem
+                              className="flex gap-2 text-destructive"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteNotification(notif._id);
+                              }}
+                            >
+                              <DeleteIcon size={14} />
+                              Delete Notif
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </li>
+                  ))
+                )}
+              </ul>
+            </PopoverContent>
+          </Popover>
         )}
 
         <div className="relative">

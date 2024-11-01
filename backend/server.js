@@ -55,6 +55,7 @@ app.use(errorHandler);
 mongoose.connection.once('open', () => {
   setupChangeStream('reports', 'reportChange', io);
   setupChangeStream('users', 'userChange', io);
+  setupChangeStream('notifications', 'notificationChange', io);
   setupChangeStream('infrastructure-types', 'infrastructureChange', io);
 });
 

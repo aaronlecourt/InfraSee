@@ -13,7 +13,6 @@ import { Helmet, HelmetProvider } from "react-helmet-async";
 import axios from "axios";
 import { columnsModReports } from "@/components/data-table/columns/columnsModReports";
 import { columnsModHidden } from "@/components/data-table/columns/columnsModHidden";
-import { Button } from "@/components/ui/button";
 import { SkeletonTable } from "@/components/elements/skeletontable";
 import ModNavbar from "@/components/elements/mod-navbar/navbar";
 import { columnsModUnassigned } from "@/components/data-table/columns/columnsModUnassigned";
