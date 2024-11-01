@@ -15,7 +15,7 @@ import { columnsModReports } from "@/components/data-table/columns/columnsModRep
 import { columnsModHidden } from "@/components/data-table/columns/columnsModHidden";
 import { Button } from "@/components/ui/button";
 import { SkeletonTable } from "@/components/elements/skeletontable";
-import ModNavbar from "@/components/elements/mod-navbar/navbar";
+import SubModNavbar from "@/components/elements/mod-navbar/submodnavbar";
 import { columnsModUnassigned } from "@/components/data-table/columns/columnsModUnassigned";
 import { columnsSubModReports } from "@/components/data-table/columns/columnsSubModReports";
 import { SubOverview } from "@/components/elements/sub-overview";
@@ -73,7 +73,7 @@ const SubModeratorDashboardScreen = () => {
         <Helmet>
           <title>{"InfraSee | Sub-Moderator Dashboard"}</title>
         </Helmet>
-        <ModNavbar userInfo={userInfo} activeTab={activeTab} setActiveTab={setActiveTab}/>
+        <SubModNavbar userInfo={userInfo} activeTab={activeTab} setActiveTab={setActiveTab}/>
         <main className="p-4">
           <h1 className="text-3xl">Dashboard</h1>
 

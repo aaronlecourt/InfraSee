@@ -18,6 +18,7 @@ import { ModSecurity } from "@/components/elements/mod-security";
 import { ModReport } from "@/components/elements/mod-report";
 import { ModAccount } from "@/components/elements/mod-account";
 import axios from "axios";
+import SubModNavbar from "@/components/elements/mod-navbar/submodnavbar";
 
 const fetchUserProfile = async () => {
   const response = await axios.get("/api/users/profile");
@@ -82,7 +83,11 @@ function SettingsScreen() {
         <Helmet>
           <title>{"InfraSee | Settings"}</title>
         </Helmet>
-        <ModNavbar userInfo={userInfo} />
+        {userInfo.isModerator ? (
+          <ModNavbar userInfo={userInfo} />
+        ) : (
+          <SubModNavbar userInfo={userInfo} />
+        )}
       </div>
       <main className="p-4">
         <h1 className="text-3xl mb-1">Settings</h1>
@@ -105,7 +110,7 @@ function SettingsScreen() {
           </div>
           <div className="col-span-1 lg:col-span-7 py-2 px-4">
             <TabsContent value="account">
-              <ModAccount user={user} userInfo={userInfo}/>
+              <ModAccount user={user} userInfo={userInfo} />
             </TabsContent>
             <TabsContent value="report_form">
               <ModReport user={user} />

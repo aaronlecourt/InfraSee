@@ -39,7 +39,7 @@ const fetchNotifications = async () => {
   return response.data;
 };
 
-const ModNavbar = ({ userInfo, activeTab, setActiveTab }) => {
+const SubModNavbar = ({ userInfo, activeTab, setActiveTab }) => {
   const navigate = useNavigate();
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
@@ -75,7 +75,7 @@ const ModNavbar = ({ userInfo, activeTab, setActiveTab }) => {
   }, []);
 
   const handleLogoClick = () => {
-    navigate("/moderator/dashboard");
+    navigate("/submoderator/dashboard");
   };
 
   const handleLogout = async () => {
@@ -311,4 +311,4 @@ const ModNavbar = ({ userInfo, activeTab, setActiveTab }) => {
   );
 };
 
-export default ModNavbar;
+export default SubModNavbar;

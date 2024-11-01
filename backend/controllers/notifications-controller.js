@@ -62,7 +62,10 @@ const getUserNotifications = asyncHandler(async (req, res) => {
   try {
     const notifications = await Notification.find({
       user: req.user._id,
-    }).populate("report");
+    })
+      .populate("report")
+      .sort({ createdAt: -1 }); // Sort by createdAt (newest first)
+
     res.json(notifications);
   } catch (error) {
     console.error(error);
