@@ -15,7 +15,7 @@ const createReport = asyncHandler(async (req, res) => {
       report_address,
       latitude,
       longitude,
-      infraType,
+      infraType, // This should be the ID of the infraType
       report_by,
       report_contactNum,
       report_desc,
@@ -57,9 +57,7 @@ const createReport = asyncHandler(async (req, res) => {
     };
 
     // Check for existing reports within 10 meters or at the same location
-    const existingReports = await Report.find({ infraType }).populate(
-      "report_status"
-    );
+    const existingReports = await Report.find({ infraType }).populate("report_status");
     for (const report of existingReports) {
       const distance = haversineDistance(
         [latitude, longitude],
@@ -70,7 +68,6 @@ const createReport = asyncHandler(async (req, res) => {
       if (distance <= 10 && report.report_status.stat_name !== "Resolved") {
         return res.status(409).json({
           message: "A similar report has already been reported.",
-          // existingReport: `Address: ${report.report_address}, Description: ${report.report_desc}, Status: ${report.report_status.stat_name}`,
         });
       }
     }
@@ -80,7 +77,7 @@ const createReport = asyncHandler(async (req, res) => {
       report_address,
       latitude,
       longitude,
-      infraType,
+      infraType, // This should be the ID of the infraType
       report_by,
       report_contactNum,
       report_desc,
@@ -89,25 +86,26 @@ const createReport = asyncHandler(async (req, res) => {
 
     const savedReport = await report.save();
 
-    // Notify relevant moderators
-    await notifyModeratorOnNewReport(savedReport);
+    // Populate the saved report's infraType
+    const populatedReport = await Report.findById(savedReport._id)
+      .populate('infraType', '_id infra_name');
 
-    return res
-      .status(201)
-      .json({ message: "Report created successfully", report: savedReport });
+    // Notify relevant moderators
+    await notifyModeratorOnNewReport(populatedReport);
+
+    return res.status(201).json({
+      message: "Report created successfully",
+      report: populatedReport,
+    });
   } catch (error) {
     console.error(`Error creating report: ${error.message}`);
 
     if (error.name === "ValidationError") {
-      return res
-        .status(422)
-        .json({ message: "Validation error: " + error.message });
+      return res.status(422).json({ message: "Validation error: " + error.message });
     } else if (error.code === 11000) {
       return res.status(409).json({ message: "Duplicate report found." });
     } else {
-      return res
-        .status(500)
-        .json({ message: "Server error. Please try again later." });
+      return res.status(500).json({ message: "Server error. Please try again later." });
     }
   }
 });
@@ -236,7 +234,8 @@ const getModeratorReports = asyncHandler(async (req, res) => {
       is_hidden: false,
     })
       .populate("report_mod", "name")
-      .populate("report_status", "stat_name");
+      .populate("report_status", "stat_name")
+      .populate("infraType", "_id infra_name");
 
     // Return an empty array if no reports are found, but with status 200
     if (!reports || reports.length === 0) {
@@ -307,7 +306,7 @@ const getModeratorHiddenReports = asyncHandler(async (req, res) => {
     })
       .populate("report_mod", "name")
       .populate("report_status", "stat_name")
-      .populate("infraType", "infra_name");
+      .populate("infraType", "_id infra_name");
 
     if (!reports || reports.length === 0) {
       return res.status(200).json([]);
@@ -369,7 +368,8 @@ const getSubModeratorReports = asyncHandler(async (req, res) => {
       is_hidden: false,
     })
       .populate("report_mod", "name")
-      .populate("report_status", "stat_name");
+      .populate("report_status", "stat_name")
+      .populate("infraType", "_id infra_name");
 
     if (!reports || reports.length === 0) {
       return res.status(200).json([]); // Return empty array with 200 OK
@@ -429,7 +429,7 @@ const getSubModeratorHiddenReports = asyncHandler(async (req, res) => {
     })
       .populate("report_mod", "name")
       .populate("report_status", "stat_name")
-      .populate("infraType", "infra_name");
+      .populate("infraType", "_id infra_name");
 
     if (!hiddenReports || hiddenReports.length === 0) {
       return res.status(200).json([]); // Return empty array with 200 OK
@@ -520,7 +520,7 @@ const getHiddenReports = asyncHandler(async (req, res) => {
     const reports = await Report.find({ is_hidden: true })
       .populate("report_mod", "name")
       .populate("report_status", "stat_name")
-      .populate("infraType", "infra_name");
+      .populate("infraType", "_id infra_name");
 
     res.json(reports);
   } catch (error) {

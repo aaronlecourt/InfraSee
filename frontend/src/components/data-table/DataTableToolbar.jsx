@@ -21,6 +21,7 @@ import { ConfirmHideDialog } from "../elements/hide-confirm-modal";
 import { ConfirmRestoreDialog } from "../elements/restore-confirm-modal";
 import axios from "axios";
 import { toast } from "sonner";
+import { exportExcel } from "@/lib/exportUtils";
 
 export function DataTableToolbar({
   userInfo,
@@ -60,15 +61,11 @@ export function DataTableToolbar({
   };
 
   const handleHideReports = async () => {
-    const reportIds = selectedRows
-      .map((report) => report.original._id)
-      .join(",");
+    const reportIds = selectedRows.map((report) => report.original._id).join(",");
     const count = selectedRows.length;
     try {
       await axios.put(`/api/reports/hide/${reportIds}`);
-      toast.success(
-        `${count} report${count > 1 ? "s" : ""} hidden successfully.`
-      );
+      toast.success(`${count} report${count > 1 ? "s" : ""} hidden successfully.`);
     } catch (error) {
       toast.error("Error hiding reports. Please try again.");
     } finally {
@@ -77,21 +74,18 @@ export function DataTableToolbar({
   };
 
   const handleRestoreReports = async () => {
-    const reportIds = selectedRows
-      .map((report) => report.original._id)
-      .join(",");
+    const reportIds = selectedRows.map((report) => report.original._id).join(",");
     const count = selectedRows.length;
     try {
       await axios.put(`/api/reports/restore/${reportIds}`);
-      toast.success(
-        `${count} report${count > 1 ? "s" : ""} restored successfully.`
-      );
+      toast.success(`${count} report${count > 1 ? "s" : ""} restored successfully.`);
     } catch (error) {
       toast.error("Error restoring reports. Please try again.");
     } finally {
       setIsRestoreDialogOpen(false);
     }
   };
+
 
   useEffect(() => {
     const initializeData = async () => {
@@ -112,9 +106,6 @@ export function DataTableToolbar({
     <div className="mt-2 flex flex-col gap-2">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-2">
         <div className="col-span-1 flex gap-x-2">
-          {/* MOD SIDE SEARCH BARS */}
-
-          {/* REPORTS TAB SEARCH */}
           {(userInfo.isModerator || userInfo.isSubModerator) &&
             (activeTab === "reports" || activeTab === "hidden") && (
               <Input
@@ -122,13 +113,10 @@ export function DataTableToolbar({
                 value={table.getColumn("report_by")?.getFilterValue() ?? ""}
                 className="h-9"
                 onChange={(event) => {
-                  table
-                    .getColumn("report_by")
-                    ?.setFilterValue(event.target.value);
+                  table.getColumn("report_by")?.setFilterValue(event.target.value);
                 }}
               />
             )}
-          {/* UNASSIGNED TAB SEARCH */}
           {userInfo.isModerator && activeTab === "unassigned" && (
             <>
               <Input
@@ -136,9 +124,7 @@ export function DataTableToolbar({
                 value={table.getColumn("report_by")?.getFilterValue() ?? ""}
                 className="h-9"
                 onChange={(event) => {
-                  table
-                    .getColumn("report_by")
-                    ?.setFilterValue(event.target.value);
+                  table.getColumn("report_by")?.setFilterValue(event.target.value);
                 }}
                 onFocus={() => {
                   setHighlightedId();
@@ -153,8 +139,6 @@ export function DataTableToolbar({
               />
             </>
           )}
-
-          {/* ADMIN SIDE SEARCH BARS */}
           {userInfo.isAdmin && activeButton === "accounts" && (
             <Input
               placeholder="Filter by Moderator Name"
@@ -171,24 +155,18 @@ export function DataTableToolbar({
               value={table.getColumn("report_by")?.getFilterValue() ?? ""}
               className="h-9"
               onChange={(event) => {
-                table
-                  .getColumn("report_by")
-                  ?.setFilterValue(event.target.value);
+                table.getColumn("report_by")?.setFilterValue(event.target.value);
               }}
             />
           )}
-
-          {/* MOBILE DATA TABLE VIEW OPTIONS + CSV*/}
           <div className="flex gap-2 sm:hidden">
             <DataTableViewOptions table={table} />
-            <Button size="filter" className="flex">
+            <Button size="filter" className="flex" onClick={() => exportExcel(table.getFilteredRowModel().rows, userInfo, activeTab, activeButton)}>
               <Download size={15} />
               <p className="hidden md:block">CSV</p>
             </Button>
           </div>
         </div>
-
-        {/* CALENDARDATEPICKER */}
         <div className="col-span-1">
           <CalendarDatePicker
             date={dateRange}
@@ -198,64 +176,48 @@ export function DataTableToolbar({
           />
         </div>
       </div>
-      {/* FACETED FILTERS */}
       <div className="grid grid-cols-1 gap-y-2">
         <div className="col-span-1 flex items-center justify-between">
           <div className="flex items-center">
-            {/* MODSIDE REPORT STATUS */}
-            {userInfo.isModerator &&
-              (activeTab === "reports" || activeTab === "hidden") && (
-                <DataTableFacetedFilter
-                  column={table.getColumn("report_status")}
-                  title="Status"
-                  options={filterOptions.reportStatus.filter(
-                    (status) => status.label !== "Unassigned" // Exclude "Unassigned" in reports tab
-                  )}
-                />
-              )}
-            {/* SUBMOD SIDE REPORT STATUS */}
+            {userInfo.isModerator && (activeTab === "reports" || activeTab === "hidden") && (
+              <DataTableFacetedFilter
+                column={table.getColumn("report_status")}
+                title="Status"
+                options={filterOptions.reportStatus.filter(
+                  (status) => status.label !== "Unassigned"
+                )}
+              />
+            )}
             {userInfo.isSubModerator && activeTab === "reports" && (
               <DataTableFacetedFilter
                 column={table.getColumn("report_status")}
                 title="Status"
                 options={filterOptions.reportStatus.filter((status) =>
-                  ["Under Review", "For Revision", "Resolved"].includes(
-                    status.label
-                  )
+                  ["Under Review", "For Revision", "Resolved"].includes(status.label)
                 )}
               />
             )}
-
-            {/* ADMIN SIDE ACCOUNTS PAGE, ALL TABS EXCEPT SUBMODERATORS */}
-            {userInfo.isAdmin &&
-              activeButton === "accounts" &&
-              !(activeTab === "submoderators") && (
+            {userInfo.isAdmin && activeButton === "accounts" && !(activeTab === "submoderators") && (
+              <DataTableFacetedFilter
+                column={table.getColumn("infra_type")}
+                title="Infrastructure Type"
+                options={filterOptions.infraType}
+              />
+            )}
+            {userInfo.isAdmin && activeButton === "accounts" && activeTab === "submoderators" && (
+              <div className="flex gap-2">
                 <DataTableFacetedFilter
                   column={table.getColumn("infra_type")}
                   title="Infrastructure Type"
                   options={filterOptions.infraType}
                 />
-              )}
-
-            {/* ADMIN SIDE ACCOUNTS PAGE, SUBMODERATORS TAB */}
-            {userInfo.isAdmin &&
-              activeButton === "accounts" &&
-              activeTab === "submoderators" && (
-                <div className="flex gap-2">
-                  <DataTableFacetedFilter
-                    column={table.getColumn("infra_type")}
-                    title="Infrastructure Type"
-                    options={filterOptions.infraType}
-                  />
-                  <DataTableFacetedFilter
-                    column={table.getColumn("assignedModerator")}
-                    title="Assigned to"
-                    options={filterOptions.reportMod}
-                  />
-                </div>
-              )}
-
-            {/* ADMIN SIDE REPORTS PAGE */}
+                <DataTableFacetedFilter
+                  column={table.getColumn("assignedModerator")}
+                  title="Assigned to"
+                  options={filterOptions.reportMod}
+                />
+              </div>
+            )}
             {userInfo.isAdmin && activeButton === "reports" && (
               <div className="flex gap-x-2">
                 <DataTableFacetedFilter
@@ -270,8 +232,6 @@ export function DataTableToolbar({
                 />
               </div>
             )}
-
-            {/* GLOBAL RESET FILTER BUTTON */}
             {isFiltered && (
               <Button
                 variant="ghost"
@@ -284,49 +244,38 @@ export function DataTableToolbar({
             )}
           </div>
           <div className="flex">
-            {/* DESKTOP DATATALBE VIEW OPTIONS + CSV */}
             {activeTab !== "unassigned" && (
               <div className="hidden sm:flex">
                 <DataTableViewOptions table={table} />
-                <Button size="filter" className="flex gap-2 ml-2">
+                <Button size="filter" className="flex gap-2 ml-2" onClick={() => exportExcel(table.getFilteredRowModel().rows, userInfo, activeTab, activeButton)}>
                   <Download size={15} />
                   <p className="hidden md:block">CSV</p>
                 </Button>
               </div>
             )}
-
-            {/* MULTISELECT ACTIONS */}
             <div className="flex gap-2">
-              {/* MOD SIDE HIDDEN TAB */}
-              {table.getFilteredSelectedRowModel().rows.length > 0 &&
-                activeTab === "hidden" && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="ml-2"
-                    onClick={() => setIsRestoreDialogOpen(true)}
-                  >
-                    <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
-                    <p className="hidden md:block">Unhide</p>(
-                    {table.getFilteredSelectedRowModel().rows.length})
-                  </Button>
-                )}
-              {/* MOD SIDE REPORTS TAB */}
-              {table.getFilteredSelectedRowModel().rows.length > 0 &&
-                activeTab === "reports" && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="ml-2"
-                    onClick={() => setIsHideDialogOpen(true)}
-                  >
-                    <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
-                    <p className="hidden md:block">Hide</p>(
-                    {selectedRows.length})
-                  </Button>
-                )}
-
-              {/* ADMIN SIDE CREATE ACCOUNTS */}
+              {table.getFilteredSelectedRowModel().rows.length > 0 && activeTab === "hidden" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="ml-2"
+                  onClick={() => setIsRestoreDialogOpen(true)}
+                >
+                  <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
+                  <p className="hidden md:block">Unhide</p>({table.getFilteredSelectedRowModel().rows.length})
+                </Button>
+              )}
+              {table.getFilteredSelectedRowModel().rows.length > 0 && activeTab === "reports" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="ml-2"
+                  onClick={() => setIsHideDialogOpen(true)}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  <p className="hidden md:block">Hide</p>({selectedRows.length})
+                </Button>
+              )}
               {userInfo.isAdmin && activeButton === "accounts" && (
                 <>
                   <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

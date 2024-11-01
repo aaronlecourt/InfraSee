@@ -27,7 +27,8 @@ export default defineConfig({
     include: [
       "@googlemaps/markerclusterer",
       "@cloudinary/url-gen",
-      "react-dropzone"
+      "react-dropzone",
+      'export-to-csv'
     ],
   }  
 });

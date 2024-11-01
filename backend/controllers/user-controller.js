@@ -67,7 +67,7 @@ const moderatorUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   // Find the user by email
-  const user = await User.findOne({ email }).populate("infra_type", "infra_name");
+  const user = await User.findOne({ email }).populate("infra_type", "_id infra_name");
 
   // Check if user exists
   if (!user) {
@@ -555,7 +555,8 @@ const getModerators = asyncHandler(async (req, res) => {
         { isSubModerator: true, deactivated: false }
       ],
     })
-    .populate("infra_type", "infra_name"); 
+    .populate("infra_type", "infra_name")
+    .populate("assignedModerator", "name"); 
 
     res.status(200).json(moderators.length ? moderators : []);
   } catch (error) {
@@ -570,7 +571,8 @@ const getModerators = asyncHandler(async (req, res) => {
 const getModeratorList = asyncHandler(async (req, res) => {
   try {
     const moderators = await User.find({ isModerator: true, deactivated: false })
-      .populate("infra_type", "infra_name");
+      .populate("infra_type", "infra_name")
+      .populate("assignedModerator", "name");
 
     res.status(200).json(moderators.length ? moderators : []);
   } catch (error) {
