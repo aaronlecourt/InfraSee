@@ -1,5 +1,9 @@
 import React, { useState } from "react";
 import { useForm, Controller, FormProvider } from "react-hook-form";
+import { useLogoutMutation } from "@/slices/users-api-slice";
+import { logout } from "@/slices/auth-slice";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -51,7 +55,9 @@ export function ModSecurity() {
       confirmPassword: "",
     },
   });
-
+  const [logoutApiCall] = useLogoutMutation();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const {
     control,
     handleSubmit,
@@ -64,27 +70,67 @@ export function ModSecurity() {
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [currentPasswordVisible, setCurrentPasswordVisible] = useState(false);
 
+  const handleLogout = async () => {
+    try {
+      await logoutApiCall().unwrap();
+      dispatch(logout());
+      navigate("/moderator/login");
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const onSubmit = async (data) => {
     try {
+      // Attempt to change the password
       await changePassword({
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
       }).unwrap();
-
+  
+      // Notify the user of success and reset the form
       toast.success("Password updated successfully!");
       reset();
+  
+      // Initiate the logout countdown
+      startLogoutCountdown(3);
+  
     } catch (error) {
       console.error("Error updating password:", error);
-
-      if (error.status === 400) {
-        toast.error(error.data.message || "Current password is incorrect.");
-      } else if (error.status === 404) {
-        toast.error("User not found.");
-      } else {
-        toast.error("Failed to update password.");
-      }
+      handleError(error);
     }
   };
+  
+  // Function to handle logout countdown
+  const startLogoutCountdown = (seconds) => {
+    let countdown = seconds;
+  
+    const countdownInterval = setInterval(() => {
+      if (countdown <= 0) {
+        clearInterval(countdownInterval);
+        toast.dismiss();
+        toast.info("You have been logged out to apply changes.");
+        handleLogout(); 
+      } else {
+        toast.dismiss(); 
+        toast(`Logging out in ${countdown} seconds to apply changes.`);
+        countdown -= 1;
+      }
+    }, 1000);
+  };
+  
+  // Function to handle error messages
+  const handleError = (error) => {
+    if (error.status === 400) {
+      toast.error(error.data.message || "Current password is incorrect.");
+    } else if (error.status === 404) {
+      toast.error("User not found.");
+    } else {
+      toast.error("Failed to update password.");
+    }
+  };
+  
+
   return (
     <FormProvider {...methods}>
       <div className="">
