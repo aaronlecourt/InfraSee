@@ -73,7 +73,7 @@ const SubModeratorDashboardScreen = () => {
         <Helmet>
           <title>{"InfraSee | Sub-Moderator Dashboard"}</title>
         </Helmet>
-        <ModNavbar userInfo={userInfo} />
+        <ModNavbar userInfo={userInfo} activeTab={activeTab} setActiveTab={setActiveTab}/>
         <main className="p-4">
           <h1 className="text-3xl">Dashboard</h1>
 
