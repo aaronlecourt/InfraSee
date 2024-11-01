@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useUpdateUserMutation } from "@/slices/users-api-slice";
+import { useLogoutMutation } from "@/slices/users-api-slice";
+import { logout } from "@/slices/auth-slice";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -15,13 +19,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
 import { UserRoundXIcon } from "lucide-react";
 import {
   Dialog,
@@ -35,6 +39,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+
 
 // Validation schema
 const formSchema = z.object({
@@ -54,7 +59,10 @@ const fetchInfrastructureTypes = async () => {
 export function ModAccount({ user, userInfo }) {
   const [infrastructureTypes, setInfrastructureTypes] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [updateUser, { isLoading, isError, error }] = useUpdateUserMutation();
+  const [updateUser, { isLoading }] = useUpdateUserMutation();
+  const [logoutApiCall] = useLogoutMutation();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const loadInfrastructureType = async () => {
     try {
@@ -65,7 +73,9 @@ export function ModAccount({ user, userInfo }) {
     }
   };
 
-  loadInfrastructureType();
+  useEffect(() => {
+    loadInfrastructureType();
+  }, []);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -76,7 +86,11 @@ export function ModAccount({ user, userInfo }) {
     },
   });
 
-  const { handleSubmit, control, setValue, reset, watch } = form;
+  const getInfraName = (value) => {
+    return infrastructureTypes.find((type) => type._id === value)?.infra_name;
+  };
+
+  const { handleSubmit, control, reset } = form;
 
   useEffect(() => {
     if (user) {
@@ -88,23 +102,63 @@ export function ModAccount({ user, userInfo }) {
     }
   }, [user, reset]);
 
+  const handleLogout = async () => {
+    try {
+      await logoutApiCall().unwrap();
+      dispatch(logout());
+      navigate("/moderator/login");
+    } catch (err) {
+      console.log(err);
+      toast.error("Failed to log out.");
+    }
+  };
+
   const onSubmit = async (data) => {
     const { name, email, infrastructureType } = data;
 
     try {
+      // Update user information
       await updateUser({
         name,
         email,
         infra_type: infrastructureType,
       }).unwrap();
+
+      // Notify the user of a successful update
       toast.success("Account updated successfully!");
+
+      // Initiate the countdown before logging out
+      startLogoutCountdown(3);
+
     } catch (err) {
-      const errorMessage =
-        err?.data?.message || "An error occurred during the update.";
-      toast.error(errorMessage);
+      handleUpdateError(err);
     }
   };
 
+  // Function to manage logout countdown
+  const startLogoutCountdown = (seconds) => {
+    let countdown = seconds;
+
+    const countdownInterval = setInterval(() => {
+      if (countdown <= 0) {
+        clearInterval(countdownInterval);
+        toast.dismiss();
+        toast.info("You have been logged out to apply changes.");
+        handleLogout(); 
+      } else {
+        toast.dismiss();
+        toast(`Logging out in ${countdown} seconds to apply changes.`);
+        countdown -= 1; 
+      }
+    }, 1000);
+  };
+
+  const handleUpdateError = (error) => {
+    const errorMessage = error?.data?.message || "An error occurred during the update.";
+    toast.error(errorMessage);
+  };
+  
+  
   // const handleDeactivate = async () => {
   //   try {
   //     await axios.delete("/api/deactivate-account");
@@ -118,10 +172,7 @@ export function ModAccount({ user, userInfo }) {
   // };
 
   // Find the selected infrastructure name
-  const getInfraName = (value) => {
-    return infrastructureTypes.find((type) => type._id === value)?.infra_name;
-  };
-
+  
   return (
     <div>
       <h1 className="text-xl font-bold mb-2">Account</h1>
