@@ -24,6 +24,11 @@ export function SubOverview({
   highlightedId,
   setHighlightedId,
 }) {
+  // Filter for reports that are Under Review
+  const underReviewReports = data.filter(report => 
+    report.report_status.stat_name === "Under Review"
+  );
+
   return (
     <div className="h-full flex flex-col">
       <SubReportCounter data={data} userInfo={userInfo} activeTab={activeTab} />
@@ -49,7 +54,7 @@ export function SubOverview({
             <CardContent className="flex-1 w-full overflow-hidden">
               <ScrollArea className="h-full px-5">
                 <SubReportList
-                  data={data}
+                  data={underReviewReports} // Pass filtered reports to SubReportList
                   setHighlightedId={setHighlightedId}
                   goToReportsTab={goToReportsTab}
                 />

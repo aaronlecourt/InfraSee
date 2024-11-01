@@ -351,20 +351,21 @@ const getSubModeratorReports = asyncHandler(async (req, res) => {
       throw new Error("Submoderator does not have an assigned moderator.");
     }
 
-    // Fetch the ID for "Under Review" status
-    const underReviewStatus = await Status.findOne({
-      stat_name: "Under Review",
+    // Fetch the IDs for "Under Review", "Resolved", and "For Revision" statuses
+    const statuses = await Status.find({
+      stat_name: { $in: ["Under Review", "Resolved", "For Revision"] },
     });
-    if (!underReviewStatus) {
-      return res
-        .status(404)
-        .json({ message: "Under Review status not found." });
+
+    if (!statuses || statuses.length === 0) {
+      return res.status(404).json({ message: "No relevant statuses found." });
     }
 
-    // Fetch reports assigned to the assigned moderator with "Under Review" status
+    const statusIds = statuses.map(status => status._id);
+
+    // Fetch reports assigned to the assigned moderator with the relevant statuses
     const reports = await Report.find({
       report_mod: user.assignedModerator._id,
-      report_status: underReviewStatus._id, // Use the status ID
+      report_status: { $in: statusIds }, // Use the array of status IDs
       is_hidden: false,
     })
       .populate("report_mod", "name")
@@ -374,7 +375,18 @@ const getSubModeratorReports = asyncHandler(async (req, res) => {
       return res.status(200).json([]); // Return empty array with 200 OK
     }
 
-    res.status(200).json(reports);
+    // Sort the reports based on status order
+    const statusOrder = {
+      "Under Review": 1,
+      "For Revision": 2,
+      "Resolved": 3,
+    };
+
+    const sortedReports = reports.sort((a, b) => {
+      return statusOrder[a.report_status.stat_name] - statusOrder[b.report_status.stat_name];
+    });
+
+    res.status(200).json(sortedReports);
   } catch (error) {
     console.error(`Error fetching submoderator reports: ${error.message}`);
 
@@ -383,9 +395,7 @@ const getSubModeratorReports = asyncHandler(async (req, res) => {
     } else if (error.name === "ValidationError") {
       res.status(422).json({ message: error.message });
     } else {
-      res
-        .status(500)
-        .json({ message: "Server error. Please try again later." });
+      res.status(500).json({ message: "Server error. Please try again later." });
     }
   }
 });
