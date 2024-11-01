@@ -57,7 +57,9 @@ const createReport = asyncHandler(async (req, res) => {
     };
 
     // Check for existing reports within 10 meters or at the same location
-    const existingReports = await Report.find({ infraType }).populate("report_status");
+    const existingReports = await Report.find({ infraType }).populate(
+      "report_status"
+    );
     for (const report of existingReports) {
       const distance = haversineDistance(
         [latitude, longitude],
@@ -87,8 +89,10 @@ const createReport = asyncHandler(async (req, res) => {
     const savedReport = await report.save();
 
     // Populate the saved report's infraType
-    const populatedReport = await Report.findById(savedReport._id)
-      .populate('infraType', '_id infra_name');
+    const populatedReport = await Report.findById(savedReport._id).populate(
+      "infraType",
+      "_id infra_name"
+    );
 
     // Notify relevant moderators
     await notifyModeratorOnNewReport(populatedReport);
@@ -101,11 +105,15 @@ const createReport = asyncHandler(async (req, res) => {
     console.error(`Error creating report: ${error.message}`);
 
     if (error.name === "ValidationError") {
-      return res.status(422).json({ message: "Validation error: " + error.message });
+      return res
+        .status(422)
+        .json({ message: "Validation error: " + error.message });
     } else if (error.code === 11000) {
       return res.status(409).json({ message: "Duplicate report found." });
     } else {
-      return res.status(500).json({ message: "Server error. Please try again later." });
+      return res
+        .status(500)
+        .json({ message: "Server error. Please try again later." });
     }
   }
 });
@@ -359,7 +367,7 @@ const getSubModeratorReports = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "No relevant statuses found." });
     }
 
-    const statusIds = statuses.map(status => status._id);
+    const statusIds = statuses.map((status) => status._id);
 
     // Fetch reports assigned to the assigned moderator with the relevant statuses
     const reports = await Report.find({
@@ -383,7 +391,10 @@ const getSubModeratorReports = asyncHandler(async (req, res) => {
     };
 
     const sortedReports = reports.sort((a, b) => {
-      return statusOrder[a.report_status.stat_name] - statusOrder[b.report_status.stat_name];
+      return (
+        statusOrder[a.report_status.stat_name] -
+        statusOrder[b.report_status.stat_name]
+      );
     });
 
     res.status(200).json(sortedReports);
@@ -395,7 +406,9 @@ const getSubModeratorReports = asyncHandler(async (req, res) => {
     } else if (error.name === "ValidationError") {
       res.status(422).json({ message: error.message });
     } else {
-      res.status(500).json({ message: "Server error. Please try again later." });
+      res
+        .status(500)
+        .json({ message: "Server error. Please try again later." });
     }
   }
 });
@@ -597,10 +610,24 @@ const updateReportStatus = async (req, res) => {
     if (statusId === resolvedStatus._id.toString()) {
       // Check if the moderator has submoderators
       if (moderator.subModerators.length > 0) {
-        // If moderator has submoderators, set status to "Under Review" and is_requested to true
-        updateData.report_status = underReviewStatus._id;
-        updateData.is_requested = true;
-        updateData.request_time = Date.now();
+        // Find active submoderators
+        const activeSubMods = await User.find({
+          assignedModerator: moderator._id,
+          deactivated: false,
+        });
+
+        if (activeSubMods.length > 0) {
+          // If there are active submoderators, set status to "Under Review" and is_requested to true
+          updateData.report_status = underReviewStatus._id;
+          updateData.is_requested = true;
+          updateData.request_time = Date.now();
+        } else {
+          // If no active submoderators, set the status to "Resolved"
+          updateData.report_status = resolvedStatus._id;
+          updateData.is_requested = false;
+          updateData.request_time = null;
+          updateData.report_time_resolved = Date.now();
+        }
       } else {
         // If no submoderators, set the status to "Resolved"
         updateData.report_status = resolvedStatus._id;
@@ -629,7 +656,6 @@ const updateReportStatus = async (req, res) => {
       message: "Report status updated successfully",
       report: updatedReport,
     });
-    
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "An error occurred", error });

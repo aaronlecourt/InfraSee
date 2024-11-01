@@ -1,5 +1,7 @@
 import asyncHandler from "express-async-handler";
 import User from "../models/user-model.js";
+import Report from "../models/reports-model.js";
+import Status from "../models/status-model.js";
 import generateToken from "../utils/generate-token.js";
 import generateOtp from "../utils/otp-generator.js";
 import sendOtpEmail from "../utils/mail.js";
@@ -238,10 +240,10 @@ const createSubModerator = asyncHandler(async (req, res) => {
 // @access  Private/Admin or Moderator
 const deleteUser = asyncHandler(async (req, res) => {
   try {
-    const userId = req.params.id;
+    const moderatorId = req.params.id;
 
     // Find the user by ID and delete it
-    const user = await User.findByIdAndDelete(userId);
+    const user = await User.findByIdAndDelete(moderatorId);
 
     if (!user) {
       res.status(404);
@@ -263,91 +265,121 @@ const deleteUser = asyncHandler(async (req, res) => {
 });
 
 
-// @desc Deactivate a moderator and their submoderators
-// @route PUT /api/moderators/:moderatorId/deactivate
-// @access Private (requires admin or moderator privileges)
 const deactivateModerator = asyncHandler(async (req, res) => {
   const { moderatorId } = req.params;
 
   try {
-    const moderator = await User.findById(moderatorId);
+    const user = await User.findById(moderatorId);
 
-    if (!moderator) {
+    if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    
-    if (moderator.isSubModerator) {
-      return res.status(400).json({ message: "Cannot deactivate a submoderator directly." });
+
+    // Retrieve status IDs for "Under Review" and "For Revision"
+    const statuses = await Status.find({
+      stat_name: { $in: ["Under Review", "For Revision"] }
+    });
+    const statusIds = statuses.map(status => status._id);
+
+    if (user.isModerator) {
+      // Check if there are any reports with "Under Review" or "For Revision" assigned to this moderator
+      const pendingReports = await Report.find({
+        report_mod: moderatorId,
+        report_status: { $in: statusIds }
+      });
+
+      if (pendingReports.length > 0) {
+        return res.status(400).json({ message: "Cannot deactivate moderator with pending reports." });
+      }
+
+      // Deactivate the moderator and their submoderators
+      await User.findByIdAndUpdate(moderatorId, { deactivated: true });
+      const { modifiedCount } = await User.updateMany(
+        { assignedModerator: moderatorId, isSubModerator: true },
+        { deactivated: true }
+      );
+
+      const message = modifiedCount > 0
+        ? "Moderator and submoderators deactivated successfully"
+        : "Moderator deactivated successfully. No submoderators found.";
+        
+      return res.status(200).json({ message });
+
+    } else if (user.isSubModerator) {
+      // Check if the assigned moderator has any reports with "Under Review" status
+      const underReviewStatus = statuses.find(status => status.stat_name === "Under Review")?._id;
+      
+      const pendingReports = await Report.find({
+        report_mod: user.assignedModerator,
+        report_status: underReviewStatus
+      });
+
+      if (pendingReports.length > 0) {
+        return res.status(400).json({ message: "Cannot deactivate the submoderator due to pending reports awaiting approval or rejection" });
+      }
+
+      // Proceed with deactivation of submoderator
+      await User.findByIdAndUpdate(moderatorId, { deactivated: true });
+      return res.status(200).json({ message: "Submoderator deactivated successfully" });
+
+    } else {
+      return res.status(400).json({ message: "User is neither a moderator nor a submoderator." });
     }
 
-    if (!moderator.isModerator) {
-      return res.status(400).json({ message: "User is not a moderator" });
-    }
-
-    if (moderator.deactivated) {
-      return res.status(400).json({ message: "Moderator is already deactivated" });
-    }
-
-    // Deactivate the moderator and their submoderators
-    await User.findByIdAndUpdate(moderatorId, { deactivated: true });
-    const { modifiedCount } = await User.updateMany(
-      { assignedModerator: moderatorId, isSubModerator: true },
-      { deactivated: true }
-    );
-
-    const message = modifiedCount > 0
-      ? "Moderator and submoderators deactivated successfully"
-      : "Moderator deactivated successfully. No submoderators found.";
-
-    return res.status(200).json({ message });
   } catch (error) {
-    console.error(`Error deactivating moderator: ${error.message}`);
+    console.error(`Error deactivating user: ${error.message}`);
     return res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
 
-// @desc Reactivate a moderator and their submoderators
+
+
+// @desc Reactivate a moderator, their submoderators, or a single submoderator
 // @route PUT /api/moderators/:moderatorId/reactivate
 // @access Private (requires admin or moderator privileges)
 const reactivateModerator = asyncHandler(async (req, res) => {
   const { moderatorId } = req.params;
 
   try {
-    const moderator = await User.findById(moderatorId);
+    const user = await User.findById(moderatorId);
 
-    if (!moderator) {
+    if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (moderator.isSubModerator) {
-      return res.status(400).json({ message: "Cannot reactivate a submoderator directly." });
+    // Check if user is already active
+    if (!user.deactivated) {
+      return res.status(400).json({ message: "User is not deactivated" });
     }
 
-    if (!moderator.isModerator) {
-      return res.status(400).json({ message: "User is not a moderator" });
+    // Reactivate moderator and all associated submoderators if applicable
+    if (user.isModerator && !user.isSubModerator) {
+      await User.findByIdAndUpdate(moderatorId, { deactivated: false });
+      const { modifiedCount } = await User.updateMany(
+        { assignedModerator: moderatorId, isSubModerator: true },
+        { deactivated: false }
+      );
+
+      const message = modifiedCount > 0
+        ? "Moderator and submoderators reactivated successfully"
+        : "Moderator reactivated successfully. No submoderators found.";
+
+      return res.status(200).json({ message });
     }
 
-    if (!moderator.deactivated) {
-      return res.status(400).json({ message: "Moderator is not deactivated" });
+    // Reactivate a single submoderator
+    if (user.isSubModerator) {
+      await User.findByIdAndUpdate(moderatorId, { deactivated: false });
+      return res.status(200).json({ message: "Submoderator reactivated successfully" });
     }
 
-    // Reactivate the moderator and their submoderators
-    await User.findByIdAndUpdate(moderatorId, { deactivated: false });
-    const { modifiedCount } = await User.updateMany(
-      { assignedModerator: moderatorId, isSubModerator: true },
-      { deactivated: false }
-    );
-
-    const message = modifiedCount > 0
-      ? "Moderator and submoderators reactivated successfully"
-      : "Moderator reactivated successfully. No submoderators found.";
-
-    return res.status(200).json({ message });
+    return res.status(400).json({ message: "User is neither a moderator nor a submoderator" });
   } catch (error) {
-    console.error(`Error reactivating moderator: ${error.message}`);
+    console.error(`Error reactivating user: ${error.message}`);
     return res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
+
 
 
 
