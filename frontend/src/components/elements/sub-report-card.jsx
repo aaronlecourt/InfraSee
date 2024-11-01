@@ -1,9 +1,9 @@
 import React from "react";
 import { FileIcon } from "lucide-react";
 
-function SubReportCard({ report, setHighlightedId, goToReportsTab }) {
+function SubReportCard({ report, setSelectedNotificationId, goToReportsTab }) {
   const handleClick = () => {
-    setHighlightedId(report._id); // Set highlighted ID
+    setSelectedNotificationId(report._id); // Set highlighted ID
     goToReportsTab(); // Navigate to unassigned tab
   };
 

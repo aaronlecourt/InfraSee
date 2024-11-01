@@ -31,7 +31,7 @@ const SubModeratorDashboardScreen = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [reports, setReports] = useState([]);
   const [loadingReports, setLoadingReports] = useState(true);
-  const [highlightedId, setHighlightedId] = useState();
+  const [selectedNotificationId, setSelectedNotificationId] = useState(null);
 
   useEffect(() => {
     socket.on("reportChange", (change) => {
@@ -56,7 +56,7 @@ const SubModeratorDashboardScreen = () => {
       setLoadingReports(false);
     }
   };
-  
+
   useEffect(() => {
     loadReports();
   }, []);
@@ -73,7 +73,12 @@ const SubModeratorDashboardScreen = () => {
         <Helmet>
           <title>{"InfraSee | Sub-Moderator Dashboard"}</title>
         </Helmet>
-        <SubModNavbar userInfo={userInfo} activeTab={activeTab} setActiveTab={setActiveTab}/>
+        <SubModNavbar
+          userInfo={userInfo}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          setSelectedNotificationId={setSelectedNotificationId}
+        />
         <main className="p-4">
           <h1 className="text-3xl">Dashboard</h1>
 
@@ -97,8 +102,8 @@ const SubModeratorDashboardScreen = () => {
                   data={combinedReports}
                   userInfo={userInfo}
                   activeTab={activeTab}
-                  highlightedId={highlightedId}
-                  setHighlightedId={setHighlightedId}
+                  selectedNotificationId={selectedNotificationId}
+                  setSelectedNotificationId={setSelectedNotificationId}
                 />
               )}
             </TabsContent>
@@ -115,8 +120,8 @@ const SubModeratorDashboardScreen = () => {
                   userInfo={userInfo}
                   columns={columnsSubModReports}
                   activeTab={activeTab}
-                  highlightedId={highlightedId}
-                  setHighlightedId={setHighlightedId}
+                  selectedNotificationId={selectedNotificationId}
+                  setSelectedNotificationId={setSelectedNotificationId}
                 />
               )}
             </TabsContent>

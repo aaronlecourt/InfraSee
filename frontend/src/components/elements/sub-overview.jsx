@@ -21,8 +21,7 @@ export function SubOverview({
   data,
   userInfo,
   activeTab,
-  highlightedId,
-  setHighlightedId,
+  setSelectedNotificationId
 }) {
   // Filter for reports that are Under Review
   const underReviewReports = data.filter(report => 
@@ -55,7 +54,7 @@ export function SubOverview({
               <ScrollArea className="h-full px-5">
                 <SubReportList
                   data={underReviewReports} // Pass filtered reports to SubReportList
-                  setHighlightedId={setHighlightedId}
+                  setSelectedNotificationId={setSelectedNotificationId}
                   goToReportsTab={goToReportsTab}
                 />
               </ScrollArea>

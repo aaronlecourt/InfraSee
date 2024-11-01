@@ -39,7 +39,12 @@ const fetchNotifications = async () => {
   return response.data;
 };
 
-const SubModNavbar = ({ userInfo, activeTab, setActiveTab }) => {
+const SubModNavbar = ({
+  userInfo,
+  activeTab,
+  setActiveTab,
+  setSelectedNotificationId,
+}) => {
   const navigate = useNavigate();
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
@@ -47,8 +52,7 @@ const SubModNavbar = ({ userInfo, activeTab, setActiveTab }) => {
   const [loadingNotifications, setLoadingNotifications] = useState(true);
 
   useEffect(() => {
-    socket.on("notificationChange", (change) => {
-      console.log("Received notification change:", change);
+    socket.on("notificationChange", () => {
       loadNotifications();
     });
 
@@ -93,19 +97,6 @@ const SubModNavbar = ({ userInfo, activeTab, setActiveTab }) => {
     return format(date, "MMMM dd, yyyy - hh:mm aa");
   };
 
-  // useEffect(() => {
-  //   const fetchNotifications = async () => {
-  //     try {
-  //       const response = await axios.get("/api/notification/notifications");
-  //       setNotifications(response.data);
-  //     } catch (error) {
-  //       console.error("Failed to fetch notifications", error);
-  //     }
-  //   };
-
-  //   fetchNotifications();
-  // }, []);
-
   const markAsRead = async (notifId) => {
     try {
       await axios.put(`/api/notification/notifications/${notifId}/read`);
@@ -133,7 +124,10 @@ const SubModNavbar = ({ userInfo, activeTab, setActiveTab }) => {
     if (!notif.is_read) {
       await markAsRead(notif._id);
     }
+
+    // Set the active tab directly to "reports"
     setActiveTab("reports");
+    setSelectedNotificationId(notif.report._id);
   };
 
   const deleteNotification = async (notifId) => {
@@ -186,15 +180,20 @@ const SubModNavbar = ({ userInfo, activeTab, setActiveTab }) => {
                   notifications.map((notif) => (
                     <li
                       key={notif._id}
-                      className={`p-2 hover:bg-gray-100 text-sm font-medium cursor-pointer`}
+                      className={`p-2 hover:bg-gray-100 text-sm font-medium cursor-pointer min-w-60 max-w-72`}
                       onClick={() => handleNotificationClick(notif)}
                     >
                       <div className="flex items-start gap-2">
                         <div className="flex flex-col gap-1">
                           <span
-                            className={`${
+                            className={`text-wrap ${
                               notif.is_read ? "text-gray-500/50" : ""
                             }`}
+                            style={{
+                              overflowWrap: "break-word",
+                              wordBreak: "break-word",
+                              maxWidth: "100%",
+                            }}
                           >
                             {notif.message}
                           </span>
@@ -208,6 +207,7 @@ const SubModNavbar = ({ userInfo, activeTab, setActiveTab }) => {
                             {formatDate(notif.createdAt)}
                           </div>
                         </div>
+
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button
@@ -277,21 +277,12 @@ const SubModNavbar = ({ userInfo, activeTab, setActiveTab }) => {
               )}
               <DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                {userInfo.isModerator ? (
-                  <DropdownMenuItem
-                    onClick={() => navigate("/moderator/dashboard")}
-                  >
-                    <LucideLayoutDashboard className="mr-2 h-4 w-4 text-slate-950" />
-                    <span>Dashboard</span>
-                  </DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem
-                    onClick={() => navigate("/submoderator/dashboard")}
-                  >
-                    <LucideLayoutDashboard className="mr-2 h-4 w-4 text-slate-950" />
-                    <span>Dashboard</span>
-                  </DropdownMenuItem>
-                )}
+                <DropdownMenuItem
+                  onClick={() => navigate("/submoderator/dashboard")}
+                >
+                  <LucideLayoutDashboard className="mr-2 h-4 w-4 text-slate-950" />
+                  <span>Dashboard</span>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate("/settings")}>
                   <Settings className="mr-2 h-4 w-4 text-slate-950" />

@@ -150,8 +150,8 @@ const ModNavbar = ({
       (report) => report._id === notif.report._id
     );
 
-    console.log("REPORT: ", report);
-    console.log("HIDDEN REPORT: ", hiddenReport);
+    // console.log("REPORT: ", report);
+    // console.log("HIDDEN REPORT: ", hiddenReport);
 
     // Determine the active tab based on the report's status
     if (hiddenReport) {
@@ -244,9 +244,14 @@ const ModNavbar = ({
                       <div className="flex items-start gap-2">
                         <div className="flex flex-col gap-1">
                           <span
-                            className={`${
+                            className={`text-wrap ${
                               notif.is_read ? "text-gray-500/50" : ""
                             }`}
+                            style={{
+                              overflowWrap: "break-word",
+                              wordBreak: "break-word",
+                              maxWidth: "100%",
+                            }}
                           >
                             {notif.message}
                           </span>
@@ -260,6 +265,7 @@ const ModNavbar = ({
                             {formatDate(notif.createdAt)}
                           </div>
                         </div>
+
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button

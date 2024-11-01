@@ -2,7 +2,7 @@ import React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import SubReportCard from "./sub-report-card";
 
-export function SubReportList({ data, setHighlightedId, goToReportsTab }) {
+export function SubReportList({ data, setSelectedNotificationId, goToReportsTab }) {
   return (
     <ScrollArea className="max-h-[500px] overflow-y-auto">
       {data.length === 0 ? (
@@ -14,7 +14,7 @@ export function SubReportList({ data, setHighlightedId, goToReportsTab }) {
           <SubReportCard
             key={report._id}
             report={report}
-            setHighlightedId={setHighlightedId}
+            setSelectedNotificationId={setSelectedNotificationId}
             goToReportsTab={goToReportsTab}
           />
         ))

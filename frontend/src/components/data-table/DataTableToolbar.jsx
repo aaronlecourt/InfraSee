@@ -245,7 +245,7 @@ export function DataTableToolbar({
               </div>
             )}
             <div className="flex gap-2">
-              {table.getFilteredSelectedRowModel().rows.length > 0 && activeTab === "hidden" && (
+              {userInfo.isModerator && table.getFilteredSelectedRowModel().rows.length > 0 && activeTab === "hidden" && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -256,7 +256,7 @@ export function DataTableToolbar({
                   <p className="hidden md:block">Unhide</p>({table.getFilteredSelectedRowModel().rows.length})
                 </Button>
               )}
-              {table.getFilteredSelectedRowModel().rows.length > 0 && activeTab === "reports" && (
+              {userInfo.isModerator && table.getFilteredSelectedRowModel().rows.length > 0 && activeTab === "reports" && (
                 <Button
                   variant="outline"
                   size="sm"
