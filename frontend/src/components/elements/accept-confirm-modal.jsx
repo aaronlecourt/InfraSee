@@ -12,7 +12,7 @@ const formatDate = (dateString) => {
 export function ConfirmAcceptDialog({ isOpen, onClose, onConfirm, data }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="">
         <DialogHeader>
           <DialogTitle>Confirm Time Resolved</DialogTitle>
           <DialogDescription>

@@ -94,7 +94,6 @@ const ModeratorDashboardScreen = () => {
     }
   };
 
-  console.log("UPDATED SELECT:", selectedNotificationId);
   // Initial load
   useEffect(() => {
     loadReports();

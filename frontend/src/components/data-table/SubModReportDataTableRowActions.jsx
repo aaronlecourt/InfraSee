@@ -13,7 +13,15 @@ import {
 import { ReportDetailsDialog } from "../elements/report-details-modal";
 import { UpdateStatusDialog } from "../elements/update-status-modal";
 import { ConfirmHideDialog } from "../elements/hide-confirm-modal";
-import { ArchiveIcon, Check, Edit, Eye, EyeOff, LucideGalleryVerticalEnd, X } from "lucide-react";
+import {
+  ArchiveIcon,
+  Check,
+  Edit,
+  Eye,
+  EyeOff,
+  LucideGalleryVerticalEnd,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmAcceptDialog } from "../elements/accept-confirm-modal";
 import { ConfirmRejectDialog } from "../elements/reject-confirm-modal";
@@ -50,10 +58,11 @@ export function SubModReportDataTableRowActions({ row }) {
       setAcceptDialogOpen(false);
     } catch (error) {
       console.error("Error confirming approval:", error);
-      toast.error(error.response?.data?.message || "Request has failed. Try Again.");
+      toast.error(
+        error.response?.data?.message || "Request has failed. Try Again."
+      );
     }
   };
-  
 
   const handleRejectConfirm = async () => {
     const reportId = dialogData?._id;
@@ -61,7 +70,7 @@ export function SubModReportDataTableRowActions({ row }) {
       toast.error("No report with that ID was found. Please try again.");
       return;
     }
-  
+
     try {
       const response = await axios.put(`/api/reports/reject/${reportId}`, {
         isAccepted: false, // Pass false to indicate rejection
@@ -70,10 +79,12 @@ export function SubModReportDataTableRowActions({ row }) {
       setRejectDialogOpen(false);
     } catch (error) {
       console.error("Error rejecting approval:", error);
-      toast.error(error.response?.data?.message || "Request has failed. Try Again.");
+      toast.error(
+        error.response?.data?.message || "Request has failed. Try Again."
+      );
     }
   };
-  
+
   const handleShowDetails = () => {
     setDialogData(row.original);
     setShowDetailsDialogOpen(true);
@@ -120,24 +131,32 @@ export function SubModReportDataTableRowActions({ row }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
-          <DropdownMenuItem
-            onClick={handleAccept}
-            className="flex gap-2 text-green-600"
-          >
-            <Check size={14} className="" />
-            Accept
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={handleReject}
-            className="flex gap-2 text-red-600"
-          >
-            <X size={14} className="" />
-            Reject
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
+          {row.original.report_status?.stat_name !== "For Revision" &&
+            row.original.report_status?.stat_name !== "Resolved" && (
+              <>
+                <DropdownMenuItem
+                  onClick={handleAccept}
+                  className="flex gap-2 text-green-600"
+                >
+                  <Check size={14} />
+                  Accept
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleReject}
+                  className="flex gap-2 text-red-600"
+                >
+                  <X size={14} />
+                  Reject
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
 
           <DropdownMenuItem onClick={handleShowDetails} className="flex gap-2">
-            <LucideGalleryVerticalEnd size={14} className="text-muted-foreground" />
+            <LucideGalleryVerticalEnd
+              size={14}
+              className="text-muted-foreground"
+            />
             Show Details
           </DropdownMenuItem>
           {row.original.is_new ? (

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 export function ConfirmAssignDialog({ isOpen, onClose, onConfirm }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="">
         <DialogHeader>
           <DialogTitle>Confirm Assignment</DialogTitle>
           <DialogDescription>

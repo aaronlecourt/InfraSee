@@ -23,6 +23,7 @@ export function ModReportDataTableRowActions({ row }) {
   const [dialogData, setDialogData] = useState(null);
   const [reportIdToHide, setReportIdToHide] = useState(null);
 
+
   const handleUpdateStatus = () => {
     setDialogData(row.original);
     setUpdateStatusDialogOpen(true);
@@ -34,19 +35,23 @@ export function ModReportDataTableRowActions({ row }) {
   };
 
   const handleHide = async () => {
-    const reportId = reportIdToHide;
+    const reportIds = reportIdToHide; // Make sure this is a comma-separated string
+    console.log("Hiding reports with IDs:", reportIds);
+    
     try {
-      const response = await axios.put(`/api/reports/hide/${reportId}`);
-      console.log(response.data.message);
-      toast.success("Report hid successfully!");
+      const response = await axios.put(`/api/reports/hide/${reportIds}`);
+      console.log("Success response:", response.data.message);
+      toast.success("Reports hidden successfully!");
       setHideDialogOpen(false);
       setReportIdToHide(null);
     } catch (error) {
-      console.error("Error hiding report:", error);
-      toast.error(error.response?.data?.message || "Failed to hide report.");
+      console.error("Error hiding reports:", error);
+      const errorMessage = error.response?.data?.message || "Failed to hide reports.";
+      console.error("Displayed error message:", errorMessage);
+      toast.error(errorMessage); // Show the specific error message as a toast
     }
   };
-
+  
   const handleShowDetails = () => {
     setDialogData(row.original);
     setShowDetailsDialogOpen(true);
@@ -80,7 +85,6 @@ export function ModReportDataTableRowActions({ row }) {
       toast.error(error.response?.data?.message || "Failed to mark as unread.");
     }
   };
-
   return (
     <>
       <DropdownMenu>
@@ -127,12 +131,17 @@ export function ModReportDataTableRowActions({ row }) {
             </DropdownMenuItem>
           )}
 
-          <DropdownMenuSeparator />
-
-          <DropdownMenuItem className="flex gap-2" onClick={openHideDialog}>
-            <ArchiveIcon size={14} className="text-muted-foreground" />
-            Hide Report
-          </DropdownMenuItem>
+          
+          {row.original.report_status?.stat_name === "Resolved" &&
+            row.original.report_status?.stat_name === "Dismissed" && (
+              <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="flex gap-2" onClick={openHideDialog}>
+                <ArchiveIcon size={14} className="text-muted-foreground" />
+                Hide Report
+              </DropdownMenuItem>
+              </>
+            )}
         </DropdownMenuContent>
       </DropdownMenu>
 

@@ -23,11 +23,11 @@ export function SkeletonTable({ columns }) {
               <TableHead className="py-2">
                 <Skeleton className="h-4 w-4" />
               </TableHead>
-              {columns.map((column) => (
-                <TableHead className="px-2 py-2" key={column.accessor}>
+              {columns.map((column, index) => (
+                <TableHead className="px-2 py-2" key={`${column.accessor}-${index}`}>
                   <div className="flex gap-2">
-                  <Skeleton className="h-4" />
-                  <ChevronsUpDown size={12}/>
+                    <Skeleton className="h-4" />
+                    <ChevronsUpDown size={12} />
                   </div>
                 </TableHead>
               ))}
@@ -40,8 +40,8 @@ export function SkeletonTable({ columns }) {
                 <TableCell className="px-4 py-4">
                   <Skeleton className="h-4 w-4" />
                 </TableCell>
-                {columns.map((column) => (
-                  <TableCell className="px-4 py-2" key={column.accessor}>
+                {columns.map((column, colIndex) => (
+                  <TableCell className="px-4 py-2" key={`${column.accessor}-${colIndex}`}>
                     <Skeleton className="h-4 w-full" />
                   </TableCell>
                 ))}

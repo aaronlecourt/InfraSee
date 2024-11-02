@@ -468,31 +468,55 @@ const getSubModeratorHiddenReports = asyncHandler(async (req, res) => {
 
 const hideReport = asyncHandler(async (req, res) => {
   try {
-    const reportIds = req.params.ids.split(","); // Assuming IDs are passed as a comma-separated string
+    const reportIds = req.params.ids.split(","); 
+    console.log("Report IDs received:", reportIds);
 
-    // Update multiple reports
-    const reports = await Report.updateMany(
-      { _id: { $in: reportIds } }, // Match any report with an ID in the array
+    const reports = await Report.find({ _id: { $in: reportIds } })
+      .populate('report_status', 'stat_name');
+
+    if (reports.length === 0) {
+      return res.status(404).json({ message: "No reports found for the given IDs." });
+    }
+
+    const invalidStatuses = reports.filter(report => {
+      const statusName = report.report_status ? report.report_status.stat_name : '';
+      return statusName !== 'Resolved' && statusName !== 'Dismissed';
+    });
+
+    if (invalidStatuses.length > 0) {
+      console.warn("Invalid statuses found for reports:", invalidStatuses);
+      return res.status(400).json({
+        message: "Your selection includes a report that is neither resolved nor dismissed.",
+        invalidReports: invalidStatuses.map(report => ({
+          id: report._id,
+          status: report.report_status ? report.report_status.stat_name : 'Status not found',
+        })),
+      });
+    }
+
+    const updateResult = await Report.updateMany(
+      { _id: { $in: reportIds } },
       { is_hidden: true, hidden_at: new Date() }
     );
 
-    if (reports.nModified === 0) {
+    if (updateResult.nModified === 0) {
       return res.status(404).json({ message: "No reports found to hide." });
     }
 
     res.json({
-      message: "Reports hidden successfully",
-      count: reports.nModified,
+      message: "Reports hidden successfully.",
+      count: updateResult.nModified,
     });
   } catch (error) {
     console.error(`Error hiding reports: ${error.message}`);
+    console.error(error); // Log the complete error object
 
     if (error.name === "CastError") {
-      res.status(400).json({ message: "Invalid report ID format." });
+      return res.status(400).json({ message: "Invalid report ID format." });
+    } else if (error.name === "ValidationError") {
+      return res.status(400).json({ message: "Validation error occurred." });
     } else {
-      res
-        .status(500)
-        .json({ message: "Server error. Please try again later." });
+      return res.status(500).json({ message: "Server error. Please try again later." });
     }
   }
 });

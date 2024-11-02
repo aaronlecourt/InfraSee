@@ -89,7 +89,7 @@ export function DataTableToolbar({
     const initializeData = async () => {
       const options = await fetchFilterOptions();
       setFilterOptions(options);
-      console.log("Fetched Filter Options:", options.reportStatus);
+      // console.log("Fetched Filter Options:", options.reportStatus);
     };
     initializeData();
   }, []);
