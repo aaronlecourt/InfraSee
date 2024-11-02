@@ -628,6 +628,7 @@ const updateReportStatus = async (req, res) => {
       is_new: true,
       request_time: null,
       report_time_resolved: report_time_resolved,
+      submod_is_new: false,
     };
 
     // Check if the status is being set to "Resolved"
@@ -645,6 +646,7 @@ const updateReportStatus = async (req, res) => {
           updateData.report_status = underReviewStatus._id;
           updateData.is_requested = true;
           updateData.request_time = Date.now();
+          updateData.submod_is_new = true;
         } else {
           // If no active submoderators, set the status to "Resolved"
           updateData.report_status = resolvedStatus._id;
@@ -715,6 +717,7 @@ const submodApproval = async (req, res) => {
       report.report_status = resolvedStatus._id;
       report.is_requested = false;
       report.is_new = true; // Optionally reset the "new" flag
+      report.submod_is_new = false; 
       await report.save();
 
       // Notify moderator on submoderator approval
@@ -763,6 +766,7 @@ const submodReject = async (req, res) => {
       report.report_status = forRevisionStatus._id;
       report.is_requested = false; // Set to false since it's no longer requested
       report.is_new = true; // Optionally reset the "new" flag
+      report.submod_is_new = false; // Set to false after submod read process
       await report.save();
 
       // Notify moderator on submoderator rejection
@@ -823,13 +827,17 @@ const markAsRead = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "Report not found." });
     }
 
-    if (!report.is_new) {
-      return res
-        .status(200)
-        .json({ message: "Report is already marked as read." });
+    if (!report.is_new && !report.submod_is_new) {
+      return res.status(200).json({ message: "Report is already marked as read." });
     }
 
-    report.is_new = false;
+    // Update based on is_requested
+    if (report.is_requested) {
+      report.submod_is_new = false;
+    } else {
+      report.is_new = false;
+    }
+
     const updatedReport = await report.save();
 
     res.json({
@@ -852,13 +860,18 @@ const markAsUnread = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "Report not found." });
     }
 
-    if (report.is_new) {
-      return res
-        .status(200)
-        .json({ message: "Report is already marked as unread." });
+    // Check if the report is already marked as unread
+    if (report.is_new && report.submod_is_new) {
+      return res.status(200).json({ message: "Report is already marked as unread." });
     }
 
-    report.is_new = true;
+    // Update based on is_requested
+    if (report.is_requested) {
+      report.submod_is_new = true;
+    } else {
+      report.is_new = true;
+    }
+
     const updatedReport = await report.save();
 
     res.json({

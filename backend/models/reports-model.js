@@ -9,6 +9,10 @@ const reportSchema = mongoose.Schema(
       type: Boolean,
       default: true
     },
+    submod_is_new: {
+      type: Boolean,
+      default: true
+    },
     report_mod: {
       type: mongoose.Schema.Types.ObjectId,
       ref: User,

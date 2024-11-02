@@ -61,14 +61,20 @@ export function ModUnassignedDataTableRowActions({ row }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
-          <DropdownMenuItem onClick={handleMarkAsRead} className="flex gap-2">
-            <Eye size={14} className="text-muted-foreground" />
-            Mark as Read
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleMarkAsUnread} className="flex gap-2">
-            <EyeOff size={14} className="text-muted-foreground" />
-            Mark as Unread
-          </DropdownMenuItem>
+        {row.original.is_new ? (
+            <DropdownMenuItem onClick={handleMarkAsRead} className="flex gap-2">
+              <Eye size={14} className="text-muted-foreground" />
+              Mark as Read
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem
+              onClick={handleMarkAsUnread}
+              className="flex gap-2"
+            >
+              <EyeOff size={14} className="text-muted-foreground" />
+              Mark as Unread
+            </DropdownMenuItem>
+          )}
 
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleShowDetails} className="flex gap-2">

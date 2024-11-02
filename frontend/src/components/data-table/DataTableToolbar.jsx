@@ -173,7 +173,7 @@ export function DataTableToolbar({
       <div className="grid grid-cols-1 gap-y-2">
         <div className="col-span-1 flex items-center justify-between">
           <div className="flex items-center">
-            {userInfo.isModerator && (activeTab === "reports" || activeTab === "hidden") && (
+            {userInfo.isModerator && activeTab === "reports"&& (
               <DataTableFacetedFilter
                 column={table.getColumn("report_status")}
                 title="Status"
@@ -182,6 +182,17 @@ export function DataTableToolbar({
                 )}
               />
             )}
+            {userInfo.isModerator && activeTab === "hidden" && (
+              <DataTableFacetedFilter
+                column={table.getColumn("report_status")}
+                title="Status"
+                options={filterOptions.reportStatus.filter((status) =>
+                  ["Dismissed", "Resolved"].includes(status.label)
+                )}
+              />
+            )}
+
+
             {userInfo.isSubModerator && activeTab === "reports" && (
               <DataTableFacetedFilter
                 column={table.getColumn("report_status")}

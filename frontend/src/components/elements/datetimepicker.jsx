@@ -27,19 +27,17 @@ export function DateTimePicker({ value, onChange, minDate, maxDate }) {
         return;
       }
       
-      // Set the time to one hour later than minDate while preserving minutes
+      // Set default time
       if (minDate) {
         const minSelectableTime = new Date(minDate);
-        minSelectableTime.setHours(minSelectableTime.getHours() + 1);
-  
-        // If the selected date is the same as minDate, set the hours and minutes accordingly
-        if (newDate.toDateString() === minSelectableTime.toDateString()) {
+        const isSameDay = newDate.toDateString() === minSelectableTime.toDateString();
+        
+        if (isSameDay) {
           newDate.setHours(minSelectableTime.getHours());
           newDate.setMinutes(minSelectableTime.getMinutes());
         } else {
-          // Otherwise, just set the hours to the default
-          newDate.setHours(minSelectableTime.getHours());
-          newDate.setMinutes(0); // Reset minutes to 0 for new selections on different days
+          newDate.setHours(0);
+          newDate.setMinutes(0);
         }
       } else {
         newDate.setHours(0);
@@ -64,12 +62,17 @@ export function DateTimePicker({ value, onChange, minDate, maxDate }) {
     }
 
     // Ensure the selected time is valid based on minDate and maxDate
-    if (minDate && date) {
+    if (minDate) {
       const minSelectableTime = new Date(minDate);
-      minSelectableTime.setHours(minSelectableTime.getHours() + 1); // At least one hour later
-      if (newDate < minSelectableTime) {
+      const isMinDateSameDay = newDate.toDateString() === minSelectableTime.toDateString();
+
+      // Set new date to minimum if below
+      if (isMinDateSameDay && newDate < minSelectableTime) {
         newDate.setHours(minSelectableTime.getHours());
-        newDate.setMinutes(0); // Reset minutes to 0 for the new time
+        newDate.setMinutes(minSelectableTime.getMinutes());
+      } else if (!isMinDateSameDay && newDate < minSelectableTime) {
+        newDate.setHours(0);
+        newDate.setMinutes(0);
       }
     }
 

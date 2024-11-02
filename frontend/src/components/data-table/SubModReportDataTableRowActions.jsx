@@ -159,7 +159,7 @@ export function SubModReportDataTableRowActions({ row }) {
             />
             Show Details
           </DropdownMenuItem>
-          {row.original.is_new ? (
+          {row.original.submod_is_new ? (
             <DropdownMenuItem onClick={handleMarkAsRead} className="flex gap-2">
               <Eye size={14} className="text-muted-foreground" />
               Mark as Read

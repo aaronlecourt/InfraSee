@@ -14,24 +14,30 @@ export const columnsSubModReports = [
   {
     accessorKey: "submod_id",
     title: "",
-    header: ({ column }) => <DataTableColumnHeader column={column} title=""/>,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: () => null,
     enableSorting: false,
     enableHiding: false,
     enableCellSorting: false,
   },
   {
-    accessorKey: "is_new",
+    accessorKey: "submod_is_new",
     title: "",
     header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => (
       <div className="whitespace-nowrap">
-        {row.getValue("is_new") ? (
-          <Badge variant="outline" className="w-full rounded-md border-muted-foreground/20 text-muted-foreground">
+        {row.getValue("submod_is_new") ? (
+          <Badge
+            variant="outline"
+            className="px-2 rounded-md border-none bg-muted-foreground text-white"
+          >
             Unread
           </Badge>
         ) : (
-          <Badge variant="outline" className="w-full rounded-md border-muted-foreground/20 text-muted-foreground">
+          <Badge
+            variant="outline"
+            className="px-2 rounded-md border-muted-foreground/20 text-muted-foreground"
+          >
             Read
           </Badge>
         )}
@@ -106,7 +112,11 @@ export const columnsSubModReports = [
       <DataTableColumnHeader column={column} title="Requested Last" />
     ),
     cell: ({ row }) => (
-      <div className="">{row.getValue("request_time") ? formatDate(row.getValue("request_time")) : "N/A"}</div>
+      <div className="">
+        {row.getValue("request_time")
+          ? formatDate(row.getValue("request_time"))
+          : "N/A"}
+      </div>
     ),
     filterFn: (row, id, value) => {
       const rowDate = new Date(row.getValue(id));
@@ -123,9 +133,13 @@ export const columnsSubModReports = [
       <DataTableColumnHeader column={column} title="Resolved on" />
     ),
     cell: ({ row }) => (
-      <div className="">{row.getValue("report_time_resolved") ? formatDate(row.getValue("report_time_resolved")) : "N/A"}</div>
+      <div className="">
+        {row.getValue("report_time_resolved")
+          ? formatDate(row.getValue("report_time_resolved"))
+          : "N/A"}
+      </div>
     ),
-    
+
     enableSorting: true,
     enableHiding: true,
   },

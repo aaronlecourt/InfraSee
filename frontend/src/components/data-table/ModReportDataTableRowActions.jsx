@@ -13,7 +13,7 @@ import {
 import { ReportDetailsDialog } from "../elements/report-details-modal";
 import { UpdateStatusDialog } from "../elements/update-status-modal";
 import { ConfirmHideDialog } from "../elements/hide-confirm-modal";
-import { ArchiveIcon, Edit, Eye, EyeOff } from "lucide-react";
+import { ArchiveIcon, Edit, Eye, EyeOff, LucideGalleryHorizontal, LucideGalleryThumbnails, LucideGalleryVertical, LucideGalleryVerticalEnd } from "lucide-react";
 import { toast } from "sonner";
 
 export function ModReportDataTableRowActions({ row }) {
@@ -99,7 +99,7 @@ export function ModReportDataTableRowActions({ row }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
           <DropdownMenuItem onClick={handleShowDetails} className="flex gap-2">
-            <Eye size={14} className="text-muted-foreground" />
+            <LucideGalleryVerticalEnd size={14} className="text-muted-foreground" />
             Show Details
           </DropdownMenuItem>
           <DropdownMenuSeparator />
