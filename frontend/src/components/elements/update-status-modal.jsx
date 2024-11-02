@@ -32,11 +32,30 @@ const baseSchema = z.object({
 });
 
 const resolvedSchema = baseSchema.extend({
-  report_time_resolved: z.string().min(1, "Time resolved is required when status is 'Resolved'."),
+  report_time_resolved: z.string().min(1, "Time resolved is required when status is 'Resolved'"),
 });
 
 const getSchema = (selectedStatus) => {
   return selectedStatus === "Resolved" ? resolvedSchema : baseSchema;
+};
+
+// Placeholder mapping based on status transitions
+const remarkPlaceholders = {
+  "Unassigned": {
+    "Pending": "Your report was successfully marked 'Pending' after we verified and accepted your report.",
+  },
+  "Pending": {
+    "In Progress": "Repairs for your report began on [date/time] and might finish by [date/time]. Delays may occur. You'll be notified once Resolved.",
+    "Unassigned": "We've mistakenly accepted your report and have returned it to unassigned status for other moderators to address.",
+    "Dismissed": "Your report was not verified. It may lack factual information or was considered a duplicate or spam.",
+  },
+  "In Progress": {
+    "Pending": "Apologies. Repairs for your report are paused due to [reasons] and will possibly resume on [date/time].",
+    "Resolved": "Your report has been successfully resolved and verified.",
+  },
+  "Dismissed": {},
+  "Resolved": {},
+  "Under Review": {},
 };
 
 export function UpdateStatusDialog({ isOpen, onClose, data }) {
@@ -97,6 +116,12 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
   const onSubmit = async (formData) => {
     const reportId = data._id;
 
+    // Check if the selected status is the same as the current status
+    if (formData.status === data.report_status._id) {
+      toast.error("You must change the status before submitting.");
+      return; // Early return to prevent submission
+    }
+
     try {
       const schema = getSchema(formData.status);
       schema.parse(formData);
@@ -155,6 +180,12 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
   };
 
   const allowedStatusOptions = getAllowedStatusOptions();
+
+  // Get the appropriate placeholder for the remarks field
+  const getRemarkPlaceholder = () => {
+    const placeholderMap = remarkPlaceholders[currentStatus] || {};
+    return placeholderMap[selectedStatus] || "Enter more detailed info on the status update. Maximum of 150 characters.";
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -223,7 +254,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                             <Textarea
                               {...field}
                               id="remarks"
-                              placeholder="Enter remarks (required, max 150 characters)"
+                              placeholder={getRemarkPlaceholder()}
                               className="mt-1"
                               rows="3"
                             />
