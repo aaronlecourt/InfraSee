@@ -61,11 +61,14 @@ export function DataTableToolbar({
   const handleHideReports = async () => {
     const reportIds = selectedRows.map((report) => report.original._id).join(",");
     const count = selectedRows.length;
+  
     try {
-      await axios.put(`/api/reports/hide/${reportIds}`);
+      const response = await axios.put(`/api/reports/hide/${reportIds}`);
       toast.success(`${count} report${count > 1 ? "s" : ""} hidden successfully.`);
     } catch (error) {
-      toast.error("Error hiding reports. Please try again.");
+  
+      const errorMessage = error.response?.data?.message || "Error hiding reports. Please try again.";
+      toast.error(errorMessage);
     } finally {
       setIsHideDialogOpen(false);
     }
@@ -75,7 +78,7 @@ export function DataTableToolbar({
     const reportIds = selectedRows.map((report) => report.original._id).join(",");
     const count = selectedRows.length;
     try {
-      await axios.put(`/api/reports/restore/${reportIds}`);
+      await axios.put(`/api/reports/restore/${reportIds}`).unwrap();
       toast.success(`${count} report${count > 1 ? "s" : ""} restored successfully.`);
     } catch (error) {
       toast.error("Error restoring reports. Please try again.");
