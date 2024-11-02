@@ -274,14 +274,14 @@ const deactivateModerator = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Retrieve status IDs for "Under Review" and "For Revision"
+    // Retrieve status IDs for "Under Review", "For Revision", "In Progress", and "Pending"
     const statuses = await Status.find({
-      stat_name: { $in: ["Under Review", "For Revision"] },
+      stat_name: { $in: ["Under Review", "For Revision", "In Progress", "Pending"] },
     });
     const statusIds = statuses.map((status) => status._id);
 
     if (user.isModerator) {
-      // Check if there are any reports with "Under Review" or "For Revision" assigned to this moderator
+      // Check if there are any reports with "Under Review", "For Revision", "In Progress", or "Pending" assigned to this moderator
       const pendingReports = await Report.find({
         report_mod: moderatorId,
         report_status: { $in: statusIds },
@@ -309,7 +309,7 @@ const deactivateModerator = asyncHandler(async (req, res) => {
 
       return res.status(200).json({ message });
     } else if (user.isSubModerator) {
-      // Check if the assigned moderator has any reports with "Under Review" status
+      // Check if the assigned moderator has any reports with "Under Review" or "For Revision" status
       const underReviewStatus = statuses.find(
         (status) => status.stat_name === "Under Review"
       )?._id;
