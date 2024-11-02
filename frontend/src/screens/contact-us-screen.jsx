@@ -17,7 +17,7 @@ function ContactUsScreen() {
 
   return (
     <HelmetProvider>
-      <div className="bg-[url('../bg.jpg')] bg-cover bg-no-repeat bg-bottom min-h-screen flex flex-col overflow-hidden">
+      <div className="bg-[url('/bg.jpg')] bg-cover bg-no-repeat bg-bottom min-h-screen flex flex-col overflow-hidden">
         <Helmet>
           <title>{"InfraSee | Contact Us"}</title>
         </Helmet>
