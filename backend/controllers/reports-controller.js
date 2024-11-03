@@ -2,7 +2,8 @@ import asyncHandler from "express-async-handler";
 import Report from "../models/reports-model.js";
 import User from "../models/user-model.js";
 import Status from "../models/status-model.js";
-import Notification from "../models/notifications-model.js";
+import { sendSMS } from "../utils/sms-service.js";
+
 import {
   notifySubmoderatorOnStatusChange,
   notifyModeratorOnNewReport,
@@ -387,7 +388,7 @@ const getSubModeratorReports = asyncHandler(async (req, res) => {
     const statusOrder = {
       "Under Review": 1,
       "For Revision": 2,
-      "Resolved": 3,
+      Resolved: 3,
     };
 
     const sortedReports = reports.sort((a, b) => {
@@ -468,28 +469,37 @@ const getSubModeratorHiddenReports = asyncHandler(async (req, res) => {
 
 const hideReport = asyncHandler(async (req, res) => {
   try {
-    const reportIds = req.params.ids.split(","); 
+    const reportIds = req.params.ids.split(",");
     console.log("Report IDs received:", reportIds);
 
-    const reports = await Report.find({ _id: { $in: reportIds } })
-      .populate('report_status', 'stat_name');
+    const reports = await Report.find({ _id: { $in: reportIds } }).populate(
+      "report_status",
+      "stat_name"
+    );
 
     if (reports.length === 0) {
-      return res.status(404).json({ message: "No reports found for the given IDs." });
+      return res
+        .status(404)
+        .json({ message: "No reports found for the given IDs." });
     }
 
-    const invalidStatuses = reports.filter(report => {
-      const statusName = report.report_status ? report.report_status.stat_name : '';
-      return statusName !== 'Resolved' && statusName !== 'Dismissed';
+    const invalidStatuses = reports.filter((report) => {
+      const statusName = report.report_status
+        ? report.report_status.stat_name
+        : "";
+      return statusName !== "Resolved" && statusName !== "Dismissed";
     });
 
     if (invalidStatuses.length > 0) {
       console.warn("Invalid statuses found for reports:", invalidStatuses);
       return res.status(400).json({
-        message: "Your selection includes a report that is neither resolved nor dismissed.",
-        invalidReports: invalidStatuses.map(report => ({
+        message:
+          "Your selection includes a report that is neither resolved nor dismissed.",
+        invalidReports: invalidStatuses.map((report) => ({
           id: report._id,
-          status: report.report_status ? report.report_status.stat_name : 'Status not found',
+          status: report.report_status
+            ? report.report_status.stat_name
+            : "Status not found",
         })),
       });
     }
@@ -516,7 +526,9 @@ const hideReport = asyncHandler(async (req, res) => {
     } else if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Validation error occurred." });
     } else {
-      return res.status(500).json({ message: "Server error. Please try again later." });
+      return res
+        .status(500)
+        .json({ message: "Server error. Please try again later." });
     }
   }
 });
@@ -677,6 +689,22 @@ const updateReportStatus = async (req, res) => {
     // Notify submoderators if the report status is requested
     await notifySubmoderatorOnStatusChange(updatedReport);
 
+    // Construct a flexible automated message based on the status
+    const statusName = updatedReport.report_status.stat_name; 
+    const remarks = updatedReport.status_remark || "No additional remarks.";
+    const moderatorName = moderator.name;
+
+    // Construct the message
+    const message = [
+      `Your report status has been updated to "${statusName}".`,
+      `Updated by: ${moderatorName}`,
+      `Remarks: ${remarks}`,
+      "This is an automated message; please do not reply.",
+    ].join("\n");
+
+    // Send SMS notification
+    await sendSMS(report.report_contactNum, message);
+
     // Return success response
     res.status(200).json({
       message: "Report status updated successfully",
@@ -717,7 +745,7 @@ const submodApproval = async (req, res) => {
       report.report_status = resolvedStatus._id;
       report.is_requested = false;
       report.is_new = true; // Optionally reset the "new" flag
-      report.submod_is_new = false; 
+      report.submod_is_new = false;
       await report.save();
 
       // Notify moderator on submoderator approval
@@ -828,7 +856,9 @@ const markAsRead = asyncHandler(async (req, res) => {
     }
 
     if (!report.is_new && !report.submod_is_new) {
-      return res.status(200).json({ message: "Report is already marked as read." });
+      return res
+        .status(200)
+        .json({ message: "Report is already marked as read." });
     }
 
     // Update based on is_requested
@@ -862,7 +892,9 @@ const markAsUnread = asyncHandler(async (req, res) => {
 
     // Check if the report is already marked as unread
     if (report.is_new && report.submod_is_new) {
-      return res.status(200).json({ message: "Report is already marked as unread." });
+      return res
+        .status(200)
+        .json({ message: "Report is already marked as unread." });
     }
 
     // Update based on is_requested
