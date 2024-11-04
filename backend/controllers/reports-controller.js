@@ -2,7 +2,6 @@ import asyncHandler from "express-async-handler";
 import Report from "../models/reports-model.js";
 import User from "../models/user-model.js";
 import Status from "../models/status-model.js";
-import { sendSMS } from "../utils/sms-service.js";
 
 import {
   notifySubmoderatorOnStatusChange,
@@ -703,7 +702,6 @@ const updateReportStatus = async (req, res) => {
     ].join("\n");
 
     // Send SMS notification
-    await sendSMS(report.report_contactNum, message);
 
     // Return success response
     res.status(200).json({
