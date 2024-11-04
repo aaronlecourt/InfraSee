@@ -24,7 +24,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
-import { DateTimePicker } from "./DateTimePicker"; // Adjust the import path as necessary
+import { DateTimePicker } from "./datetimepicker";
 
 const baseSchema = z.object({
   status: z.string().min(1, "Status is required"),
