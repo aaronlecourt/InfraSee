@@ -227,7 +227,7 @@ const ModNavbar = ({
             <PopoverContent
               align="end"
               side="bottom"
-              className="shadow-sm absolute right-0 z-10 max-h-[350px] min-w-60 max-w-72 bg-white border rounded-md overflow-y-auto cursor-default p-0"
+              className="shadow-sm absolute right-0 z-30 max-h-[350px] min-w-60 max-w-72 bg-white border rounded-md overflow-y-auto cursor-default p-0"
             >
               <ul className="p-1 flex flex-col gap-1">
                 {notifications.length === 0 ? (

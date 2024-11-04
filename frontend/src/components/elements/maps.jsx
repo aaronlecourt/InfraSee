@@ -161,7 +161,7 @@ const Maps = ({ data, userInfo }) => {
   return (
     <APIProvider apiKey={apiKey}>
       <div className="w-full h-full relative">
-        <div className="absolute top-3 left-3 z-50 max-w-md gap-2 flex flex-col-reverse sm:flex-row">
+        <div className="absolute top-3 left-3 z-10 max-w-md gap-2 flex flex-col-reverse sm:flex-row">
           <div className="relative">
             <Input
               ref={inputRef}
@@ -176,7 +176,7 @@ const Maps = ({ data, userInfo }) => {
             </div>
           </div>
           {predictions.length > 0 && (
-            <ul className="absolute bg-white border rounded-md text-sm max-h-52 overflow-y-auto z-50 mt-10">
+            <ul className="absolute bg-white border rounded-md text-sm max-h-52 overflow-y-auto z-10 mt-10">
               {predictions.map((prediction) => (
                 <li
                   key={prediction.place_id}
@@ -197,7 +197,7 @@ const Maps = ({ data, userInfo }) => {
         {!userInfo.isSubModerator && (
           <>
             {/* Toggle button for status */}
-            <div className="absolute top-3 right-3 z-50 flex flex-col items-end gap-2 shadow-sm">
+            <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-2 shadow-sm">
               <Button
                 variant="outline"
                 onClick={() => setStatusVisible(!statusVisible)}

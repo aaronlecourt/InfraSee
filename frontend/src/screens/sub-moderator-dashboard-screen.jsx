@@ -73,7 +73,7 @@ const SubModeratorDashboardScreen = () => {
         <Helmet>
           <title>{"InfraSee | Sub-Moderator Dashboard"}</title>
         </Helmet>
-        <div className="sticky top-0 z-10 bg-white">
+        <div className="sticky top-0 z-20 bg-white">
           <SubModNavbar
             userInfo={userInfo}
             activeTab={activeTab}

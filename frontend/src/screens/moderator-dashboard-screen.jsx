@@ -114,7 +114,7 @@ const ModeratorDashboardScreen = () => {
         <Helmet>
           <title>{"InfraSee | Moderator Dashboard"}</title>
         </Helmet>
-        <div className="sticky top-0 z-10 bg-white">
+        <div className="sticky top-0 z-20 bg-white">
           <ModNavbar
             userInfo={userInfo}
             activeTab={activeTab}
