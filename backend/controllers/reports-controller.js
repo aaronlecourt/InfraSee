@@ -683,13 +683,16 @@ const updateReportStatus = async (req, res, io) => {
     // Update the report with new status and information
     const updatedReport = await Report.findByIdAndUpdate(reportId, updateData, {
       new: true,
+    }).populate({
+      path: 'report_status',
+      select: 'stat_name' 
     });
 
     // Notify submoderators if the report status is requested
     await notifySubmoderatorOnStatusChange(updatedReport);
 
     // Construct a flexible automated message based on the status
-    const statusName = updatedReport.report_status.stat_name; 
+    const statusName = updatedReport.report_status?.stat_name;
     const remarks = updatedReport.status_remark || "No additional remarks.";
     const moderatorName = moderator.name;
 
@@ -704,7 +707,7 @@ const updateReportStatus = async (req, res, io) => {
     // Send SMS notification
     io.emit('sms sender', { phone_number: report.report_contactNum, message });
     console.log('SMS sender event emitted to socket:', { phone_number: report.report_contactNum, message });
-    
+
     // Return success response
     res.status(200).json({
       message: "Report status updated successfully",
