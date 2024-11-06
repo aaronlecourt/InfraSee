@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 import Report from "../models/reports-model.js";
 import User from "../models/user-model.js";
 import Status from "../models/status-model.js";
+import { sendSMSNotification } from "../config/socket.js";
 
 import {
   notifySubmoderatorOnStatusChange,
@@ -705,7 +706,7 @@ const updateReportStatus = async (req, res, io) => {
     ].join("\n");
 
     // Send SMS notification
-    io.emit('sms sender', { phone_number: report.report_contactNum, message });
+    sendSMSNotification(io, report.report_contactNum, message);
     console.log('SMS sender event emitted to socket:', { message, phone_number: report.report_contactNum });
 
     // Return success response
