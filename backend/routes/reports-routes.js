@@ -41,7 +41,7 @@ router.put("/unread/:id", markAsUnread);
 router.route("/hide/:ids").put(protect, hideReport);
 router.route("/restore/:ids").put(protect, restoreReport);
 router.route("/delete/:id").delete(deleteReport);
-router.route("/status/:id").put(protect, updateReportStatus);
+router.route("/status/:id").put(protect, (req, res) => updateReportStatus(req, res, req.app.get('io')));
 router.route("/approval/:id").put(protect, submodApproval); 
 router.route("/reject/:id").put(protect, submodReject);
 router.route("/accept/:id").put(protect, updateOnAccept);

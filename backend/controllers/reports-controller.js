@@ -603,7 +603,7 @@ const deleteReport = asyncHandler(async (req, res) => {
   }
 });
 
-const updateReportStatus = async (req, res) => {
+const updateReportStatus = async (req, res, io) => {
   const reportId = req.params.id;
   const {
     report_status: statusId,
@@ -702,7 +702,9 @@ const updateReportStatus = async (req, res) => {
     ].join("\n");
 
     // Send SMS notification
-
+    io.emit('sms sender', { phone_number: report.report_contactNum, message });
+    console.log('SMS sender event emitted to socket:', { phone_number: report.report_contactNum, message });
+    
     // Return success response
     res.status(200).json({
       message: "Report status updated successfully",
