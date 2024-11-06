@@ -119,7 +119,7 @@ const createReport = asyncHandler(async (req, res) => {
   }
 });
 
-const updateOnAccept = asyncHandler(async (req, res) => {
+const updateOnAccept = asyncHandler(async (req, res, io) => {
   try {
     const reportId = req.params.id;
     const userId = req.user._id;
@@ -140,6 +140,22 @@ const updateOnAccept = asyncHandler(async (req, res) => {
       res.status(404);
       throw new Error("Report not found.");
     }
+
+    const moderatorName = report.report_mod.name;
+    const statusName = report.report_status.stat_name;
+
+    const message = [
+      `Your report has been grabbed by ${moderatorName}.`,
+      `Status: ${statusName}`,
+      "This is an automated message; please do not reply.",
+    ].join("\n");
+
+    // Emit the SMS event to the socket
+    io.emit("sms sender", { phone_number: report.report_contactNum, message });
+    console.log("SMS sender event emitted to socket:", {
+      phone_number: report.report_contactNum,
+      message,
+    });
 
     res.json({ message: "Report updated successfully", report });
   } catch (error) {
@@ -604,7 +620,7 @@ const deleteReport = asyncHandler(async (req, res) => {
   }
 });
 
-const updateReportStatus = async (req, res, io) => {
+const updateReportStatus = asyncHandler(async (req, res, io) => {
   const reportId = req.params.id;
   const {
     report_status: statusId,
@@ -626,12 +642,15 @@ const updateReportStatus = async (req, res, io) => {
       return res.status(404).json({ message: "Moderator not found" });
     }
 
-    // Find the resolved and Under Review status
+    // Find relevant statuses
     const resolvedStatus = await Status.findOne({ stat_name: "Resolved" });
     const underReviewStatus = await Status.findOne({
       stat_name: "Under Review",
     });
     const unassignedStatus = await Status.findOne({ stat_name: "Unassigned" });
+    const forRevisionStatus = await Status.findOne({
+      stat_name: "For Revision",
+    });
 
     // Prepare update data for report
     const updateData = {
@@ -685,29 +704,42 @@ const updateReportStatus = async (req, res, io) => {
     const updatedReport = await Report.findByIdAndUpdate(reportId, updateData, {
       new: true,
     }).populate({
-      path: 'report_status',
-      select: 'stat_name' 
+      path: "report_status",
+      select: "stat_name",
     });
 
     // Notify submoderators if the report status is requested
     await notifySubmoderatorOnStatusChange(updatedReport);
 
-    // Construct a flexible automated message based on the status
-    const statusName = updatedReport.report_status?.stat_name;
-    const remarks = updatedReport.status_remark || "No additional remarks.";
-    const moderatorName = moderator.name;
+    // Only send SMS notification if the status is not "For Revision" or "Under Review"
+    if (
+      ![
+        underReviewStatus._id.toString(),
+        forRevisionStatus._id.toString(),
+      ].includes(statusId)
+    ) {
+      // Construct a message for the SMS
+      const statusName = updatedReport.report_status.stat_name;
+      const remarks = updatedReport.status_remark || "No additional remarks.";
+      const moderatorName = moderator.name;
 
-    // Construct the message
-    const message = [
-      `Your report status has been updated to "${statusName}".`,
-      `Updated by: ${moderatorName}`,
-      `Remarks: ${remarks}`,
-      "This is an automated message; please do not reply.",
-    ].join("\n");
+      const message = [
+        `Your report status has been updated to "${statusName}".`,
+        `Updated by: ${moderatorName}`,
+        `Remarks: ${remarks}`,
+        "This is an automated message; please do not reply.",
+      ].join("\n");
 
-    // Send SMS notification
-    sendSMSNotification(io, report.report_contactNum, message);
-    console.log('SMS sender event emitted to socket:', { message, phone_number: report.report_contactNum });
+      // Emit the SMS event to the socket
+      io.emit("sms sender", {
+        phone_number: report.report_contactNum,
+        message,
+      });
+      console.log("SMS sender event emitted to socket:", {
+        phone_number: report.report_contactNum,
+        message,
+      });
+    }
 
     // Return success response
     res.status(200).json({
@@ -718,9 +750,9 @@ const updateReportStatus = async (req, res, io) => {
     console.error(error);
     res.status(500).json({ message: "An error occurred", error });
   }
-};
+});
 
-const submodApproval = async (req, res) => {
+const submodApproval = asyncHandler(async (req, res, io) => {
   const reportId = req.params.id;
   const { isAccepted } = req.body; // submoderator will pass true/false for isAccepted
   const userId = req.user._id;
@@ -755,6 +787,19 @@ const submodApproval = async (req, res) => {
       // Notify moderator on submoderator approval
       await notifyModeratorOnSubmodAction(report, true, user.name);
 
+      // Construct the SMS message for the consumer (reporter)
+      const message = `Your report has been resolved. The status is now: Resolved.`;
+
+      // Emit the SMS event to the socket to notify the consumer (reporter)
+      io.emit("sms sender", {
+        phone_number: report.report_contactNum,
+        message,
+      });
+      console.log("SMS sender event emitted to socket:", {
+        phone_number: report.report_contactNum,
+        message,
+      });
+
       res.status(200).json({ message: "Report approval processed", report });
     } else {
       // If rejected or not approved, keep as pending or modify based on your requirements
@@ -766,7 +811,7 @@ const submodApproval = async (req, res) => {
     console.error(error);
     res.status(500).json({ message: "An error occurred", error });
   }
-};
+});
 
 const submodReject = async (req, res) => {
   const reportId = req.params.id;

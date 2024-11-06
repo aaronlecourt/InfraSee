@@ -42,8 +42,9 @@ router.route("/hide/:ids").put(protect, hideReport);
 router.route("/restore/:ids").put(protect, restoreReport);
 router.route("/delete/:id").delete(deleteReport);
 router.route("/status/:id").put(protect, (req, res) => updateReportStatus(req, res, req.app.get('io')));
-router.route("/approval/:id").put(protect, submodApproval); 
+router.route("/approval/:id").put(protect, (req, res) => submodApproval(req, res, req.app.get('io')));
 router.route("/reject/:id").put(protect, submodReject);
-router.route("/accept/:id").put(protect, updateOnAccept);
+router.route("/accept/:id").put(protect, (req, res) => updateOnAccept(req, res, req.app.get('io')));
+
 
 export default router;
