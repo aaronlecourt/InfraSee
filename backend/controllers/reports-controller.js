@@ -706,7 +706,7 @@ const updateReportStatus = async (req, res, io) => {
 
     // Send SMS notification
     io.emit('sms sender', { phone_number: report.report_contactNum, message });
-    console.log('SMS sender event emitted to socket:', { phone_number: report.report_contactNum, message });
+    console.log('SMS sender event emitted to socket:', { message, phone_number: report.report_contactNum });
 
     // Return success response
     res.status(200).json({
