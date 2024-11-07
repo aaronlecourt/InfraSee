@@ -724,9 +724,9 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
       const moderatorName = moderator.name;
 
       const message = [
-        `Your report status has been updated to "${statusName}".`,
-        `Updated by: ${moderatorName}`,
-        `Remarks: ${remarks}`,
+        // `Your report status has been updated to "${statusName}".`,
+        // `Updated by: ${moderatorName}`,
+        // `Remarks: ${remarks}`,
         "This is an automated message; please do not reply.",
       ].join("\n");
 
