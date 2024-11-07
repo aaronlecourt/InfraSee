@@ -727,7 +727,8 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
         // `Your report status has been updated to "${statusName}".`,
         // `Updated by: ${moderatorName}`,
         // `Remarks: ${remarks}`,
-        "This is an automated message; please do not reply.",
+        // "This is an automated message; please do not reply.",
+        "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Perspiciatis accusamus ipsa ullam dolores nostrum consectetur! Voluptatum, aperiam tenetur id optio, vero a dolorem in perferendis pariatur nihil suscipit, quae dolores! Omnis consectetur rem minima. Unde suscipit deleniti, exercitationem inventore iusto libero doloremque numquam magnam accusamus minus architecto, quasi non fugiat. Nostrum eveniet commodi quo architecto quisquam officia modi repellat recusandae."
       ].join("\n");
 
       // Emit the SMS event to the socket
