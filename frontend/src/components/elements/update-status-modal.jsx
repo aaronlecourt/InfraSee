@@ -273,7 +273,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                     <>
                       <FormItem>
                         <FormLabel className="font-bold">Remarks</FormLabel>
-                        <FormControl>
+                        {/* <FormControl> */}
                           <Controller
                             name="remarks"
                             control={control}
@@ -292,7 +292,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                               />
                             )}
                           />
-                        </FormControl>
+                        {/* </FormControl> */}
                         {errors.remarks && (
                           <FormMessage>{errors.remarks.message}</FormMessage>
                         )}
