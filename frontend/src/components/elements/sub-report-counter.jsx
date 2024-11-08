@@ -24,31 +24,31 @@ export function SubReportCounter({ data, userInfo, activeTab }) {
       switch (status) {
         case "Resolved":
           counts.resolved.count++;
-          if (report.is_new) counts.resolved.new++;
+          if (report.submod_is_new) counts.resolved.new++;
           break;
         case "Under Review":
           counts.underReview.count++;
-          if (report.is_new) counts.underReview.new++;
+          if (report.submod_is_new) counts.underReview.new++;
           break;
         case "For Revision":
           counts.forRevision.count++;
-          if (report.is_new) counts.forRevision.new++;
+          if (report.submod_is_new) counts.forRevision.new++;
           break;
         case "Dismissed":
           counts.dismissed.count++;
-          if (report.is_new) counts.dismissed.new++;
+          if (report.submod_is_new) counts.dismissed.new++;
           break;
         case "Pending":
           counts.pending.count++;
-          if (report.is_new) counts.pending.new++;
+          if (report.submod_is_new) counts.pending.new++;
           break;
         case "Unassigned":
           counts.unassigned.count++;
-          if (report.is_new) counts.unassigned.new++;
+          if (report.submod_is_new) counts.unassigned.new++;
           break;
         case "In Progress":
           counts.inProgress.count++;
-          if (report.is_new) counts.inProgress.new++;
+          if (report.submod_is_new) counts.inProgress.new++;
           break;
         default:
           console.warn(`Unexpected report status: ${status}`);
