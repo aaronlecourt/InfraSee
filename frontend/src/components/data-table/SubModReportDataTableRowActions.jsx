@@ -53,6 +53,7 @@ export function SubModReportDataTableRowActions({ row }) {
       // Send approval request with isAccepted set to true
       const response = await axios.put(`/api/reports/approval/${reportId}`, {
         isAccepted: true,
+        remarks: dialogData?.status_remark
       });
       toast.success(response.data.message || "Report successfully approved!");
       setAcceptDialogOpen(false);

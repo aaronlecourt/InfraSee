@@ -143,11 +143,13 @@ const updateOnAccept = asyncHandler(async (req, res, io) => {
 
     const moderatorName = report.report_mod.name;
     const statusName = report.report_status.stat_name;
+    const reporterName = report.report_by;
 
     const message = [
-      `Your report has been grabbed by ${moderatorName}.`,
-      `Status: ${statusName}`,
-      "This is an automated message; please do not reply.",
+      "InfraSee - Your one-stop tool for reporting infrastructure damage. \n"
+      `Hello ${reporterName}!`
+      `Your report has been assessed and assigned for further action by ${moderatorName}.`,
+      `\n[Report Status]: ${statusName}`,
     ].join("\n");
 
     // Emit the SMS event to the socket
@@ -722,13 +724,13 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
       const statusName = updatedReport.report_status.stat_name;
       const remarks = updatedReport.status_remark || "No additional remarks.";
       const moderatorName = moderator.name;
+      const reporterName = updatedReport.report_by;
 
       const message = [
-        // `Your report status has been updated to "${statusName}".`,
-        // `Updated by: ${moderatorName}`,
-        // `Remarks: ${remarks}`,
-        // "This is an automated message; please do not reply.",
-        "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Perspiciatis accusamus ipsa ullam dolores nostrum consectetur! Voluptatum, aperiam tenetur id optio, vero a dolorem in perferendis pariatur nihil suscipit, quae dolores! Omnis consectetur rem minima. Unde suscipit deleniti, exercitationem inventore iusto libero doloremque numquam magnam accusamus minus architecto, quasi non fugiat. Nostrum eveniet commodi quo architecto quisquam officia modi repellat recusandae."
+        "InfraSee - Your one-stop tool for reporting infrastructure damage. \n"
+        `Hello ${reporterName}!`
+        `${moderatorName} has successfully updated your report status to '${statusName}'`,
+        `Remarks: ${remarks}`,
       ].join("\n");
 
       // Emit the SMS event to the socket
@@ -755,7 +757,7 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
 
 const submodApproval = asyncHandler(async (req, res, io) => {
   const reportId = req.params.id;
-  const { isAccepted } = req.body; // submoderator will pass true/false for isAccepted
+  const { isAccepted, remarks } = req.body; // submoderator will pass true/false for isAccepted
   const userId = req.user._id;
 
   try {
@@ -789,7 +791,14 @@ const submodApproval = asyncHandler(async (req, res, io) => {
       await notifyModeratorOnSubmodAction(report, true, user.name);
 
       // Construct the SMS message for the consumer (reporter)
-      const message = `Your report has been resolved. The status is now: Resolved.`;
+      // const message = `Your report has been resolved. The status is now: Resolved.`;
+
+      const message = [
+        "InfraSee - Your one-stop tool for reporting infrastructure damage. \n"
+        `Hello ${reporterName}!`
+        `The report you made has now been resolved. Thank you for using InfraSee.'`,
+        `Remarks: ${remarks}`,
+      ].join("\n");
 
       // Emit the SMS event to the socket to notify the consumer (reporter)
       io.emit("sms sender", {
