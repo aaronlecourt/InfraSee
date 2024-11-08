@@ -21,13 +21,13 @@ export function DateTimePicker({ value, onChange, minDate, maxDate }) {
   const handleDateSelect = (selectedDate) => {
     if (selectedDate) {
       const newDate = new Date(selectedDate);
-      
+
       // Prevent selecting a date beyond maxDate
       if (maxDate && newDate > new Date(maxDate)) {
         return;
       }
-      
-      // Set default time
+
+      // Set default time based on minDate if available
       if (minDate) {
         const minSelectableTime = new Date(minDate);
         const isSameDay = newDate.toDateString() === minSelectableTime.toDateString();
@@ -43,7 +43,7 @@ export function DateTimePicker({ value, onChange, minDate, maxDate }) {
         newDate.setHours(0);
         newDate.setMinutes(0);
       }
-  
+
       setDate(newDate);
       onChange(newDate.toISOString());
     }
@@ -61,19 +61,11 @@ export function DateTimePicker({ value, onChange, minDate, maxDate }) {
       newDate.setHours(value === "PM" ? currentHours + 12 : currentHours - 12);
     }
 
-    // Ensure the selected time is valid based on minDate and maxDate
-    if (minDate) {
+    // Ensure the selected time is within the bounds of minDate and maxDate
+    if (minDate && newDate < new Date(minDate)) {
       const minSelectableTime = new Date(minDate);
-      const isMinDateSameDay = newDate.toDateString() === minSelectableTime.toDateString();
-
-      // Set new date to minimum if below
-      if (isMinDateSameDay && newDate < minSelectableTime) {
-        newDate.setHours(minSelectableTime.getHours());
-        newDate.setMinutes(minSelectableTime.getMinutes());
-      } else if (!isMinDateSameDay && newDate < minSelectableTime) {
-        newDate.setHours(0);
-        newDate.setMinutes(0);
-      }
+      newDate.setHours(minSelectableTime.getHours());
+      newDate.setMinutes(minSelectableTime.getMinutes());
     }
 
     if (maxDate && newDate > new Date(maxDate)) {
