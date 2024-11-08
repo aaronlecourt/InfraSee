@@ -18,7 +18,7 @@ export function SubReportCounter({ data, userInfo, activeTab }) {
       counts.total.count++; // Increment total count
       const status = report.report_status?.stat_name || "unknown";
 
-      if (report.is_new) counts.total.new++; // Increment new count for total
+      if (report.submod_is_new) counts.total.new++; // Increment new count for total
 
       // Increment the count for the corresponding status
       switch (status) {

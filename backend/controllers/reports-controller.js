@@ -683,6 +683,7 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
         updateData.is_requested = true;
         updateData.request_time = Date.now();
         updateData.submod_is_new = true;
+        updateData.under_submod = true;
       } else {
         // If no submoderators, set the status to "Resolved"
         updateData.report_status = resolvedStatus._id;
@@ -784,6 +785,7 @@ const submodApproval = asyncHandler(async (req, res, io) => {
       report.is_requested = false;
       report.is_new = true; // Optionally reset the "new" flag
       report.submod_is_new = false;
+      report.under_submod = false;
       await report.save();
 
       // Notify moderator on submoderator approval
@@ -864,6 +866,7 @@ const submodReject = async (req, res) => {
       report.is_new = true; // Optionally reset the "new" flag
       report.submod_is_new = false; // Set to false after submod read process
       report.request_time = null;
+      report.under_submod = false;
       await report.save();
 
       // Notify moderator on submoderator rejection
@@ -930,11 +933,11 @@ const markAsRead = asyncHandler(async (req, res) => {
         .json({ message: "Report is already marked as read." });
     }
 
-    // Update based on is_requested
-    if (report.is_requested) {
-      report.submod_is_new = false;
+    // Check if the report is under submoderator review (under_submod is true)
+    if (report.under_submod) {
+      report.submod_is_new = false;  // Update submod_is_new if under_submod is true
     } else {
-      report.is_new = false;
+      report.is_new = false;  // Otherwise, update is_new
     }
 
     const updatedReport = await report.save();
@@ -966,11 +969,11 @@ const markAsUnread = asyncHandler(async (req, res) => {
         .json({ message: "Report is already marked as unread." });
     }
 
-    // Update based on is_requested
-    if (report.request_time) {
-      report.submod_is_new = true;
+    // Update based on under_submod flag
+    if (report.under_submod) {
+      report.submod_is_new = true;  // Mark as unread for submoderator
     } else {
-      report.is_new = true;
+      report.is_new = true;  // Mark as unread for regular moderator
     }
 
     const updatedReport = await report.save();
@@ -984,6 +987,7 @@ const markAsUnread = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
+
 
 export {
   createReport,

@@ -86,7 +86,11 @@ const reportSchema = mongoose.Schema(
       type: Date,
       default: null,
       nullable: true, 
-    }
+    },
+    under_submod:{
+      type: Boolean,
+      default: false, 
+    },
   },
   {
     timestamps: true,
