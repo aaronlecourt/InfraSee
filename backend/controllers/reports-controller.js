@@ -107,7 +107,7 @@ const createReport = asyncHandler(async (req, res, io) => {
     ].join("\n");
 
     // Emit the SMS event to the socket
-    io.emit("sms sender", { phone_number: report.report_contactNum, message });
+    io.emit("sms sender", { phone_number: populatedReport.report_contactNum, message });
     console.log("SMS sender event emitted to socket:", {
       phone_number: report.report_contactNum,
       message,
