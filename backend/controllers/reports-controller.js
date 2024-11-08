@@ -863,6 +863,7 @@ const submodReject = async (req, res) => {
       report.is_requested = false; // Set to false since it's no longer requested
       report.is_new = true; // Optionally reset the "new" flag
       report.submod_is_new = false; // Set to false after submod read process
+      report.request_time = null;
       await report.save();
 
       // Notify moderator on submoderator rejection
