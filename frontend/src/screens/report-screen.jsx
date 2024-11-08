@@ -122,29 +122,30 @@ function ReportScreen() {
   const filteredData = data.filter(report => {
     // Exclude reports with status "Under Review" or "For Revision"
     if (report.report_status.stat_name === "Under Review" || report.report_status.stat_name === "For Revision") {
-      return false;
+      // Temporarily set the status to "In Progress"
+      report.report_status.stat_name = "In Progress"; // Override status
     }
-
+  
     const reportDate = new Date(report.createdAt);
     // Normalize report date to UTC
     const normalizedReportDate = new Date(reportDate.setUTCHours(0, 0, 0, 0));
-
+  
     const { from, to } = dateRange;
-
+  
     const fromDate = from ? new Date(from).setUTCHours(0, 0, 0, 0) : null;
     const toDate = to ? new Date(to).setUTCHours(23, 59, 59, 999) : null;
-
+  
     const isInDateRange =
       (fromDate === null || normalizedReportDate >= fromDate) &&
       (toDate === null || normalizedReportDate <= toDate);
-
+  
     const isStatusMatch = 
       selectedStatus === "All" || 
       report.report_status.stat_name === selectedStatus;
-
+  
     return isInDateRange && isStatusMatch;
   });
-
+  
   return (
     <HelmetProvider>
       <div className="flex flex-col min-h-screen">
