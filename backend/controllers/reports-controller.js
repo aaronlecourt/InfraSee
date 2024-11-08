@@ -940,9 +940,9 @@ const submodApproval = asyncHandler(async (req, res, io) => {
 
       // Construct the SMS message for the consumer (reporter)
       const message = [
+        `[InfraSee]`,
         `Hello ${report.report_by}! The report you made has now been resolved. Thank you for using InfraSee.`,
         `Remarks: ${remarks || "No remarks provided."}`,
-        `\n[InfraSee]`,
       ].join("\n");
 
       // Emit the SMS event to the socket to notify the consumer (reporter)
