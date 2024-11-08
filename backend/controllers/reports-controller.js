@@ -146,8 +146,8 @@ const updateOnAccept = asyncHandler(async (req, res, io) => {
     const reporterName = report.report_by;
 
     const message = [
-      "InfraSee - Your one-stop tool for reporting infrastructure damage. \n"
-      `Hello ${reporterName}!`
+      `InfraSee - Your one-stop tool for reporting infrastructure damage. \n`,
+      `Hello ${reporterName}!`,
       `Your report has been assessed and assigned for further action by ${moderatorName}.`,
       `\n[Report Status]: ${statusName}`,
     ].join("\n");
@@ -727,8 +727,8 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
       const reporterName = updatedReport.report_by;
 
       const message = [
-        "InfraSee - Your one-stop tool for reporting infrastructure damage. \n"
-        `Hello ${reporterName}!`
+        `InfraSee - Your one-stop tool for reporting infrastructure damage. \n`,
+        `Hello ${reporterName}!`,
         `${moderatorName} has successfully updated your report status to '${statusName}'`,
         `Remarks: ${remarks}`,
       ].join("\n");
@@ -794,8 +794,8 @@ const submodApproval = asyncHandler(async (req, res, io) => {
       // const message = `Your report has been resolved. The status is now: Resolved.`;
 
       const message = [
-        "InfraSee - Your one-stop tool for reporting infrastructure damage. \n"
-        `Hello ${reporterName}!`
+        `InfraSee - Your one-stop tool for reporting infrastructure damage. \n`,
+        `Hello ${reporterName}!`,
         `The report you made has now been resolved. Thank you for using InfraSee.'`,
         `Remarks: ${remarks}`,
       ].join("\n");
