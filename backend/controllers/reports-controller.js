@@ -660,15 +660,11 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
 
     // Find relevant statuses
     const resolvedStatus = await Status.findOne({ stat_name: "Resolved" });
-    const underReviewStatus = await Status.findOne({
-      stat_name: "Under Review",
-    });
+    const underReviewStatus = await Status.findOne({ stat_name: "Under Review" });
     const unassignedStatus = await Status.findOne({ stat_name: "Unassigned" });
-    const forRevisionStatus = await Status.findOne({
-      stat_name: "For Revision",
-    });
+    const forRevisionStatus = await Status.findOne({ stat_name: "For Revision" });
 
-    // Prepare update data for report
+    // Prepare update data for the report
     const updateData = {
       report_status: statusId,
       status_remark,
@@ -682,31 +678,17 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
     if (statusId === resolvedStatus._id.toString()) {
       // Check if the moderator has submoderators
       if (moderator.subModerators.length > 0) {
-        // Find active submoderators
-        const activeSubMods = await User.find({
-          assignedModerator: moderator._id,
-          deactivated: false,
-        });
-
-        if (activeSubMods.length > 0) {
-          // If there are active submoderators, set status to "Under Review" and is_requested to true
-          updateData.report_status = underReviewStatus._id;
-          updateData.is_requested = true;
-          updateData.request_time = Date.now();
-          updateData.submod_is_new = true;
-        } else {
-          // If no active submoderators, set the status to "Resolved"
-          updateData.report_status = resolvedStatus._id;
-          updateData.is_requested = false;
-          updateData.request_time = null;
-          updateData.report_time_resolved = Date.now();
-        }
+        // If there are submoderators, set the status to "Under Review" and is_requested to true
+        updateData.report_status = underReviewStatus._id;
+        updateData.is_requested = true;
+        updateData.request_time = Date.now();
+        updateData.submod_is_new = true;
       } else {
         // If no submoderators, set the status to "Resolved"
         updateData.report_status = resolvedStatus._id;
         updateData.is_requested = false;
         updateData.request_time = null;
-        updateData.report_time_resolved = resolvedStatus.report_time_resolved;
+        updateData.report_time_resolved = Date.now();
       }
     }
 
@@ -727,14 +709,17 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
     // Notify submoderators if the report status is requested
     await notifySubmoderatorOnStatusChange(updatedReport);
 
-    // Only send SMS notification if the status is not "For Revision" or "Under Review"
+    // Only send SMS notification if:
+    // 1. The status is not "Under Review" or "For Revision"
+    // 2. The status is not "Resolved" AND there are submoderators
     if (
       ![
         underReviewStatus._id.toString(),
         forRevisionStatus._id.toString(),
-      ].includes(statusId)
+      ].includes(statusId) &&
+      !(statusId === resolvedStatus._id.toString() && moderator.subModerators.length > 0)
     ) {
-      // Construct a message for the SMS
+      // Construct the message for the SMS
       const statusName = updatedReport.report_status.stat_name;
       const remarks = updatedReport.status_remark || "No additional remarks.";
       const moderatorName = moderator.name;
@@ -767,6 +752,7 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
     res.status(500).json({ message: "An error occurred", error });
   }
 });
+
 
 const submodApproval = asyncHandler(async (req, res, io) => {
   const reportId = req.params.id;
