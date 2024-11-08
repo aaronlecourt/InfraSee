@@ -28,11 +28,16 @@ import { DateTimePicker } from "./datetimepicker";
 
 const baseSchema = z.object({
   status: z.string().min(1, "Status is required"),
-  remarks: z.string().min(1, "Remarks are required").max(150, "Remarks must be at most 150 characters"),
+  remarks: z
+    .string()
+    .min(1, "Remarks are required")
+    .max(150, "Remarks must be at most 150 characters"),
 });
 
 const resolvedSchema = baseSchema.extend({
-  report_time_resolved: z.string().min(1, "Time resolved is required when status is 'Resolved'"),
+  report_time_resolved: z
+    .string()
+    .min(1, "Time resolved is required when status is 'Resolved'"),
 });
 
 const getSchema = (selectedStatus) => {
@@ -41,29 +46,35 @@ const getSchema = (selectedStatus) => {
 
 // Placeholder mapping based on status transitions
 const remarkPlaceholders = {
-  "Unassigned": {
-    "Pending": "Your report was successfully marked 'Pending' after we verified and accepted your report.",
+  Unassigned: {
+    Pending:
+      "Your report was successfully marked 'Pending' after we verified and accepted your report.",
   },
-  "Pending": {
-    "In Progress": "Repairs for your report began on [date/time] and might finish by [date/time]. Delays may occur. You'll be notified once Resolved.",
-    "Unassigned": "We've mistakenly accepted your report and have returned it to unassigned status for other moderators to address.",
-    "Dismissed": "Your report was not verified. It may lack factual information or was considered a duplicate or spam.",
+  Pending: {
+    "In Progress":
+      "Repairs started [date/time] and might end [date/time]. Delays may happen.",
+    Unassigned:
+      "Enter more details as to why this report is being marked unassigned again.",
+    Dismissed: "Enter the reasons as to why this report is being dismissed.",
   },
   "In Progress": {
-    "Pending": "Apologies. Repairs for your report are paused due to [reasons] and will possibly resume on [date/time].",
-    "Resolved": "Your report has been successfully resolved and verified.",
+    Pending: "Enter more details as to why this report was paused",
+    Resolved: "Enter more details about this report's resolution",
   },
-  "Dismissed": {},
-  "Resolved": {},
+  Dismissed: {},
+  Resolved: {},
   "Under Review": {},
 };
 
 export function UpdateStatusDialog({ isOpen, onClose, data }) {
   const { userInfo } = useSelector((state) => state.auth);
   const [statusOptions, setStatusOptions] = useState([]);
-  const [selectedStatus, setSelectedStatus] = useState(data?.report_status.stat_name || "");
+  const [selectedStatus, setSelectedStatus] = useState(
+    data?.report_status.stat_name || ""
+  );
   const currentStatus = data?.report_status.stat_name || "";
   const today = new Date();
+  const [remarksLength, setRemarksLength] = useState(0);
 
   const methods = useForm({
     resolver: zodResolver(getSchema(selectedStatus)),
@@ -156,20 +167,24 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
 
   const getAllowedStatusOptions = () => {
     const restrictedStatuses = {
-      "Pending": ["In Progress", "Dismissed", "Unassigned"],
+      Pending: ["In Progress", "Dismissed", "Unassigned"],
       "In Progress": ["Resolved", "Pending"],
       "For Revision": ["Resolved"],
-      "Dismissed": [],
-      "Resolved": [],
+      Dismissed: [],
+      Resolved: [],
       "Under Review": [],
     };
 
     const allowed = restrictedStatuses[currentStatus] || [];
-    const currentStatusOption = statusOptions.find(option => option.stat_name === currentStatus);
+    const currentStatusOption = statusOptions.find(
+      (option) => option.stat_name === currentStatus
+    );
 
-    const filteredOptions = allowed.map(statName =>
-      statusOptions.find(option => option.stat_name === statName)
-    ).filter(Boolean);
+    const filteredOptions = allowed
+      .map((statName) =>
+        statusOptions.find((option) => option.stat_name === statName)
+      )
+      .filter(Boolean);
 
     // Include the current status in the options
     if (currentStatusOption && !filteredOptions.includes(currentStatusOption)) {
@@ -184,7 +199,10 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
   // Get the appropriate placeholder for the remarks field
   const getRemarkPlaceholder = () => {
     const placeholderMap = remarkPlaceholders[currentStatus] || {};
-    return placeholderMap[selectedStatus] || "Enter more detailed info on the status update. Maximum of 150 characters.";
+    return (
+      placeholderMap[selectedStatus] ||
+      "Enter more detailed info on the status update. Maximum of 150 characters."
+    );
   };
 
   return (
@@ -193,7 +211,8 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
         <DialogHeader>
           <DialogTitle>Update Report Status</DialogTitle>
           <DialogDescription>
-            Update the reporter's report status here. An SMS notification is sent to their contact number immediately.
+            Update the reporter's report status here. An SMS notification is
+            sent to their contact number immediately.
           </DialogDescription>
           {data ? (
             <div className="w-full pt-2">
@@ -215,7 +234,9 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                           const selectedOption = statusOptions.find(
                             (option) => option._id === value
                           );
-                          setSelectedStatus(selectedOption ? selectedOption.stat_name : "");
+                          setSelectedStatus(
+                            selectedOption ? selectedOption.stat_name : ""
+                          );
                         }}
                         value={field.value}
                         className="w-full"
@@ -237,37 +258,55 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                     )}
                   />
 
-                  {["Dismissed", "Resolved", "Under Review"].includes(currentStatus) ? (
+                  {["Dismissed", "Resolved", "Under Review"].includes(
+                    currentStatus
+                  ) ? (
                     <p className="mt-2 text-muted-foreground text-sm">
-                      {currentStatus === "Dismissed" && `This report was dismissed because: "${data.status_remark}"`}
-                      {currentStatus === "Resolved" && "This report is already resolved."}
-                      {currentStatus === "Under Review" && "This report is being reviewed by your submoderator, no action can be taken yet."}
+                      {currentStatus === "Dismissed" &&
+                        `This report was dismissed. Remarks: "${data.status_remark}"`}
+                      {currentStatus === "Resolved" &&
+                        "This report is already resolved."}
+                      {currentStatus === "Under Review" &&
+                        "This report is being reviewed by your submoderator, no action can be taken yet."}
                     </p>
                   ) : (
                     <>
                       <FormItem>
                         <FormLabel className="font-bold">Remarks</FormLabel>
-                        <Controller
-                          name="remarks"
-                          control={control}
-                          render={({ field }) => (
-                            <Textarea
-                              {...field}
-                              id="remarks"
-                              placeholder={getRemarkPlaceholder()}
-                              className="mt-1"
-                              rows="3"
-                            />
-                          )}
-                        />
+                        <FormControl>
+                          <Controller
+                            name="remarks"
+                            control={control}
+                            render={({ field }) => (
+                              <Textarea
+                                {...field}
+                                id="remarks"
+                                placeholder={getRemarkPlaceholder()}
+                                className="mt-1"
+                                rows="3"
+                                maxLength={150} // Set a max length limit for remarks
+                                onChange={(e) => {
+                                  setRemarksLength(e.target.value.length); // Update the length
+                                  field.onChange(e); // Keep the form state updated
+                                }}
+                              />
+                            )}
+                          />
+                        </FormControl>
                         {errors.remarks && (
                           <FormMessage>{errors.remarks.message}</FormMessage>
                         )}
                       </FormItem>
 
+                      <div className="flex justify-between text-xs font-normal text-muted-foreground mt-1">
+                        {remarksLength} / 150 {/* Display the current length */}
+                      </div>
+
                       {selectedStatus === "Resolved" && (
                         <FormItem>
-                          <FormLabel className="font-bold">Time Resolved</FormLabel>
+                          <FormLabel className="font-bold">
+                            Time Resolved
+                          </FormLabel>
                           <Controller
                             name="report_time_resolved"
                             control={control}
@@ -295,7 +334,15 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                     </>
                   )}
 
-                  <Button type="submit" className="mt-4 w-full" disabled={["Dismissed", "Resolved", "Under Review"].includes(currentStatus)}>
+                  <Button
+                    type="submit"
+                    className="mt-4 w-full"
+                    disabled={[
+                      "Dismissed",
+                      "Resolved",
+                      "Under Review",
+                    ].includes(currentStatus)}
+                  >
                     Update Status
                   </Button>
                 </form>

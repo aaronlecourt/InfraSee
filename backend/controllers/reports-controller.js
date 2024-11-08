@@ -636,6 +636,124 @@ const deleteReport = asyncHandler(async (req, res) => {
   }
 });
 
+// const updateReportStatus = asyncHandler(async (req, res, io) => {
+//   const reportId = req.params.id;
+//   const {
+//     report_status: statusId,
+//     modID: modId,
+//     status_remark,
+//     report_time_resolved,
+//   } = req.body; // Updated destructuring
+
+//   try {
+//     // Find the report
+//     const report = await Report.findById(reportId).populate("report_mod");
+//     if (!report) {
+//       return res.status(404).json({ message: "Report not found" });
+//     }
+
+//     // Find the moderator who is updating the report
+//     const moderator = await User.findById(modId).populate("subModerators");
+//     if (!moderator) {
+//       return res.status(404).json({ message: "Moderator not found" });
+//     }
+
+//     // Find relevant statuses
+//     const resolvedStatus = await Status.findOne({ stat_name: "Resolved" });
+//     const underReviewStatus = await Status.findOne({ stat_name: "Under Review" });
+//     const unassignedStatus = await Status.findOne({ stat_name: "Unassigned" });
+//     const forRevisionStatus = await Status.findOne({ stat_name: "For Revision" });
+
+//     // Prepare update data for the report
+//     const updateData = {
+//       report_status: statusId,
+//       status_remark,
+//       is_new: true,
+//       request_time: null,
+//       report_time_resolved: report_time_resolved,
+//       submod_is_new: false,
+//     };
+
+//     // Check if the status is being set to "Resolved"
+//     if (statusId === resolvedStatus._id.toString()) {
+//       // Check if the moderator has submoderators
+//       if (moderator.subModerators.length > 0) {
+//         // If there are submoderators, set the status to "Under Review" and is_requested to true
+//         updateData.report_status = underReviewStatus._id;
+//         updateData.is_requested = true;
+//         updateData.request_time = Date.now();
+//         updateData.submod_is_new = true;
+//         // updateData.under_submod = true;
+//       } else {
+//         // If no submoderators, set the status to "Resolved"
+//         updateData.report_status = resolvedStatus._id;
+//         updateData.is_requested = false;
+//         updateData.request_time = null;
+//         updateData.report_time_resolved = Date.now();
+//       }
+//     }
+
+//     // Check if the status is being set to "Unassigned"
+//     if (statusId === unassignedStatus._id.toString()) {
+//       // If the status is "Unassigned", clear the assigned moderator
+//       await Report.findByIdAndUpdate(reportId, { $unset: { report_mod: "" } });
+//     }
+
+//     // Update the report with new status and information
+//     const updatedReport = await Report.findByIdAndUpdate(reportId, updateData, {
+//       new: true,
+//     }).populate({
+//       path: "report_status",
+//       select: "stat_name",
+//     });
+
+//     // Notify submoderators if the report status is requested
+//     await notifySubmoderatorOnStatusChange(updatedReport);
+
+//     // Only send SMS notification if:
+//     // 1. The status is not "Under Review" or "For Revision"
+//     // 2. The status is not "Resolved" AND there are submoderators
+//     if (
+//       ![
+//         underReviewStatus._id.toString(),
+//         forRevisionStatus._id.toString(),
+//       ].includes(statusId) &&
+//       !(statusId === resolvedStatus._id.toString() && moderator.subModerators.length > 0)
+//     ) {
+//       // Construct the message for the SMS
+//       const statusName = updatedReport.report_status.stat_name;
+//       const remarks = updatedReport.status_remark || "No additional remarks.";
+//       const moderatorName = moderator.name;
+//       const reporterName = updatedReport.report_by;
+
+//       const message = [
+//         `Hello ${reporterName}! ${moderatorName} has successfully updated your report status to '${statusName}'`,
+//         `Remarks: ${remarks}`,
+//         `\n[InfraSee]`,
+//       ].join("\n");
+
+//       // Emit the SMS event to the socket
+//       io.emit("sms sender", {
+//         phone_number: report.report_contactNum,
+//         message,
+//       });
+//       console.log("SMS sender event emitted to socket:", {
+//         phone_number: report.report_contactNum,
+//         message,
+//       });
+//     }
+
+//     // Return success response
+//     res.status(200).json({
+//       message: "Report status updated successfully",
+//       report: updatedReport,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "An error occurred", error });
+//   }
+// });
+
 const updateReportStatus = asyncHandler(async (req, res, io) => {
   const reportId = req.params.id;
   const {
@@ -662,7 +780,9 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
     const resolvedStatus = await Status.findOne({ stat_name: "Resolved" });
     const underReviewStatus = await Status.findOne({ stat_name: "Under Review" });
     const unassignedStatus = await Status.findOne({ stat_name: "Unassigned" });
-    const forRevisionStatus = await Status.findOne({ stat_name: "For Revision" });
+    const dismissedStatus = await Status.findOne({ stat_name: "Dismissed" });
+    const inProgressStatus = await Status.findOne({ stat_name: "In Progress" });
+    const pendingStatus = await Status.findOne({ stat_name: "Pending" });
 
     // Prepare update data for the report
     const updateData = {
@@ -674,38 +794,57 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
       submod_is_new: false,
     };
 
-    // Check if the status is being set to "Resolved"
+    // Prepare message variable to store the custom message
+    let customMessage = '';
+
+    // Determine status transition and set custom messages
     if (statusId === resolvedStatus._id.toString()) {
-      // Check if the moderator has submoderators
+      // If setting status to Resolved
       if (moderator.subModerators.length > 0) {
-        // If there are submoderators, set the status to "Under Review" and is_requested to true
         updateData.report_status = underReviewStatus._id;
         updateData.is_requested = true;
         updateData.request_time = Date.now();
         updateData.submod_is_new = true;
-        // updateData.under_submod = true;
+        customMessage = `Repairs for your report have started. You will be notified if there is a delay or once your report is resolved.`;
       } else {
-        // If no submoderators, set the status to "Resolved"
         updateData.report_status = resolvedStatus._id;
         updateData.is_requested = false;
         updateData.request_time = null;
         updateData.report_time_resolved = Date.now();
+        customMessage = `The report you made has now been resolved. Thank you for using InfraSee.`;
       }
     }
 
-    // Check if the status is being set to "Unassigned"
-    if (statusId === unassignedStatus._id.toString()) {
-      // If the status is "Unassigned", clear the assigned moderator
+    // Handle Pending to Unassigned
+    else if (statusId === unassignedStatus._id.toString()) {
+      updateData.report_status = unassignedStatus._id;
+      customMessage = `We've mistakenly accepted your report and have returned it to unassigned status for other moderators to address.`;
       await Report.findByIdAndUpdate(reportId, { $unset: { report_mod: "" } });
     }
 
+    // Handle Pending to Dismissed
+    else if (statusId === dismissedStatus._id.toString()) {
+      updateData.report_status = dismissedStatus._id;
+      customMessage = `Your report was not verified. It may lack factual information or was considered a duplicate or spam.`;
+    }
+
+    // Handle In Progress to Pending
+    else if (statusId === pendingStatus._id.toString()) {
+      updateData.report_status = pendingStatus._id;
+      customMessage = `Sorry for the inconvenience, repairs for your report were paused. See remarks for more info.`;
+    }
+
+    // Handle In Progress to Resolved
+    else if (statusId === resolvedStatus._id.toString() && report.report_status.toString() === inProgressStatus._id.toString()) {
+      updateData.report_status = resolvedStatus._id;
+      updateData.is_requested = false;
+      updateData.report_time_resolved = Date.now();
+      customMessage = `The report you made has now been resolved. Thank you for using InfraSee.`;
+    }
+
     // Update the report with new status and information
-    const updatedReport = await Report.findByIdAndUpdate(reportId, updateData, {
-      new: true,
-    }).populate({
-      path: "report_status",
-      select: "stat_name",
-    });
+    const updatedReport = await Report.findByIdAndUpdate(reportId, updateData, { new: true })
+      .populate({ path: "report_status", select: "stat_name" });
 
     // Notify submoderators if the report status is requested
     await notifySubmoderatorOnStatusChange(updatedReport);
@@ -713,23 +852,21 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
     // Only send SMS notification if:
     // 1. The status is not "Under Review" or "For Revision"
     // 2. The status is not "Resolved" AND there are submoderators
-    if (
-      ![
-        underReviewStatus._id.toString(),
-        forRevisionStatus._id.toString(),
-      ].includes(statusId) &&
-      !(statusId === resolvedStatus._id.toString() && moderator.subModerators.length > 0)
-    ) {
+    if (![underReviewStatus._id.toString(), dismissedStatus._id.toString()].includes(statusId) &&
+      !(statusId === resolvedStatus._id.toString() && moderator.subModerators.length > 0)) {
+      
       // Construct the message for the SMS
       const statusName = updatedReport.report_status.stat_name;
       const remarks = updatedReport.status_remark || "No additional remarks.";
       const moderatorName = moderator.name;
       const reporterName = updatedReport.report_by;
 
+      // Construct the message in the requested format
       const message = [
-        `Hello ${reporterName}! ${moderatorName} has successfully updated your report status to '${statusName}'`,
+        `[InfraSee]`,
+        `Hello ${reporterName}! ${customMessage}`,
         `Remarks: ${remarks}`,
-        `\n[InfraSee]`,
+        `Handled By: ${moderatorName}`,
       ].join("\n");
 
       // Emit the SMS event to the socket
@@ -753,7 +890,6 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
     res.status(500).json({ message: "An error occurred", error });
   }
 });
-
 
 const submodApproval = asyncHandler(async (req, res, io) => {
   const reportId = req.params.id;
