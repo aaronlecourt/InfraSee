@@ -24,7 +24,8 @@ import { protect } from "../middleware/auth-middleware.js";
 const router = express.Router();
 
 router.route("/").get(getReports);
-router.post("/create", createReport);
+// Add the 'protect' middleware to the route to secure it
+router.route("/create").post(protect, (req, res) => createReport(req, res, req.app.get('io')));
 router.route("/unassigned").get(protect, getUnassignedReports);
 router.route("/moderator/reports").get(protect, getModeratorReports);
 router
