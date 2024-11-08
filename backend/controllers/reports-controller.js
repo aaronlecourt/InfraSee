@@ -101,9 +101,9 @@ const createReport = asyncHandler(async (req, res, io) => {
     const reporterName = populatedReport.report_by;
 
     const message = [
+      `[InfraSee]`,
       `Hello ${reporterName}! Your report has been successfully submitted and is now under review. You will receive updates when a moderator takes action on your report.`,
-      `Report Status: ${statusName}`,
-      `\n[InfraSee]`,
+      `Status: ${statusName}`,
     ].join("\n");
 
     // Emit the SMS event to the socket
@@ -161,9 +161,9 @@ const updateOnAccept = asyncHandler(async (req, res, io) => {
     const reporterName = report.report_by;
 
     const message = [
-      `Hello ${reporterName}! Your report has been assessed and assigned for further action by ${moderatorName}.`,
-      `Report Status: ${statusName}`,
-      `\n[InfraSee]`,
+      `[InfraSee]`,
+      `Hello ${reporterName}! Your report has been assessed and assigned for further action to ${moderatorName}.`,
+      `Status: ${statusName}`,
     ].join("\n");
 
     // Emit the SMS event to the socket
@@ -866,7 +866,7 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
         `[InfraSee]`,
         `Hello ${reporterName}! ${customMessage}`,
         `Remarks: ${remarks}`,
-        `Handled By: ${moderatorName}`,
+        `Moderator: ${moderatorName}`,
       ].join("\n");
 
       // Emit the SMS event to the socket
