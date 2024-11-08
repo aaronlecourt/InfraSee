@@ -25,7 +25,7 @@ const router = express.Router();
 
 router.route("/").get(getReports);
 // Add the 'protect' middleware to the route to secure it
-router.route("/create").post(protect, (req, res) => createReport(req, res, req.app.get('io')));
+router.route("/create").post((req, res) => createReport(req, res, req.app.get('io')));
 router.route("/unassigned").get(protect, getUnassignedReports);
 router.route("/moderator/reports").get(protect, getModeratorReports);
 router

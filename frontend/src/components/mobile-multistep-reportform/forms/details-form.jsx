@@ -11,7 +11,7 @@ import {
 import { useDropzone } from "react-dropzone";
 import { CloudUpload } from "lucide-react";
 
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
 
 const DetailsForm = ({ onClose, imagePreview, setImagePreview }) => {
   const {
@@ -31,7 +31,7 @@ const DetailsForm = ({ onClose, imagePreview, setImagePreview }) => {
     if (file) {
       // Validate file size
       if (file.size > MAX_FILE_SIZE) {
-        setError("file", { type: "manual", message: "File size exceeds the limit of 2 MB." });
+        setError("file", { type: "manual", message: "File size exceeds the limit of 20 MB." });
         return;
       }
       // Validate file type
