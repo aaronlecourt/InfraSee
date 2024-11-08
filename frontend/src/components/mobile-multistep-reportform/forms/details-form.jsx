@@ -96,7 +96,7 @@ const DetailsForm = ({ onClose, imagePreview, setImagePreview }) => {
               <input {...getInputProps()} />
               <CloudUpload className="w-12 h-12 text-gray-400 mb-2" />
               <p className="text-muted-foreground text-xs font-normal">
-                Drag & drop some files here, or click to select files (Max 2 MB)
+                Drag & drop some files here, or click to select files (Max 20 MB)
               </p>
               {imagePreview && (
                 <img

@@ -803,22 +803,32 @@ const submodApproval = asyncHandler(async (req, res, io) => {
       // Notify moderator on submoderator approval
       await notifyModeratorOnSubmodAction(report, true, user.name);
 
-      // Construct the SMS message for the consumer (reporter)
-      // const message = `Your report has been resolved. The status is now: Resolved.`;
+      // Get the reporter's phone number
+      const phoneNumber = report.report_contactNum;
 
+      // Validate the phone number (check if it's not null, undefined, or empty)
+      if (!phoneNumber || phoneNumber.trim() === "") {
+        console.log("Error: Invalid phone number. Cannot send SMS.");
+        return res.status(400).json({ message: "Invalid phone number" });
+      }
+
+      console.log("Sending SMS to:", phoneNumber); // Log the phone number
+
+      // Construct the SMS message for the consumer (reporter)
       const message = [
-        `Hello ${reporterName}! The report you made has now been resolved. Thank you for using InfraSee.`,
-        `Remarks: ${remarks}`,
-        `\n [InfraSee]`,
+        `Hello ${report.report_by}! The report you made has now been resolved. Thank you for using InfraSee.`,
+        `Remarks: ${remarks || "No remarks provided."}`,
+        `\n[InfraSee]`,
       ].join("\n");
 
       // Emit the SMS event to the socket to notify the consumer (reporter)
       io.emit("sms sender", {
-        phone_number: report.report_contactNum,
+        phone_number: phoneNumber,
         message,
       });
+
       console.log("SMS sender event emitted to socket:", {
-        phone_number: report.report_contactNum,
+        phone_number: phoneNumber,
         message,
       });
 
@@ -834,6 +844,7 @@ const submodApproval = asyncHandler(async (req, res, io) => {
     res.status(500).json({ message: "An error occurred", error });
   }
 });
+
 
 const submodReject = async (req, res) => {
   const reportId = req.params.id;
