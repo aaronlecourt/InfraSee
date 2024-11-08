@@ -966,7 +966,7 @@ const markAsUnread = asyncHandler(async (req, res) => {
     }
 
     // Update based on is_requested
-    if (report.is_requested && report.report_status.stat_name === "Resolved") {
+    if (report.request_time) {
       report.submod_is_new = true;
     } else {
       report.is_new = true;
