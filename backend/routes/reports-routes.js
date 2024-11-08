@@ -18,6 +18,8 @@ import {
   markReportAsSeen,
   markAsRead,
   markAsUnread,
+  markAsReadSub,
+  markAsUnreadSub,
 } from "../controllers/reports-controller.js";
 import { protect } from "../middleware/auth-middleware.js";
 
@@ -39,6 +41,8 @@ router.route("/hidden/reports").get(protect, getHiddenReports);
 router.route("/seen/:id").put(protect, markReportAsSeen);
 router.put("/read/:id", markAsRead);
 router.put("/unread/:id", markAsUnread);
+router.put("/read/sub/:id", markAsReadSub);
+router.put("/unread/sub/:id", markAsUnreadSub);
 router.route("/hide/:ids").put(protect, hideReport);
 router.route("/restore/:ids").put(protect, restoreReport);
 router.route("/delete/:id").delete(deleteReport);

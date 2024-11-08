@@ -683,7 +683,7 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
         updateData.is_requested = true;
         updateData.request_time = Date.now();
         updateData.submod_is_new = true;
-        updateData.under_submod = true;
+        // updateData.under_submod = true;
       } else {
         // If no submoderators, set the status to "Resolved"
         updateData.report_status = resolvedStatus._id;
@@ -785,7 +785,7 @@ const submodApproval = asyncHandler(async (req, res, io) => {
       report.is_requested = false;
       report.is_new = true; // Optionally reset the "new" flag
       report.submod_is_new = false;
-      report.under_submod = false;
+      // report.under_submod = false;
       await report.save();
 
       // Notify moderator on submoderator approval
@@ -866,7 +866,7 @@ const submodReject = async (req, res) => {
       report.is_new = true; // Optionally reset the "new" flag
       report.submod_is_new = false; // Set to false after submod read process
       report.request_time = null;
-      report.under_submod = false;
+      // report.under_submod = false;
       await report.save();
 
       // Notify moderator on submoderator rejection
@@ -933,12 +933,7 @@ const markAsRead = asyncHandler(async (req, res) => {
         .json({ message: "Report is already marked as read." });
     }
 
-    // Check if the report is under submoderator review (under_submod is true)
-    if (report.under_submod) {
-      report.submod_is_new = false;  // Update submod_is_new if under_submod is true
-    } else {
-      report.is_new = false;  // Otherwise, update is_new
-    }
+    report.is_new = false;
 
     const updatedReport = await report.save();
 
@@ -969,12 +964,68 @@ const markAsUnread = asyncHandler(async (req, res) => {
         .json({ message: "Report is already marked as unread." });
     }
 
-    // Update based on under_submod flag
-    if (report.under_submod) {
-      report.submod_is_new = true;  // Mark as unread for submoderator
-    } else {
-      report.is_new = true;  // Mark as unread for regular moderator
+    report.is_new = true;
+
+    const updatedReport = await report.save();
+
+    res.json({
+      message: "Report marked as unread successfully",
+      report: updatedReport,
+    });
+  } catch (error) {
+    console.error(`Error marking report as unread: ${error.message}`);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+const markAsReadSub = asyncHandler(async (req, res) => {
+  try {
+    const reportId = req.params.id;
+
+    const report = await Report.findById(reportId);
+
+    if (!report) {
+      return res.status(404).json({ message: "Report not found." });
     }
+
+    if (!report.is_new && !report.submod_is_new) {
+      return res
+        .status(200)
+        .json({ message: "Report is already marked as read." });
+    }
+
+    report.submod_is_new = false;
+
+    const updatedReport = await report.save();
+
+    res.json({
+      message: "Report marked as read successfully",
+      report: updatedReport,
+    });
+  } catch (error) {
+    console.error(`Error marking report as read: ${error.message}`);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+const markAsUnreadSub = asyncHandler(async (req, res) => {
+  try {
+    const reportId = req.params.id;
+
+    const report = await Report.findById(reportId);
+
+    if (!report) {
+      return res.status(404).json({ message: "Report not found." });
+    }
+
+    // Check if the report is already marked as unread
+    if (report.is_new && report.submod_is_new) {
+      return res
+        .status(200)
+        .json({ message: "Report is already marked as unread." });
+    }
+
+    report.submod_is_new = true;
 
     const updatedReport = await report.save();
 
@@ -1008,4 +1059,6 @@ export {
   markReportAsSeen,
   markAsRead,
   markAsUnread,
+  markAsReadSub,
+  markAsUnreadSub,
 };

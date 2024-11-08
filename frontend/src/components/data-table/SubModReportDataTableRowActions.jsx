@@ -100,7 +100,7 @@ export function SubModReportDataTableRowActions({ row }) {
   const handleMarkAsRead = async () => {
     const reportId = row.original._id;
     try {
-      const response = await axios.put(`/api/reports/read/${reportId}`);
+      const response = await axios.put(`/api/reports/read/sub/${reportId}`);
       toast.success(response.data.message || "Report marked as read!");
     } catch (error) {
       console.error("Error marking report as read:", error);
@@ -111,7 +111,7 @@ export function SubModReportDataTableRowActions({ row }) {
   const handleMarkAsUnread = async () => {
     const reportId = row.original._id;
     try {
-      const response = await axios.put(`/api/reports/unread/${reportId}`);
+      const response = await axios.put(`/api/reports/unread/sub/${reportId}`);
       toast.success(response.data.message || "Report marked as unread!");
     } catch (error) {
       console.error("Error marking report as unread:", error);
