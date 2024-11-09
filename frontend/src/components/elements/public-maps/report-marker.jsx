@@ -148,7 +148,7 @@ export const ReportMarker = ({
                 </div>
               </div>
             )}
-            {report.report_time_resolved && (
+            {report.report_time_resolved && report.report_status.stat_name === "Resolved" && (
               <div className="flex">
                 <div className="font-medium text-[0.7rem] bg-muted border-gray-300 p-1">
                   TIME RESOLVED:
