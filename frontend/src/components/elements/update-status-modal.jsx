@@ -343,6 +343,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                       "Dismissed",
                       "Resolved",
                       "Under Review",
+                      "For Revision"
                     ].includes(currentStatus)}
                   >
                     Update Status
