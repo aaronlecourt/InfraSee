@@ -132,8 +132,8 @@ export function ModReportDataTableRowActions({ row }) {
           )}
 
           
-          {row.original.report_status?.stat_name === "Resolved" &&
-            row.original.report_status?.stat_name === "Dismissed" && (
+          {(row.original.report_status?.stat_name === "Resolved" ||
+            row.original.report_status?.stat_name === "Dismissed") && (
               <>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="flex gap-2" onClick={openHideDialog}>
