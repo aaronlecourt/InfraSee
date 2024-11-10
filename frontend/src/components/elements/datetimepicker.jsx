@@ -21,12 +21,12 @@ export function DateTimePicker({ value, onChange, minDate, maxDate }) {
   const handleDateSelect = (selectedDate) => {
     if (selectedDate) {
       const newDate = new Date(selectedDate);
-
+  
       // Prevent selecting a date beyond maxDate
       if (maxDate && newDate > new Date(maxDate)) {
         return;
       }
-
+  
       // Set default time based on minDate if available
       if (minDate) {
         const minSelectableTime = new Date(minDate);
@@ -43,11 +43,12 @@ export function DateTimePicker({ value, onChange, minDate, maxDate }) {
         newDate.setHours(0);
         newDate.setMinutes(0);
       }
-
+  
       setDate(newDate);
       onChange(newDate.toISOString());
     }
   };
+  
 
   const handleTimeChange = (type, value) => {
     const newDate = date ? new Date(date) : new Date();

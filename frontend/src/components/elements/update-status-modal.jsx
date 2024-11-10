@@ -26,6 +26,11 @@ import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
 import { DateTimePicker } from "./datetimepicker";
 
+const fetchStatusOptions = async () => {
+  const response = await axios.get("/api/status/");
+  return response.data;
+};
+
 const baseSchema = z.object({
   status: z.string().min(1, "Status is required"),
   remarks: z
@@ -76,6 +81,12 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
   const today = new Date();
   const [remarksLength, setRemarksLength] = useState(0);
 
+  const createdAt = data?.createdAt ? new Date(data.createdAt) : undefined;
+  const minDate = createdAt
+    ? new Date(createdAt.getTime() + 60 * 60 * 1000)
+    : undefined;
+  const maxDate = new Date();
+
   const methods = useForm({
     resolver: zodResolver(getSchema(selectedStatus)),
     defaultValues: {
@@ -94,19 +105,20 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
   } = methods;
 
   useEffect(() => {
-    if (isOpen) {
-      const fetchStatusOptions = async () => {
-        try {
-          const response = await axios.get("/api/status/");
-          setStatusOptions(response.data);
-        } catch (error) {
-          console.error("Failed to fetch status options", error);
-          toast.error("Failed to fetch status options.");
-        }
-      };
-      fetchStatusOptions();
+    const loadStatusOptions = async () => {
+      try {
+        const data = await fetchStatusOptions();
+        setStatusOptions(data);
+      } catch (error) {
+        console.error("Failed to fetch status options", error);
+        toast.error("Failed to fetch status options.");
+      }
+    };
+  
+    if (isOpen && statusOptions.length === 0) {
+      loadStatusOptions();
     }
-  }, [isOpen]);
+  }, [isOpen, statusOptions.length]);
 
   useEffect(() => {
     if (data && data.report_status) {
@@ -162,8 +174,6 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
       }
     }
   };
-
-  const createdAt = data?.createdAt ? new Date(data.createdAt) : undefined;
 
   const getAllowedStatusOptions = () => {
     const restrictedStatuses = {
@@ -274,24 +284,24 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                       <FormItem>
                         <FormLabel className="font-bold">Remarks</FormLabel>
                         {/* <FormControl> */}
-                          <Controller
-                            name="remarks"
-                            control={control}
-                            render={({ field }) => (
-                              <Textarea
-                                {...field}
-                                id="remarks"
-                                placeholder={getRemarkPlaceholder()}
-                                className="mt-1"
-                                rows="3"
-                                maxLength={150} // Set a max length limit for remarks
-                                onChange={(e) => {
-                                  setRemarksLength(e.target.value.length); // Update the length
-                                  field.onChange(e); // Keep the form state updated
-                                }}
-                              />
-                            )}
-                          />
+                        <Controller
+                          name="remarks"
+                          control={control}
+                          render={({ field }) => (
+                            <Textarea
+                              {...field}
+                              id="remarks"
+                              placeholder={getRemarkPlaceholder()}
+                              className="mt-1"
+                              rows="3"
+                              maxLength={150} // Set a max length limit for remarks
+                              onChange={(e) => {
+                                setRemarksLength(e.target.value.length); // Update the length
+                                field.onChange(e); // Keep the form state updated
+                              }}
+                            />
+                          )}
+                        />
                         {/* </FormControl> */}
                         {errors.remarks && (
                           <FormMessage>{errors.remarks.message}</FormMessage>
@@ -319,8 +329,8 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                                     methods.clearErrors("report_time_resolved");
                                   }
                                 }}
-                                minDate={createdAt}
-                                maxDate={today}
+                                minDate={minDate}
+                                maxDate={maxDate}
                               />
                             )}
                           />

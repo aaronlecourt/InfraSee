@@ -158,7 +158,7 @@ export const ReportMarker = ({
                 </div>
               </div>
             )}
-            {!isPublicMap && report.status_remark && (
+              {!isPublicMap && report.status_remark && (
               <div className="flex">
               <div className="font-medium text-[0.7rem] bg-muted  border-gray-300 p-1">
                 STATUS REMARKS:
