@@ -10,62 +10,70 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
 
-export function DateTimePicker({ value, onChange }) {
+export function DateTimePicker({ value, onChange, data }) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [date, setDate] = React.useState(value ? new Date(value) : undefined);
+
+  const createdAt = new Date(data.createdAt);
+  const startAllowedTime = new Date(createdAt.getTime() + 60 * 60 * 1000); // 1 hour after creation
+  const endDate = new Date();
+  endDate.setHours(23, 59, 59, 999); // Set to today at 11:59:59.999 PM
 
   const hours = Array.from({ length: 12 }, (_, i) => i + 1);
   const minutes = Array.from({ length: 60 }, (_, i) => i);
 
   const handleDateSelect = (selectedDate) => {
-    const submissionTime = new Date(data.submissionTime); // assuming data.submissionTime is available
-    const startAllowedTime = new Date(
-      submissionTime.getTime() + 60 * 60 * 1000
-    ); // 1 hour after submission
+    if (!selectedDate) return;
 
     if (
-      selectedDate &&
-      selectedDate >= startAllowedTime &&
-      selectedDate <= new Date()
+      selectedDate < startAllowedTime ||
+      selectedDate > endDate
     ) {
-      const newDate = new Date(selectedDate);
-      newDate.setHours(0);
-      newDate.setMinutes(0);
-      setDate(newDate);
-      onChange(newDate.toISOString());
-    } else {
       const formattedStart = format(startAllowedTime, "MMM dd yyyy hh:mma");
-      const formattedEnd = format(new Date(), "MMM dd yyyy hh:mma");
+      const formattedEnd = format(endDate, "MMM dd yyyy hh:mma");
       toast.error(
-        `Please select a time between ${formattedStart} and ${formattedEnd}.`
+        `The recommended selection range is between ${formattedStart} and ${formattedEnd}.`
       );
     }
+
+    setDate(selectedDate);
+    onChange(selectedDate.toISOString());
   };
 
   const handleTimeChange = (type, value) => {
     const newDate = date ? new Date(date) : new Date();
-    
+
     if (type === "hour") {
-      // Update hour for 12-hour format
-      newDate.setHours(parseInt(value) % 12 + (newDate.getHours() >= 12 ? 12 : 0));
+      newDate.setHours(
+        (parseInt(value) % 12) + (newDate.getHours() >= 12 ? 12 : 0)
+      );
     } else if (type === "minute") {
       newDate.setMinutes(parseInt(value));
     } else if (type === "ampm") {
       const currentHours = newDate.getHours();
       if (value === "PM" && currentHours < 12) {
-        // Switch to PM, adding 12 hours if it's AM
         newDate.setHours(currentHours + 12);
       } else if (value === "AM" && currentHours >= 12) {
-        // Switch to AM, subtracting 12 hours if it's PM
         newDate.setHours(currentHours - 12);
       }
     }
-    
+
+    if (
+      newDate < startAllowedTime ||
+      newDate > endDate
+    ) {
+      const formattedStart = format(startAllowedTime, "MMM dd yyyy hh:mma");
+      const formattedEnd = format(endDate, "MMM dd yyyy hh:mma");
+      toast.error(
+        `The recommended selection range is between ${formattedStart} and ${formattedEnd}.`
+      );
+    }
+
     setDate(newDate);
     onChange(newDate.toISOString());
   };
-  
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen} modal="true">
@@ -79,7 +87,7 @@ export function DateTimePicker({ value, onChange }) {
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
           {date ? (
-            format(date, "MMM dd yyyy hh:mmaa")
+            format(date, "MMM dd yyyy hh:mma")
           ) : (
             <span>Select date and time</span>
           )}
@@ -92,6 +100,7 @@ export function DateTimePicker({ value, onChange }) {
             selected={date}
             onSelect={handleDateSelect}
             initialFocus
+            disabledDates={(d) => d < startAllowedTime || d > endDate} // Disable dates outside range
           />
           <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
             <ScrollArea className="scroll-area w-72 sm:w-auto overflow-auto">
@@ -104,6 +113,10 @@ export function DateTimePicker({ value, onChange }) {
                       date && date.getHours() % 12 === hour % 12
                         ? "default"
                         : "ghost"
+                    }
+                    disabled={ // Disable if selecting this hour would make the date invalid
+                      new Date(date).setHours(hour) < startAllowedTime ||
+                      new Date(date).setHours(hour) > endDate
                     }
                     className="sm:w-full shrink-0 aspect-square"
                     onClick={() => handleTimeChange("hour", hour.toString())}
@@ -122,6 +135,10 @@ export function DateTimePicker({ value, onChange }) {
                     size="icon"
                     variant={
                       date && date.getMinutes() === minute ? "default" : "ghost"
+                    }
+                    disabled={ // Disable if selecting this minute would make the date invalid
+                      new Date(date).setMinutes(minute) < startAllowedTime ||
+                      new Date(date).setMinutes(minute) > endDate
                     }
                     className="sm:w-full shrink-0 aspect-square"
                     onClick={() =>
@@ -149,6 +166,10 @@ export function DateTimePicker({ value, onChange }) {
                         (ampm === "PM" && date.getHours() >= 12))
                         ? "default"
                         : "ghost"
+                    }
+                    disabled={ // Disable if setting AM/PM would make date invalid
+                      (ampm === "AM" && date && date.getHours() >= 12 && date < startAllowedTime) ||
+                      (ampm === "PM" && date && date.getHours() < 12 && date > endDate)
                     }
                     className="sm:w-full shrink-0 aspect-square"
                     onClick={() => handleTimeChange("ampm", ampm)}

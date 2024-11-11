@@ -358,6 +358,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                                 onChange={(value) => {
                                   field.onChange(value); // Directly call field.onChange
                                 }}
+                                data={data}
                               />
                             )}
                           />
