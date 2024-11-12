@@ -26,17 +26,6 @@ import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
 import { DateTimePicker } from "./datetimepicker";
 
-const fetchStatusOptions = async () => {
-  try {
-    const response = await axios.get("/api/status/");
-    return response.data;
-  } catch (error) {
-    console.error("Failed to fetch status options", error);
-    toast.error("Failed to fetch status options.");
-    return [];
-  }
-};
-
 const baseSchema = z.object({
   status: z.string().min(1, "Status is required"),
   remarks: z
@@ -55,6 +44,7 @@ const getSchema = (selectedStatus) => {
   return selectedStatus === "Resolved" ? resolvedSchema : baseSchema;
 };
 
+// Placeholder mapping based on status transitions
 const remarkPlaceholders = {
   Unassigned: {
     Pending:
@@ -83,6 +73,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
     data?.report_status.stat_name || ""
   );
   const currentStatus = data?.report_status.stat_name || "";
+  const today = new Date();
   const [remarksLength, setRemarksLength] = useState(0);
 
   const methods = useForm({
@@ -90,7 +81,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
     defaultValues: {
       status: data?.report_status?._id || "",
       remarks: "",
-      report_time_resolved: data?.report_time_resolved || "",
+      report_time_resolved: "",
     },
   });
 
@@ -102,9 +93,20 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
     watch,
   } = methods;
 
-  if (isOpen && statusOptions.length === 0) {
-    fetchStatusOptions().then(setStatusOptions);
-  }
+  useEffect(() => {
+    if (isOpen) {
+      const fetchStatusOptions = async () => {
+        try {
+          const response = await axios.get("/api/status/");
+          setStatusOptions(response.data);
+        } catch (error) {
+          console.error("Failed to fetch status options", error);
+          toast.error("Failed to fetch status options.");
+        }
+      };
+      fetchStatusOptions();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (data && data.report_status) {
@@ -125,59 +127,16 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
   const onSubmit = async (formData) => {
     const reportId = data._id;
 
-    // Check if the status has actually changed before submitting
+    // Check if the selected status is the same as the current status
     if (formData.status === data.report_status._id) {
       toast.error("You must change the status before submitting.");
-      return; // Early return to prevent form submission
+      return; // Early return to prevent submission
     }
 
     try {
       const schema = getSchema(formData.status);
       schema.parse(formData);
 
-      // Validate the resolved time for "Resolved" status
-      if (formData.status === "Resolved" && formData.report_time_resolved) {
-        const submissionTime = new Date(data.createdAt);
-        const resolvedTime = new Date(formData.report_time_resolved);
-
-        const minResolvedTime = new Date(
-          submissionTime.getTime() + 60 * 60 * 1000
-        ); // 1 hour after submission
-
-        // Check if resolved time is at least 1 hour after submission
-        if (resolvedTime < minResolvedTime) {
-          toast.error(
-            "Resolution time must be at least 1 hour after submission."
-          );
-          return; // Prevent form submission
-        }
-
-        const currentTime = new Date();
-        currentTime.setSeconds(0, 0); // Set to current time without seconds
-
-        const endOfToday = new Date(currentTime);
-        endOfToday.setHours(23, 59, 59, 999); // End of today
-
-        // Check if the resolved time is in the past
-        if (resolvedTime < currentTime) {
-          toast.error("Resolution time cannot be in the past.");
-          return; // Prevent form submission
-        }
-
-        // Check if the resolved time is after today
-        if (resolvedTime > endOfToday) {
-          toast.error("Resolution time cannot be after today.");
-          return; // Prevent form submission
-        }
-
-        // Check if the resolved time is within the allowed range (after current time but before end of today)
-        if (resolvedTime >= currentTime && resolvedTime <= endOfToday) {
-          // Proceed with form submission (field value is valid)
-          field.onChange(formData.report_time_resolved);
-        }
-      }
-
-      // Proceed with the report status update if validation passed
       const response = await axios.put(`/api/reports/status/${reportId}`, {
         report_status: formData.status,
         status_remark: formData.remarks,
@@ -203,6 +162,8 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
       }
     }
   };
+
+  const createdAt = data?.createdAt ? new Date(data.createdAt) : undefined;
 
   const getAllowedStatusOptions = () => {
     const restrictedStatuses = {
@@ -297,11 +258,9 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                     )}
                   />
 
-                  {[
-                    "Dismissed",
-                    "Resolved",
-                    "Under Review",
-                  ].includes(currentStatus) ? (
+                  {["Dismissed", "Resolved", "Under Review"].includes(
+                    currentStatus
+                  ) ? (
                     <p className="mt-2 text-muted-foreground text-sm">
                       {currentStatus === "Dismissed" &&
                         `This report was dismissed. Remarks: "${data.status_remark}"`}
@@ -314,24 +273,26 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                     <>
                       <FormItem>
                         <FormLabel className="font-bold">Remarks</FormLabel>
-                        <Controller
-                          name="remarks"
-                          control={control}
-                          render={({ field }) => (
-                            <Textarea
-                              {...field}
-                              id="remarks"
-                              placeholder={getRemarkPlaceholder()}
-                              className="mt-1"
-                              rows="3"
-                              maxLength={150} // Set a max length limit for remarks
-                              onChange={(e) => {
-                                setRemarksLength(e.target.value.length); // Update the length
-                                field.onChange(e); // Keep the form state updated
-                              }}
-                            />
-                          )}
-                        />
+                        {/* <FormControl> */}
+                          <Controller
+                            name="remarks"
+                            control={control}
+                            render={({ field }) => (
+                              <Textarea
+                                {...field}
+                                id="remarks"
+                                placeholder={getRemarkPlaceholder()}
+                                className="mt-1"
+                                rows="3"
+                                maxLength={150} // Set a max length limit for remarks
+                                onChange={(e) => {
+                                  setRemarksLength(e.target.value.length); // Update the length
+                                  field.onChange(e); // Keep the form state updated
+                                }}
+                              />
+                            )}
+                          />
+                        {/* </FormControl> */}
                         {errors.remarks && (
                           <FormMessage>{errors.remarks.message}</FormMessage>
                         )}
@@ -351,15 +312,18 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                             control={control}
                             render={({ field }) => (
                               <DateTimePicker
-                                value={field.value} // Directly use field.value
+                                value={field.value}
                                 onChange={(value) => {
-                                  field.onChange(value); // Directly call field.onChange
+                                  field.onChange(value);
+                                  if (value) {
+                                    methods.clearErrors("report_time_resolved");
+                                  }
                                 }}
-                                data={data}
+                                minDate={createdAt}
+                                maxDate={today}
                               />
                             )}
                           />
-
                           {errors.report_time_resolved && (
                             <FormMessage>
                               {errors.report_time_resolved.message}
