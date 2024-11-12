@@ -4,75 +4,187 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { toast } from "sonner";
 
-export function DateTimePicker({ value, onChange, data }) {
+export function DateTimePicker({ value, onChange, minDate, maxDate }) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [date, setDate] = React.useState(value ? new Date(value) : undefined);
+  const [ampm, setAmpm] = React.useState("AM"); // AM/PM value
 
-  const createdAt = new Date(data.createdAt);
-  const startAllowedTime = new Date(createdAt.getTime() + 60 * 60 * 1000); // 1 hour after creation
-  const endDate = new Date();
-  endDate.setHours(23, 59, 59, 999); // Set to today at 11:59:59.999 PM
+  const hours = Array.from({ length: 12 }, (_, i) => i + 1); // Hour options 1-12
+  const minutes = Array.from({ length: 60 }, (_, i) => i); // Minute options 0-59
 
-  const hours = Array.from({ length: 12 }, (_, i) => i + 1);
-  const minutes = Array.from({ length: 60 }, (_, i) => i);
-
-  const handleDateSelect = (selectedDate) => {
-    if (!selectedDate) return;
-
-    if (
-      selectedDate < startAllowedTime ||
-      selectedDate > endDate
-    ) {
-      const formattedStart = format(startAllowedTime, "MMM dd yyyy hh:mma");
-      const formattedEnd = format(endDate, "MMM dd yyyy hh:mma");
-      toast.error(
-        `The recommended selection range is between ${formattedStart} and ${formattedEnd}.`
-      );
+  // Update AM/PM based on the selected date
+  const updateAmpmFromDate = (selectedDate) => {
+    if (selectedDate) {
+      const hour = selectedDate.getHours();
+      setAmpm(hour < 12 ? "AM" : "PM");
     }
-
-    setDate(selectedDate);
-    onChange(selectedDate.toISOString());
   };
 
+  // Update AM/PM when the hour or minute is changed
+  const updateAmpmFromTime = (newDate) => {
+    const hour = newDate.getHours();
+    setAmpm(hour < 12 ? "AM" : "PM");
+  };
+
+  const handleDateSelect = (selectedDate) => {
+    if (selectedDate) {
+      const newDate = new Date(selectedDate);
+
+      // Prevent selecting a date beyond maxDate
+      if (maxDate && newDate > new Date(maxDate)) {
+        return;
+      }
+
+      // Set default time based on minDate if available
+      if (minDate) {
+        const minSelectableTime = new Date(minDate);
+        const isSameDay = newDate.toDateString() === minSelectableTime.toDateString();
+        
+        if (isSameDay) {
+          newDate.setHours(minSelectableTime.getHours());
+          newDate.setMinutes(minSelectableTime.getMinutes());
+        } else {
+          newDate.setHours(0);
+          newDate.setMinutes(0);
+        }
+      } else {
+        newDate.setHours(0);
+        newDate.setMinutes(0);
+      }
+
+      setDate(newDate);
+      onChange(newDate.toISOString());
+      
+      // Update AM/PM after date select
+      updateAmpmFromDate(newDate);
+    }
+  };
+
+  // Function to handle changing the time
   const handleTimeChange = (type, value) => {
     const newDate = date ? new Date(date) : new Date();
 
     if (type === "hour") {
-      newDate.setHours(
-        (parseInt(value) % 12) + (newDate.getHours() >= 12 ? 12 : 0)
-      );
+      let newHour = parseInt(value) % 12; // Keep hours between 1-12
+
+      // Convert PM hours to 24-hour format
+      if (ampm === "PM" && newHour !== 12) {
+        newHour += 12; // Convert PM hours to 24-hour format
+      }
+      if (ampm === "AM" && newHour === 12) {
+        newHour = 0; // Convert 12 AM to 0 hours (midnight)
+      }
+
+      newDate.setHours(newHour);
     } else if (type === "minute") {
       newDate.setMinutes(parseInt(value));
     } else if (type === "ampm") {
-      const currentHours = newDate.getHours();
-      if (value === "PM" && currentHours < 12) {
-        newDate.setHours(currentHours + 12);
-      } else if (value === "AM" && currentHours >= 12) {
-        newDate.setHours(currentHours - 12);
+      setAmpm(value); // Update AM/PM state
+      let currentHour = newDate.getHours();
+      if (value === "PM" && currentHour < 12) {
+        newDate.setHours(currentHour + 12); // Convert to PM
+      } else if (value === "AM" && currentHour >= 12) {
+        newDate.setHours(currentHour - 12); // Convert to AM
       }
     }
 
-    if (
-      newDate < startAllowedTime ||
-      newDate > endDate
-    ) {
-      const formattedStart = format(startAllowedTime, "MMM dd yyyy hh:mma");
-      const formattedEnd = format(endDate, "MMM dd yyyy hh:mma");
-      toast.error(
-        `The recommended selection range is between ${formattedStart} and ${formattedEnd}.`
-      );
+    // Ensure the selected time is within the bounds of minDate and maxDate
+    if (minDate && newDate < new Date(minDate)) {
+      const minSelectableTime = new Date(minDate);
+      newDate.setHours(minSelectableTime.getHours());
+      newDate.setMinutes(minSelectableTime.getMinutes());
+    }
+
+    if (maxDate && newDate > new Date(maxDate)) {
+      return; // Don't allow selecting times beyond maxDate
     }
 
     setDate(newDate);
     onChange(newDate.toISOString());
+
+    // Update AM/PM after time change
+    updateAmpmFromTime(newDate);
+  };
+
+  // Dynamically return valid hour choices based on AM/PM selection and min/max time
+  const getValidHours = () => {
+    const validHours = [];
+    const isSameDayMin = date && minDate && new Date(date).toDateString() === new Date(minDate).toDateString();
+    const isSameDayMax = date && maxDate && new Date(date).toDateString() === new Date(maxDate).toDateString();
+
+    const minHour = minDate ? new Date(minDate).getHours() : 0;
+    const maxHour = maxDate ? new Date(maxDate).getHours() : 23;
+
+    if (ampm === "AM") {
+      // For AM, valid hours are 12 (midnight) to 11 AM
+      for (let i = 12; i <= 12; i++) { // 12 AM
+        validHours.push(i);
+      }
+      for (let i = 1; i <= 11; i++) { // 1 AM to 11 AM
+        validHours.push(i);
+      }
+    } else {
+      // For PM, valid hours are 12 (noon) to 11 PM
+      for (let i = 12; i <= 12; i++) { // 12 PM
+        validHours.push(i);
+      }
+      for (let i = 1; i <= 11; i++) { // 1 PM to 11 PM
+        validHours.push(i);
+      }
+    }
+    return validHours;
+  };
+
+  // Dynamically return valid minutes based on the selected hour and min/max time
+  const getValidMinutes = (hour) => {
+    const validMinutes = [];
+    const minDateObj = minDate ? new Date(minDate) : null;
+    const maxDateObj = maxDate ? new Date(maxDate) : null;
+  
+    const isSameDayMin = minDateObj && new Date(date).toDateString() === minDateObj.toDateString();
+    const isSameDayMax = maxDateObj && new Date(date).toDateString() === maxDateObj.toDateString();
+  
+    const minMinute = minDateObj ? minDateObj.getMinutes() : 0;
+    const maxMinute = maxDateObj ? maxDateObj.getMinutes() : 59;
+  
+    if (ampm === "AM") {
+      for (let i = 0; i < 60; i++) {
+        if (isSameDayMin && hour === minDateObj.getHours() && i < minMinute) continue;
+        if (isSameDayMax && hour === maxDateObj.getHours() && i > maxMinute) continue;
+        validMinutes.push(i);
+      }
+    } else {
+      // Handle PM hours differently
+      for (let i = 0; i < 60; i++) {
+        if (hour === 12) {
+          // Treat 12 PM as 12:00 to 12:59
+          if (isSameDayMin && hour === minDateObj.getHours() && i < minMinute) continue;
+          if (isSameDayMax && hour === maxDateObj.getHours() && i > maxMinute) continue;
+          validMinutes.push(i);
+        } else {
+          // Convert PM hour to 24-hour format
+          const pmHour = hour + 12;
+  
+          if (isSameDayMin && pmHour === minDateObj.getHours() && i < minMinute) continue;
+          if (isSameDayMax && pmHour === maxDateObj.getHours()) {
+            // Ensure that if we're at 5pm, we can only select up to minute 13
+            if (i > maxMinute) continue; // Don't allow minutes greater than maxMinute
+          }
+          validMinutes.push(i);
+        }
+      }
+    }
+  
+    return validMinutes;
+  };
+  
+  // Function to filter minutes based on the selected hour
+  const getFilteredMinutes = (hour) => {
+    const validMinutes = getValidMinutes(hour);
+    return validMinutes;
   };
 
   return (
@@ -80,17 +192,10 @@ export function DateTimePicker({ value, onChange, data }) {
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className={cn(
-            "w-full justify-start text-left font-normal",
-            !date && "text-muted-foreground"
-          )}
+          className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? (
-            format(date, "MMM dd yyyy hh:mma")
-          ) : (
-            <span>Select date and time</span>
-          )}
+          {date ? format(date, "MMM dd yyyy hh:mmaa") : <span>Select date and time</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0 max-h-80 overflow-y-auto">
@@ -100,86 +205,63 @@ export function DateTimePicker({ value, onChange, data }) {
             selected={date}
             onSelect={handleDateSelect}
             initialFocus
-            disabledDates={(d) => d < startAllowedTime || d > endDate} // Disable dates outside range
+            fromDate={minDate} // Disable past dates based on minDate
+            toDate={maxDate} // Disable future dates based on maxDate
           />
-          <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
-            <ScrollArea className="scroll-area w-72 sm:w-auto overflow-auto">
-              <div className="flex sm:flex-col p-2 pointer-events-auto">
-                {hours.reverse().map((hour) => (
-                  <Button
-                    key={hour}
-                    size="icon"
-                    variant={
-                      date && date.getHours() % 12 === hour % 12
-                        ? "default"
-                        : "ghost"
-                    }
-                    disabled={ // Disable if selecting this hour would make the date invalid
-                      new Date(date).setHours(hour) < startAllowedTime ||
-                      new Date(date).setHours(hour) > endDate
-                    }
-                    className="sm:w-full shrink-0 aspect-square"
-                    onClick={() => handleTimeChange("hour", hour.toString())}
-                  >
-                    {hour}
-                  </Button>
-                ))}
+          {/* Only show time picker if a date has been selected */}
+          {date && (
+            <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
+              <ScrollArea className="scroll-area w-72 sm:w-auto overflow-auto">
+                <div className="flex sm:flex-col p-2 pointer-events-auto">
+                  {getValidHours().map((hour) => (
+                    <Button
+                      key={hour}
+                      size="icon"
+                      variant={date && date.getHours() % 12 === hour % 12 ? "default" : "ghost"}
+                      className="sm:w-full shrink-0 aspect-square"
+                      onClick={() => handleTimeChange("hour", hour.toString())}
+                    >
+                      {hour}
+                    </Button>
+                  ))}
+                </div>
+                <ScrollBar orientation="horizontal" className="sm:hidden" />
+              </ScrollArea>
+              <ScrollArea className="scroll-area w-72 sm:w-auto overflow-auto">
+                <div className="flex sm:flex-col p-2 pointer-events-auto">
+                  {getFilteredMinutes(date ? date.getHours() : 0).map((minute) => (
+                    <Button
+                      key={minute}
+                      size="icon"
+                      variant={date && date.getMinutes() === minute ? "default" : "ghost"}
+                      className="sm:w-full shrink-0 aspect-square"
+                      onClick={() => handleTimeChange("minute", minute.toString())}
+                    >
+                      {minute < 10 ? `0${minute}` : minute}
+                    </Button>
+                  ))}
+                </div>
+                <ScrollBar orientation="horizontal" className="sm:hidden" />
+              </ScrollArea>
+              {/* AM/PM selection */}
+              <div className="flex sm:flex-col p-2">
+                <Button
+                  size="icon"
+                  variant={ampm === "AM" ? "default" : "ghost"}
+                  onClick={() => handleTimeChange("ampm", "AM")}
+                >
+                  AM
+                </Button>
+                <Button
+                  size="icon"
+                  variant={ampm === "PM" ? "default" : "ghost"}
+                  onClick={() => handleTimeChange("ampm", "PM")}
+                >
+                  PM
+                </Button>
               </div>
-              <ScrollBar orientation="horizontal" className="sm:hidden" />
-            </ScrollArea>
-            <ScrollArea className="scroll-area w-72 sm:w-auto overflow-auto">
-              <div className="flex sm:flex-col p-2 pointer-events-auto">
-                {minutes.map((minute) => (
-                  <Button
-                    key={minute}
-                    size="icon"
-                    variant={
-                      date && date.getMinutes() === minute ? "default" : "ghost"
-                    }
-                    disabled={ // Disable if selecting this minute would make the date invalid
-                      new Date(date).setMinutes(minute) < startAllowedTime ||
-                      new Date(date).setMinutes(minute) > endDate
-                    }
-                    className="sm:w-full shrink-0 aspect-square"
-                    onClick={() =>
-                      handleTimeChange(
-                        "minute",
-                        minute.toString().padStart(2, "0")
-                      )
-                    }
-                  >
-                    {minute.toString().padStart(2, "0")}
-                  </Button>
-                ))}
-              </div>
-              <ScrollBar orientation="horizontal" className="sm:hidden" />
-            </ScrollArea>
-            <ScrollArea className="scroll-area overflow-auto">
-              <div className="flex sm:flex-col p-2 pointer-events-auto">
-                {["AM", "PM"].map((ampm) => (
-                  <Button
-                    key={ampm}
-                    size="icon"
-                    variant={
-                      date &&
-                      ((ampm === "AM" && date.getHours() < 12) ||
-                        (ampm === "PM" && date.getHours() >= 12))
-                        ? "default"
-                        : "ghost"
-                    }
-                    disabled={ // Disable if setting AM/PM would make date invalid
-                      (ampm === "AM" && date && date.getHours() >= 12 && date < startAllowedTime) ||
-                      (ampm === "PM" && date && date.getHours() < 12 && date > endDate)
-                    }
-                    className="sm:w-full shrink-0 aspect-square"
-                    onClick={() => handleTimeChange("ampm", ampm)}
-                  >
-                    {ampm}
-                  </Button>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
+            </div>
+          )}
         </div>
       </PopoverContent>
     </Popover>
