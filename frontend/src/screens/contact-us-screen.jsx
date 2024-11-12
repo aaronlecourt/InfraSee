@@ -44,22 +44,22 @@ function ContactUsScreen() {
                 </a>
               </Button>
             </div>
-            <div className="mt-2">
+            {/* <div className="mt-2">
               <p className="font-medium flex gap-2 items-center"><Phone size={16}/>Contact us at</p>
               <Button variant="link" as="span">
                 <a href="tel:+11234567890" className="text-blue-600">
                   (123) 456-7890
                 </a>
               </Button>
-            </div>
-            <div className="mt-2">
+            </div> */}
+            {/* <div className="mt-2">
               <p className="font-medium flex gap-2 items-center"><Building size={16}/>Go to our Address</p>
               <Button variant="link" as="span">
                 <a className="text-blue-600">
                   123 Infrastructure St., City, Country
                 </a>
               </Button>
-            </div>
+            </div> */}
           </section>
         </main>
       </div>
