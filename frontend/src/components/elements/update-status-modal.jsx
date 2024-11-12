@@ -301,7 +301,6 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                     "Dismissed",
                     "Resolved",
                     "Under Review",
-                    "For Revision",
                   ].includes(currentStatus) ? (
                     <p className="mt-2 text-muted-foreground text-sm">
                       {currentStatus === "Dismissed" &&
@@ -310,8 +309,6 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                         "This report is already resolved."}
                       {currentStatus === "Under Review" &&
                         "This report is being reviewed by your submoderator, no action can be taken yet."}
-                      {currentStatus === "For Revision" &&
-                        "This report's resolution was rejected and is currently up for revision."}
                     </p>
                   ) : (
                     <>
@@ -380,7 +377,6 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                       "Dismissed",
                       "Resolved",
                       "Under Review",
-                      "For Revision",
                     ].includes(currentStatus)}
                   >
                     Update Status
