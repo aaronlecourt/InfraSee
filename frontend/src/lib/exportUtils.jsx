@@ -1,18 +1,30 @@
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import { format } from "date-fns";
 
+// Function to check if a value is a valid date
+const isValidDate = (value) => {
+  const date = new Date(value);
+  return typeof value === 'string' || typeof value === 'number' || value instanceof Date
+    ? !isNaN(date.getTime()) && typeof value !== 'boolean' 
+    : false;
+};
+// Function to format date
 const formatDate = (dateString) => {
-  if (!dateString) return null; // Return null for undefined or null inputs
+  if (!dateString) return null;
   const date = new Date(dateString);
-  return isNaN(date.getTime())
-    ? null
-    : format(date, "MMMM dd, yyyy hh:mm:ss aa");
+  return isNaN(date.getTime()) ? null : format(date, "MMMM dd, yyyy hh:mm:ss aa");
 };
 
-export const exportExcel = (rows, userInfo, activeTab, activeButton) => {
-  // Determine the filename based on the active button
-  let filenameSuffix = "";
+export const exportExcel = (rows, userInfo, activeTab, activeButton, table) => {
+  const visibleColumns = table.getVisibleLeafColumns();
 
+  const labeledColumns = visibleColumns.filter(
+    (column) => column.accessorFn && column.accessorFn !== undefined
+  );
+
+  console.log("Filtered Labeled Columns:", labeledColumns);
+
+  let filenameSuffix = "";
   if (userInfo.isAdmin) {
     switch (activeButton) {
       case "reports":
@@ -45,7 +57,6 @@ export const exportExcel = (rows, userInfo, activeTab, activeButton) => {
     filenameSuffix = activeTab === "reports" ? "_Reports" : "";
   }
 
-  // Define CSV configuration with dynamic filename
   const csvConfig = mkConfig({
     fieldSeparator: ",",
     filename: `InfraSee${filenameSuffix}`,
@@ -55,180 +66,39 @@ export const exportExcel = (rows, userInfo, activeTab, activeButton) => {
 
   const rowData = rows.map((row) => {
     const original = row.original;
-    let data = {}; // Initialize data
+    let data = {};
 
-    if (userInfo.isAdmin) {
-      switch (activeButton) {
-        case "reports":
-          data = {
-            _id: original._id,
-            report_by: original.report_by,
-            report_contactNum: original.report_contactNum,
-            report_desc: original.report_desc,
-            report_address: original.report_address,
-            latitude: original.latitude,
-            longitude: original.longitude,
-            infraType: original.infraType?.infra_name,
-            report_mod: original.report_mod?.name,
-            report_status: original.report_status?.stat_name,
-            createdAt: formatDate(original.createdAt),
-            updatedAt: formatDate(original.updatedAt),
-          };
-          break;
+    labeledColumns.forEach((column) => {
+      let value = original[column.id];
 
-        case "accounts":
-          switch (activeTab) {
-            case "all":
-              data = {
-                _id: original._id,
-                name: original.name,
-                email: original.email,
-                role: original.isAdmin
-                  ? "Administrator"
-                  : original.isModerator
-                  ? "Moderator"
-                  : original.isSubModerator
-                  ? "Submoderator"
-                  : "User",
-                createdAt: formatDate(original.createdAt),
-                updatedAt: formatDate(original.updatedAt),
-              };
-              break;
-            case "moderators":
-              data = {
-                _id: original._id,
-                name: original.name,
-                email: original.email,
-                role: original.isAdmin
-                  ? "Administrator"
-                  : original.isModerator
-                  ? "Moderator"
-                  : original.isSubModerator
-                  ? "Submoderator"
-                  : "User",
-                createdAt: formatDate(original.createdAt),
-                updatedAt: formatDate(original.updatedAt),
-              };
-              break;
-            case "submoderators":
-              data = {
-                _id: original._id,
-                name: original.name,
-                email: original.email,
-                assignedModerator: original.assignedModerator?.name,
-                createdAt: formatDate(original.createdAt),
-                updatedAt: formatDate(original.updatedAt),
-              };
-              break;
-            case "deactivated":
-              data = {
-                _id: original._id,
-                name: original.name,
-                email: original.email,
-                role: original.isAdmin
-                  ? "Administrator"
-                  : original.isModerator
-                  ? "Moderator"
-                  : original.isSubModerator
-                  ? "Submoderator"
-                  : "User",
-                assignedModerator: original.assignedModerator?.name,
-                createdAt: formatDate(original.createdAt),
-                updatedAt: formatDate(original.updatedAt),
-              };
-              break;
-            default:
-              data = original;
-          }
-          break;
-
-        default:
-          data = original;
+      if (value && typeof value === "object") {
+        const keys = Object.keys(value);
+        if (keys.length > 1) {
+          value = value[keys[1]];
+        } else {
+          value = JSON.stringify(value);
+        }
       }
-    } else if (userInfo.isModerator) {
-      switch (activeTab) {
-        case "reports":
-          data = {
-            _id: original._id,
-            report_img: original.report_img, // Include the report image URL
-            report_by: original.report_by,
-            report_contactNum: original.report_contactNum,
-            report_desc: original.report_desc,
-            report_address: original.report_address,
-            latitude: original.latitude,
-            longitude: original.longitude,
-            infraType: original.infraType?.infra_name,
-            report_mod: original.report_mod?.name,
-            report_status: original.report_status?.stat_name,
-            report_time_resolved: formatDate(original.report_time_resolved), // Use the updated formatDate function
-            request_time: formatDate(original.request_time), // Use the updated formatDate function
-            status_remark: original.status_remark,
-            createdAt: formatDate(original.createdAt), // Use the updated formatDate function
-            updatedAt: formatDate(original.updatedAt), // Use the updated formatDate function
-          };
-          break;
 
-        case "hidden":
-          data = {
-            _id: original._id,
-            report_by: original.report_by,
-            report_contactNum: original.report_contactNum,
-            report_desc: original.report_desc,
-            report_address: original.report_address,
-            latitude: original.latitude,
-            longitude: original.longitude,
-            infraType: original.infraType?.infra_name,
-            report_mod: original.report_mod?.name,
-            report_status: original.report_status?.stat_name,
-            report_time_resolved: formatDate(original.report_time_resolved),
-            request_time: formatDate(original.request_time),
-            status_remark: original.status_remark,
-            createdAt: formatDate(original.createdAt),
-            updatedAt: formatDate(original.updatedAt),
-            hidden_at: formatDate(original.hidden_at),
-          };
-          break;
-
-        default:
-          data = original;
+      if (Array.isArray(value)) {
+        value = value.join(", ");
       }
-    } else if (userInfo.isSubModerator) {
-      switch (activeTab) {
-        case "reports":
-          data = {
-            _id: original._id,
-            report_img: original.report_img, // Include the report image URL
-            report_by: original.report_by,
-            report_contactNum: original.report_contactNum,
-            report_desc: original.report_desc,
-            report_address: original.report_address,
-            latitude: original.latitude,
-            longitude: original.longitude,
-            infraType: original.infraType?.infra_name,
-            report_mod: original.report_mod?.name,
-            report_status: original.report_status?.stat_name,
-            report_time_resolved: formatDate(original.report_time_resolved), // Use the updated formatDate function
-            request_time: formatDate(original.request_time), // Use the updated formatDate function
-            status_remark: original.status_remark,
-            createdAt: formatDate(original.createdAt), // Use the updated formatDate function
-            updatedAt: formatDate(original.updatedAt), // Use the updated formatDate function
-          };
-          break;
 
-        default:
-          data = original;
+      if (isValidDate(value)) {
+        value = formatDate(value);
       }
-    }
 
-    return data || { _id: original._id }; // Ensure data is always returned
+      data[column.id] = value;
+    });
+
+    return data || { _id: original._id };
   });
 
-  // Check if rowData is not empty
   if (rowData.length === 0) {
     console.error("No data to export");
-    return; // Early exit if there's no data
+    return;
   }
 
-  const csv = generateCsv(csvConfig)(rowData); // Generate CSV with default headers
-  download(csvConfig)(csv); // Trigger download
+  const csv = generateCsv(csvConfig)(rowData);
+  download(csvConfig)(csv);
 };

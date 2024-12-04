@@ -23,12 +23,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { exportExcel } from "@/lib/exportUtils";
 
-export function DataTableToolbar({
-  userInfo,
-  table,
-  activeTab,
-  activeButton,
-}) {
+export function DataTableToolbar({ userInfo, table, activeTab, activeButton }) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubModDialogOpen, setIsSubModDialogOpen] = useState(false);
@@ -59,15 +54,20 @@ export function DataTableToolbar({
   };
 
   const handleHideReports = async () => {
-    const reportIds = selectedRows.map((report) => report.original._id).join(",");
+    const reportIds = selectedRows
+      .map((report) => report.original._id)
+      .join(",");
     const count = selectedRows.length;
-  
+
     try {
       const response = await axios.put(`/api/reports/hide/${reportIds}`);
-      toast.success(`${count} report${count > 1 ? "s" : ""} hidden successfully.`);
+      toast.success(
+        `${count} report${count > 1 ? "s" : ""} hidden successfully.`
+      );
     } catch (error) {
-  
-      const errorMessage = error.response?.data?.message || "Error hiding reports. Please try again.";
+      const errorMessage =
+        error.response?.data?.message ||
+        "Error hiding reports. Please try again.";
       toast.error(errorMessage);
     } finally {
       setIsHideDialogOpen(false);
@@ -75,18 +75,21 @@ export function DataTableToolbar({
   };
 
   const handleRestoreReports = async () => {
-    const reportIds = selectedRows.map((report) => report.original._id).join(",");
+    const reportIds = selectedRows
+      .map((report) => report.original._id)
+      .join(",");
     const count = selectedRows.length;
     try {
       await axios.put(`/api/reports/restore/${reportIds}`).unwrap();
-      toast.success(`${count} report${count > 1 ? "s" : ""} restored successfully.`);
+      toast.success(
+        `${count} report${count > 1 ? "s" : ""} restored successfully.`
+      );
     } catch (error) {
       toast.error("Error restoring reports. Please try again.");
     } finally {
       setIsRestoreDialogOpen(false);
     }
   };
-
 
   useEffect(() => {
     const initializeData = async () => {
@@ -108,7 +111,9 @@ export function DataTableToolbar({
                 value={table.getColumn("report_by")?.getFilterValue() ?? ""}
                 className="h-9"
                 onChange={(event) => {
-                  table.getColumn("report_by")?.setFilterValue(event.target.value);
+                  table
+                    .getColumn("report_by")
+                    ?.setFilterValue(event.target.value);
                 }}
               />
             )}
@@ -119,7 +124,9 @@ export function DataTableToolbar({
                 value={table.getColumn("report_by")?.getFilterValue() ?? ""}
                 className="h-9"
                 onChange={(event) => {
-                  table.getColumn("report_by")?.setFilterValue(event.target.value);
+                  table
+                    .getColumn("report_by")
+                    ?.setFilterValue(event.target.value);
                 }}
                 onFocus={() => {
                   table.resetColumnFilters();
@@ -149,13 +156,34 @@ export function DataTableToolbar({
               value={table.getColumn("report_by")?.getFilterValue() ?? ""}
               className="h-9"
               onChange={(event) => {
-                table.getColumn("report_by")?.setFilterValue(event.target.value);
+                table
+                  .getColumn("report_by")
+                  ?.setFilterValue(event.target.value);
               }}
             />
           )}
           <div className="flex gap-2 sm:hidden">
             <DataTableViewOptions table={table} />
-            <Button size="filter" className="flex" onClick={() => exportExcel(table.getFilteredRowModel().rows, userInfo, activeTab, activeButton)}>
+            <Button
+              size="filter"
+              className="flex"
+              onClick={() => {
+                const filteredRows = table.getFilteredRowModel().rows;
+            
+                if (filteredRows.length === 0) {
+                  toast.error("No data available to export.");
+                  return;
+                }
+            
+                exportExcel(
+                  filteredRows,
+                  userInfo,
+                  activeTab,
+                  activeButton,
+                  table
+                );
+              }}
+            >
               <Download size={15} />
               <p className="hidden md:block">CSV</p>
             </Button>
@@ -173,7 +201,7 @@ export function DataTableToolbar({
       <div className="grid grid-cols-1 gap-y-2">
         <div className="col-span-1 flex items-center justify-between">
           <div className="flex items-center">
-            {userInfo.isModerator && activeTab === "reports"&& (
+            {userInfo.isModerator && activeTab === "reports" && (
               <DataTableFacetedFilter
                 column={table.getColumn("report_status")}
                 title="Status"
@@ -192,37 +220,42 @@ export function DataTableToolbar({
               />
             )}
 
-
             {userInfo.isSubModerator && activeTab === "reports" && (
               <DataTableFacetedFilter
                 column={table.getColumn("report_status")}
                 title="Status"
                 options={filterOptions.reportStatus.filter((status) =>
-                  ["Under Review", "For Revision", "Resolved"].includes(status.label)
+                  ["Under Review", "For Revision", "Resolved"].includes(
+                    status.label
+                  )
                 )}
               />
             )}
-            {userInfo.isAdmin && activeButton === "accounts" && !(activeTab === "submoderators") && (
-              <DataTableFacetedFilter
-                column={table.getColumn("infra_type")}
-                title="Infrastructure Type"
-                options={filterOptions.infraType}
-              />
-            )}
-            {userInfo.isAdmin && activeButton === "accounts" && activeTab === "submoderators" && (
-              <div className="flex gap-2">
+            {userInfo.isAdmin &&
+              activeButton === "accounts" &&
+              !(activeTab === "submoderators") && (
                 <DataTableFacetedFilter
                   column={table.getColumn("infra_type")}
                   title="Infrastructure Type"
                   options={filterOptions.infraType}
                 />
-                <DataTableFacetedFilter
-                  column={table.getColumn("assignedModerator")}
-                  title="Assigned to"
-                  options={filterOptions.reportMod}
-                />
-              </div>
-            )}
+              )}
+            {userInfo.isAdmin &&
+              activeButton === "accounts" &&
+              activeTab === "submoderators" && (
+                <div className="flex gap-2">
+                  <DataTableFacetedFilter
+                    column={table.getColumn("infra_type")}
+                    title="Infrastructure Type"
+                    options={filterOptions.infraType}
+                  />
+                  <DataTableFacetedFilter
+                    column={table.getColumn("assignedModerator")}
+                    title="Assigned to"
+                    options={filterOptions.reportMod}
+                  />
+                </div>
+              )}
             {userInfo.isAdmin && activeButton === "reports" && (
               <div className="flex gap-x-2">
                 <DataTableFacetedFilter
@@ -252,35 +285,60 @@ export function DataTableToolbar({
             {activeTab !== "unassigned" && (
               <div className="hidden sm:flex">
                 <DataTableViewOptions table={table} />
-                <Button size="filter" className="flex gap-2 ml-2" onClick={() => exportExcel(table.getFilteredRowModel().rows, userInfo, activeTab, activeButton)}>
+                <Button
+                  size="filter"
+                  className="flex gap-2 ml-2"
+                  onClick={() => {
+                    const filteredRows = table.getFilteredRowModel().rows;
+                
+                    if (filteredRows.length === 0) {
+                      toast.error("No data available to export.");
+                      return;
+                    }
+                
+                    exportExcel(
+                      filteredRows,
+                      userInfo,
+                      activeTab,
+                      activeButton,
+                      table
+                    );
+                  }}
+                >
                   <Download size={15} />
                   <p className="hidden md:block">CSV</p>
                 </Button>
               </div>
             )}
             <div className="flex gap-2">
-              {userInfo.isModerator && table.getFilteredSelectedRowModel().rows.length > 0 && activeTab === "hidden" && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="ml-2"
-                  onClick={() => setIsRestoreDialogOpen(true)}
-                >
-                  <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
-                  <p className="hidden md:block">Unhide</p>({table.getFilteredSelectedRowModel().rows.length})
-                </Button>
-              )}
-              {userInfo.isModerator && table.getFilteredSelectedRowModel().rows.length > 0 && activeTab === "reports" && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="ml-2"
-                  onClick={() => setIsHideDialogOpen(true)}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  <p className="hidden md:block">Hide</p>({selectedRows.length})
-                </Button>
-              )}
+              {userInfo.isModerator &&
+                table.getFilteredSelectedRowModel().rows.length > 0 &&
+                activeTab === "hidden" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="ml-2"
+                    onClick={() => setIsRestoreDialogOpen(true)}
+                  >
+                    <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
+                    <p className="hidden md:block">Unhide</p>(
+                    {table.getFilteredSelectedRowModel().rows.length})
+                  </Button>
+                )}
+              {userInfo.isModerator &&
+                table.getFilteredSelectedRowModel().rows.length > 0 &&
+                activeTab === "reports" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="ml-2"
+                    onClick={() => setIsHideDialogOpen(true)}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    <p className="hidden md:block">Hide</p>(
+                    {selectedRows.length})
+                  </Button>
+                )}
               {userInfo.isAdmin && activeButton === "accounts" && (
                 <>
                   <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
