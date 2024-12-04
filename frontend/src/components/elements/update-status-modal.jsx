@@ -271,9 +271,10 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                     </p>
                   ) : (
                     <>
-                      <FormItem>
-                        <FormLabel className="font-bold">Remarks</FormLabel>
-                        {/* <FormControl> */}
+                      {selectedStatus !== "For Revision" && (
+                        <FormItem>
+                          <FormLabel className="font-bold">Remarks</FormLabel>
+                          {/* <FormControl> */}
                           <Controller
                             name="remarks"
                             control={control}
@@ -292,11 +293,12 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                               />
                             )}
                           />
-                        {/* </FormControl> */}
-                        {errors.remarks && (
-                          <FormMessage>{errors.remarks.message}</FormMessage>
-                        )}
-                      </FormItem>
+                          {/* </FormControl> */}
+                          {errors.remarks && (
+                            <FormMessage>{errors.remarks.message}</FormMessage>
+                          )}
+                        </FormItem>
+                      )}
 
                       <div className="flex justify-between text-xs font-normal text-muted-foreground mt-1">
                         {remarksLength} / 150 {/* Display the current length */}
@@ -333,18 +335,19 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                       )}
                     </>
                   )}
-
-                  <Button
-                    type="submit"
-                    className="mt-4 w-full"
-                    disabled={[
-                      "Dismissed",
-                      "Resolved",
-                      "Under Review",
-                    ].includes(currentStatus)}
-                  >
-                    Update Status
-                  </Button>
+                  {selectedStatus !== "For Revision" && (
+                    <Button
+                      type="submit"
+                      className="mt-4 w-full"
+                      disabled={[
+                        "Dismissed",
+                        "Resolved",
+                        "Under Review",
+                      ].includes(currentStatus)}
+                    >
+                      Update Status
+                    </Button>
+                  )}
                 </form>
               </FormProvider>
             </div>

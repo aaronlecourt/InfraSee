@@ -852,11 +852,11 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
     // Only send SMS notification if:
     // 1. The status is not "Under Review" or "For Revision"
     // 2. The status is not "Resolved" AND there are submoderators
-    if (![underReviewStatus._id.toString(), dismissedStatus._id.toString()].includes(statusId) &&
+    if (![underReviewStatus._id.toString()].includes(statusId) &&
       !(statusId === resolvedStatus._id.toString() && moderator.subModerators.length > 0)) {
       
       // Construct the message for the SMS
-      const statusName = updatedReport.report_status.stat_name;
+      
       const remarks = updatedReport.status_remark || "No additional remarks.";
       const moderatorName = moderator.name;
       const reporterName = updatedReport.report_by;
