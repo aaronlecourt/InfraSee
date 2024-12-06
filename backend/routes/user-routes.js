@@ -1,6 +1,7 @@
 import express from "express";
 import {
   registerUser,
+  createModerator,
   createSubModerator,
   authUser,
   adminUser,
@@ -26,9 +27,10 @@ import { protect } from "../middleware/auth-middleware.js";
 const router = express.Router();
 
 router.route("/").post(registerUser);
-router.route('/:moderatorId/submoderators').post(protect, createSubModerator);
-router.route('/:moderatorId/deactivate').put(protect, deactivateModerator);
-router.route('/:moderatorId/reactivate').put(protect, reactivateModerator);
+router.route("/:moderatorId/moderators").post(protect, createModerator);
+router.route("/:moderatorId/submoderators").post(protect, createSubModerator);
+router.route("/:moderatorId/deactivate").put(protect, deactivateModerator);
+router.route("/:moderatorId/reactivate").put(protect, reactivateModerator);
 router.route("/deactivated").get(getDeactivatedUsers);
 router.route("/delete/:id").delete(deleteUser);
 router.route("/auth").post(authUser);

@@ -18,6 +18,10 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    can_create: {
+      type: Boolean,
+      default: false,
+    },
     infra_type: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "InfrastructureType",
@@ -52,13 +56,21 @@ const userSchema = mongoose.Schema(
       ref: "User",
       default: null,
     },
-    subModerators: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    }],
+    moderators: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    subModerators: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     deactivated: {
       type: Boolean,
-      default: false, 
+      default: false,
     },
     resetPasswordToken: {
       type: String,
@@ -84,13 +96,12 @@ userSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
 // Middleware to handle deactivation and reactivation of submoderators
-userSchema.pre('findOneAndUpdate', async function (next) {
+userSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate();
 
   // If deactivating the moderator, deactivate all their submoderators
@@ -98,18 +109,24 @@ userSchema.pre('findOneAndUpdate', async function (next) {
     const moderatorId = this.getQuery()._id;
 
     // Deactivate all submoderators assigned to this moderator
-    await mongoose.model('User').updateMany(
-      { assignedModerator: moderatorId, isSubModerator: true },
-      { $set: { deactivated: true } }
-    );
-  } 
+    await mongoose
+      .model("User")
+      .updateMany(
+        { assignedModerator: moderatorId, isSubModerator: true },
+        { $set: { deactivated: true } }
+      );
+  }
   // If reactivating the moderator, reactivate all their submoderators
   else if (update.deactivated === false) {
     const moderatorId = this.getQuery()._id;
 
     // Reactivate all submoderators assigned to this moderator
-    await mongoose.model('User').updateMany(
-      { assignedModerator: moderatorId, isSubModerator: true, deactivated: true },
+    await mongoose.model("User").updateMany(
+      {
+        assignedModerator: moderatorId,
+        isSubModerator: true,
+        deactivated: true,
+      },
       { $set: { deactivated: false } }
     );
   }

@@ -96,11 +96,12 @@ const moderatorUser = asyncHandler(async (req, res) => {
   if (user.isModerator || user.isSubModerator) {
     generateToken(res, user._id);
 
-    // Respond with user data
+    // Respond with user data, including the `can_create` field
     res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
+      can_create: user.can_create,
       isAdmin: user.isAdmin,
       isModerator: user.isModerator,
       isSubModerator: user.isSubModerator,
@@ -130,15 +131,15 @@ const registerUser = asyncHandler(async (req, res) => {
     assignedModerator,
   } = req.body;
 
+  // Check if the email already exists
   const userExists = await User.findOne({ email });
 
   if (userExists) {
-    res
-      .status(400)
-      .json({ message: "That email has already been used. Try again." });
+    res.status(400).json({ message: "That email has already been used. Try again." });
     return;
   }
 
+  // Create the new user
   const user = await User.create({
     name,
     email,
@@ -152,12 +153,22 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 
   if (user) {
+    if (user.isModerator) {
+      const currentUser = await User.findById(user._id).populate('moderators');
+
+      user.can_create = currentUser.moderators.length === 0 ? true : false;
+      await user.save();
+    }
+
+    // Generate the token
     generateToken(res, user._id);
 
+    // Send the response
     res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
+      can_create: user.can_create,
       isAdmin: user.isAdmin,
       isModerator: user.isModerator,
       isSubModerator: user.isSubModerator,
@@ -171,23 +182,19 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Create a new submoderator
-// @route   POST /api/users/submoderators
-// @access  Private (only moderators or admins should access this)
-const createSubModerator = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
-  const assignedModeratorId = req.params.moderatorId;
 
-  // Find the selected moderator by `assignedModeratorId`
-  const moderator = await User.findById(assignedModeratorId);
+// @desc    Create a new moderator
+// @route   POST /api/users/moderators
+// @access  Private (only moderators with can_create privilege)
+const createModerator = asyncHandler(async (req, res) => {
+  const { name, email, password, infra_type } = req.body;
 
-  if (!moderator || !moderator.isModerator) {
-    return res
-      .status(403)
-      .json({ message: "Access denied: Selected user is not a moderator" });
+  // Check if the requesting user is a moderator with can_create privilege
+  if (!(req.user && req.user.isModerator && req.user.can_create)) {
+    return res.status(403).json({
+      message: "Access denied: Only moderators with the 'can_create' privilege can create moderators.",
+    });
   }
-
-  const infra_type = moderator.infra_type;
 
   // Check if the email is already in use
   const userExists = await User.findOne({ email });
@@ -197,43 +204,109 @@ const createSubModerator = asyncHandler(async (req, res) => {
       .json({ message: "That email has already been used. Try again." });
   }
 
-  // Create the submoderator and assign them to the selected moderator
+  // Create the new moderator
+  const moderator = await User.create({
+    name,
+    email,
+    password,
+    infra_type,
+    isModerator: true,
+    can_create: false, 
+    moderators: [], 
+    subModerators: [], 
+  });
+
+  if (moderator) {
+    // Add the newly created moderator to the moderators array of the current user
+    await User.findByIdAndUpdate(req.user._id, {
+      $addToSet: { moderators: moderator._id },
+    });
+
+    // Update the assignedModerator field for the new moderator to the user who created them
+    await User.findByIdAndUpdate(moderator._id, {
+      assignedModerator: req.user._id,
+    });
+
+    res.status(201).json({
+      _id: moderator._id,
+      name: moderator.name,
+      email: moderator.email,
+      infra_type: moderator.infra_type,
+      isModerator: moderator.isModerator,
+      can_create: moderator.can_create,
+      assignedModerator: {
+        _id: req.user._id,
+        name: req.user.name,
+      },
+    });
+  } else {
+    res.status(400).json({ message: "Invalid moderator data" });
+  }
+});
+
+
+// @desc    Create a new submoderator
+// @route   POST /api/users/submoderators
+// @access  Private (only moderators with `can_create` privilege)
+const createSubModerator = asyncHandler(async (req, res) => {
+  const { name, email, password, infra_type } = req.body;
+
+  // Check if the requesting user is a moderator with `can_create` privilege
+  if (!(req.user && req.user.isModerator && req.user.can_create)) {
+    return res.status(403).json({
+      message:
+        "Access denied: Only moderators with 'create' privileges are allowed to add sub-moderators.",
+    });
+  }
+
+  // Check if the email is already in use
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    return res
+      .status(400)
+      .json({ message: "That email has already been used. Try again." });
+  }
+
+  // Create the new submoderator
   const submoderator = await User.create({
     name,
     email,
     password,
     infra_type,
     isSubModerator: true,
-    assignedModerator: assignedModeratorId,
     subModerators: [],
   });
 
   if (submoderator) {
-    // Add the submoderator to the selected moderator's subModerators list
-    await User.findByIdAndUpdate(assignedModeratorId, {
+    // Add the newly created submoderator to the `subModerators` array of the selected moderator
+    await User.findByIdAndUpdate(req.user._id, {
       $addToSet: { subModerators: submoderator._id },
     });
 
-    // Populate the assignedModerator details
-    const populatedModerator = await User.findById(assignedModeratorId).select(
-      "_id name"
-    );
+    // Update the `assignedModerator` field for the new submoderator to the user who created them (req.user)
+    await User.findByIdAndUpdate(submoderator._id, {
+      assignedModerator: req.user._id,
+    });
+
+    // Populate the current user's details (assigned moderator)
+    const populatedModerator = await User.findById(req.user._id).select("_id name");
 
     res.status(201).json({
       _id: submoderator._id,
       name: submoderator.name,
       email: submoderator.email,
-      isSubModerator: submoderator.isSubModerator,
       infra_type: submoderator.infra_type,
+      isSubModerator: submoderator.isSubModerator,
       assignedModerator: {
-        _id: populatedModerator._id, // Populate the moderator's _id
-        name: populatedModerator.name, // Populate the moderator's name
+        _id: populatedModerator._id,  
+        name: populatedModerator.name, 
       },
     });
   } else {
     res.status(400).json({ message: "Invalid submoderator data" });
   }
 });
+
 
 // @desc    Delete a user
 // @route   DELETE /api/users/:id
@@ -276,7 +349,9 @@ const deactivateModerator = asyncHandler(async (req, res) => {
 
     // Retrieve status IDs for "Under Review", "For Revision", "In Progress", and "Pending"
     const statuses = await Status.find({
-      stat_name: { $in: ["Under Review", "For Revision", "In Progress", "Pending"] },
+      stat_name: {
+        $in: ["Under Review", "For Revision", "In Progress", "Pending"],
+      },
     });
     const statusIds = statuses.map((status) => status._id);
 
@@ -288,11 +363,9 @@ const deactivateModerator = asyncHandler(async (req, res) => {
       });
 
       if (pendingReports.length > 0) {
-        return res
-          .status(400)
-          .json({
-            message: "Cannot deactivate moderator with pending reports.",
-          });
+        return res.status(400).json({
+          message: "Cannot deactivate moderator with pending reports.",
+        });
       }
 
       // Deactivate the moderator and their submoderators
@@ -326,12 +399,10 @@ const deactivateModerator = asyncHandler(async (req, res) => {
       });
 
       if (pendingReports.length > 0) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "Cannot deactivate the submoderator due to pending reports under review or for revision.",
-          });
+        return res.status(400).json({
+          message:
+            "Cannot deactivate the submoderator due to pending reports under review or for revision.",
+        });
       }
 
       // Proceed with deactivation of submoderator
@@ -698,6 +769,7 @@ export {
   adminUser,
   moderatorUser,
   registerUser,
+  createModerator,
   createSubModerator,
   deleteUser,
   deactivateModerator,

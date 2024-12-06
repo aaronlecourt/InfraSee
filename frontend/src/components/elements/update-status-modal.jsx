@@ -75,6 +75,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
   const currentStatus = data?.report_status.stat_name || "";
   const today = new Date();
   const [remarksLength, setRemarksLength] = useState(0);
+  const [dismissReason, setDismissReason] = useState("");
 
   const methods = useForm({
     resolver: zodResolver(getSchema(selectedStatus)),
@@ -168,7 +169,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
   const getAllowedStatusOptions = () => {
     const restrictedStatuses = {
       Pending: ["In Progress", "Dismissed", "Unassigned"],
-      "In Progress": ["Resolved", "Pending"],
+      "In Progress": ["Resolved"],
       "For Revision": ["Resolved"],
       Dismissed: [],
       Resolved: [],
@@ -258,83 +259,137 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                     )}
                   />
 
-                  {["Dismissed", "Resolved", "Under Review"].includes(
-                    currentStatus
-                  ) ? (
-                    <p className="mt-2 text-muted-foreground text-sm">
-                      {currentStatus === "Dismissed" &&
-                        `This report was dismissed. Remarks: "${data.status_remark}"`}
-                      {currentStatus === "Resolved" &&
-                        "This report is already resolved."}
-                      {currentStatus === "Under Review" &&
-                        "This report is being reviewed by your submoderator, no action can be taken yet."}
-                    </p>
-                  ) : (
-                    <>
-                      {selectedStatus !== "For Revision" && (
-                        <FormItem>
-                          <FormLabel className="font-bold">Remarks</FormLabel>
-                          {/* <FormControl> */}
-                          <Controller
-                            name="remarks"
-                            control={control}
-                            render={({ field }) => (
-                              <Textarea
-                                {...field}
-                                id="remarks"
-                                placeholder={getRemarkPlaceholder()}
-                                className="mt-1"
-                                rows="3"
-                                maxLength={150} // Set a max length limit for remarks
-                                onChange={(e) => {
-                                  setRemarksLength(e.target.value.length); // Update the length
-                                  field.onChange(e); // Keep the form state updated
-                                }}
-                              />
-                            )}
-                          />
-                          {/* </FormControl> */}
-                          {errors.remarks && (
-                            <FormMessage>{errors.remarks.message}</FormMessage>
-                          )}
-                        </FormItem>
+                  {selectedStatus === "Dismissed" && (
+                    <FormItem>
+                      <FormLabel className="font-bold">
+                        Select Reason for Dismissal
+                      </FormLabel>
+                      <Controller
+                        name="dismissReason"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            {...field}
+                            value={dismissReason}
+                            onValueChange={(value) => setDismissReason(value)}
+                            className="w-full"
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select reason" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectItem value="Wrong Information">
+                                  Wrong Information
+                                </SelectItem>
+                                <SelectItem value="Not Credible">
+                                  Not Credible
+                                </SelectItem>
+                                <SelectItem value="Mali Kasi">
+                                  Mali Kasi
+                                </SelectItem>
+                                <SelectItem value="Very Wrong">
+                                  Very Wrong
+                                </SelectItem>
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors.dismissReason && (
+                        <FormMessage>
+                          {errors.dismissReason.message}
+                        </FormMessage>
                       )}
+                    </FormItem>
+                  )}
 
-                      <div className="flex justify-between text-xs font-normal text-muted-foreground mt-1">
-                        {remarksLength} / 150 {/* Display the current length */}
-                      </div>
-
-                      {selectedStatus === "Resolved" && (
-                        <FormItem>
-                          <FormLabel className="font-bold">
-                            Time Resolved
-                          </FormLabel>
-                          <Controller
-                            name="report_time_resolved"
-                            control={control}
-                            render={({ field }) => (
-                              <DateTimePicker
-                                value={field.value}
-                                onChange={(value) => {
-                                  field.onChange(value);
-                                  if (value) {
-                                    methods.clearErrors("report_time_resolved");
-                                  }
-                                }}
-                                minDate={createdAt}
-                                maxDate={today}
+                  {selectedStatus !== "Dismissed" && (
+                    <>
+                      {["Dismissed", "Resolved", "Under Review"].includes(
+                        currentStatus
+                      ) ? (
+                        <p className="mt-2 text-muted-foreground text-sm">
+                          {currentStatus === "Dismissed" &&
+                            `This report was dismissed. Remarks: "${data.status_remark}"`}
+                          {currentStatus === "Resolved" &&
+                            "This report is already resolved."}
+                          {currentStatus === "Under Review" &&
+                            "This report is being reviewed by your submoderator, no action can be taken yet."}
+                        </p>
+                      ) : (
+                        <>
+                          {selectedStatus !== "For Revision" && (
+                            <FormItem>
+                              <FormLabel className="font-bold">
+                                Remarks
+                              </FormLabel>
+                              <Controller
+                                name="remarks"
+                                control={control}
+                                render={({ field }) => (
+                                  <Textarea
+                                    {...field}
+                                    id="remarks"
+                                    placeholder={getRemarkPlaceholder()}
+                                    className="mt-1"
+                                    rows="3"
+                                    maxLength={150}
+                                    onChange={(e) => {
+                                      setRemarksLength(e.target.value.length);
+                                      field.onChange(e);
+                                    }}
+                                  />
+                                )}
                               />
-                            )}
-                          />
-                          {errors.report_time_resolved && (
-                            <FormMessage>
-                              {errors.report_time_resolved.message}
-                            </FormMessage>
+                              {errors.remarks && (
+                                <FormMessage>
+                                  {errors.remarks.message}
+                                </FormMessage>
+                              )}
+                            </FormItem>
                           )}
-                        </FormItem>
+
+                          <div className="flex justify-between text-xs font-normal text-muted-foreground mt-1">
+                            {remarksLength} / 150
+                          </div>
+
+                          {selectedStatus === "Resolved" && (
+                            <FormItem>
+                              <FormLabel className="font-bold">
+                                Time Resolved
+                              </FormLabel>
+                              <Controller
+                                name="report_time_resolved"
+                                control={control}
+                                render={({ field }) => (
+                                  <DateTimePicker
+                                    value={field.value}
+                                    onChange={(value) => {
+                                      field.onChange(value);
+                                      if (value) {
+                                        methods.clearErrors(
+                                          "report_time_resolved"
+                                        );
+                                      }
+                                    }}
+                                    minDate={createdAt}
+                                    maxDate={today}
+                                  />
+                                )}
+                              />
+                              {errors.report_time_resolved && (
+                                <FormMessage>
+                                  {errors.report_time_resolved.message}
+                                </FormMessage>
+                              )}
+                            </FormItem>
+                          )}
+                        </>
                       )}
                     </>
                   )}
+
                   {selectedStatus !== "For Revision" && (
                     <Button
                       type="submit"

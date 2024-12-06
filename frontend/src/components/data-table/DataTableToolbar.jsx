@@ -169,12 +169,12 @@ export function DataTableToolbar({ userInfo, table, activeTab, activeButton }) {
               className="flex"
               onClick={() => {
                 const filteredRows = table.getFilteredRowModel().rows;
-            
+
                 if (filteredRows.length === 0) {
                   toast.error("No data available to export.");
                   return;
                 }
-            
+
                 exportExcel(
                   filteredRows,
                   userInfo,
@@ -290,12 +290,12 @@ export function DataTableToolbar({ userInfo, table, activeTab, activeButton }) {
                   className="flex gap-2 ml-2"
                   onClick={() => {
                     const filteredRows = table.getFilteredRowModel().rows;
-                
+
                     if (filteredRows.length === 0) {
                       toast.error("No data available to export.");
                       return;
                     }
-                
+
                     exportExcel(
                       filteredRows,
                       userInfo,
@@ -362,6 +362,33 @@ export function DataTableToolbar({ userInfo, table, activeTab, activeButton }) {
                       <RegisterForm onClose={() => setIsDialogOpen(false)} />
                     </DialogContent>
                   </Dialog>
+                </>
+              )}
+
+              {userInfo.isModerator && userInfo.can_create && (
+                <>
+                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="filter"
+                        className="flex gap-2 ml-2"
+                      >
+                        <Plus size={15} />
+                        <p className="hidden md:block">Add Moderator</p>
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add Moderator</DialogTitle>
+                        <DialogDescription>
+                          Please fill in the details below.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <RegisterForm onClose={() => setIsDialogOpen(false)} />
+                    </DialogContent>
+                  </Dialog>
+                  
                   <Dialog
                     open={isSubModDialogOpen}
                     onOpenChange={setIsSubModDialogOpen}
@@ -370,7 +397,7 @@ export function DataTableToolbar({ userInfo, table, activeTab, activeButton }) {
                       <Button
                         variant="outline"
                         size="filter"
-                        className="flex gap-2"
+                        className="flex gap-2 "
                       >
                         <UserRoundPlus size={15} />
                         <p className="hidden md:block">Add Sub Moderator</p>

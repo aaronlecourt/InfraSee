@@ -37,6 +37,20 @@ export const userApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    createModerator: builder.mutation({
+      query: (data) => ({
+        url: `${USERS_URL}/${data.moderatorId}/moderators`,
+        method: "POST",
+        body: data,
+      }),
+    }),
+    createSubModerator: builder.mutation({
+      query: (data) => ({
+        url: `${USERS_URL}/${data.moderatorId}/submoderators`,
+        method: "POST",
+        body: data,
+      }),
+    }),
     updateUser: builder.mutation({
       query: (data) => ({
         url: `${USERS_URL}/profile`,
@@ -100,6 +114,8 @@ export const {
   useModeratorLoginMutation,
   useLogoutMutation,
   useRegisterMutation,
+  useCreateModeratorMutation,
+  useCreateSubModeratorMutation,
   useUpdateUserMutation,
   useCheckEmailMutation,
   useVerifyOtpMutation,
