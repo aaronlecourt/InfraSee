@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,18 +12,28 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-  FormDescription
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useRegisterMutation } from "@/slices/users-api-slice";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useCreateSubModeratorMutation } from "@/slices/users-api-slice";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required."),
-  email: z.string().min(1, "Email is required.").email("Invalid email address."),
-  password: z.string()
+  email: z
+    .string()
+    .min(1, "Email is required.")
+    .email("Invalid email address."),
+  password: z
+    .string()
     .min(1, "Password is required.")
     .min(8, "Password must be at least 8 characters.")
     .regex(/[A-Z]/, "Password must contain at least one uppercase letter.")
@@ -35,8 +45,7 @@ const schema = z.object({
 });
 
 export function SubModRegisterForm({ onClose }) {
-  const navigate = useNavigate();
-  const [register] = useRegisterMutation();
+  const [createSubModerator] = useCreateSubModeratorMutation();
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -47,35 +56,38 @@ export function SubModRegisterForm({ onClose }) {
       assignedModeratorId: "",
     },
   });
-
+  const { userInfo } = useSelector((state) => state.auth);
   const { handleSubmit, control, setValue, setError } = form;
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [infrastructureTypes, setInfrastructureTypes] = useState([]);
-  const [moderators, setModerators] = useState([]);
-  const [filteredModerators, setFilteredModerators] = useState([]);
 
   useEffect(() => {
     const fetchInfrastructureTypes = async () => {
       try {
         const response = await axios.get("/api/infrastructure-types");
-        setInfrastructureTypes(response.data);
+        if (userInfo && userInfo.infra_type) {
+          const allowedInfraType = userInfo.infra_type._id;
+          const filteredTypes = response.data.filter(
+            (type) => type._id === allowedInfraType
+          );
+          setInfrastructureTypes(filteredTypes);
+          // Set the infrastructure type to the logged-in user's infra_type
+          setValue("infrastructureType", allowedInfraType);
+        }
       } catch (error) {
         toast.error("Failed to load infrastructure types.");
       }
     };
-    
-    const fetchModerators = async () => {
-      try {
-        const response = await axios.get("/api/users/moderators-list");
-        setModerators(response.data);
-      } catch (error) {
-        toast.error("Failed to load moderators.");
-      }
-    };
 
-    fetchInfrastructureTypes();
-    fetchModerators();
-  }, []);
+    if (userInfo && userInfo.isModerator && userInfo.can_create) {
+      console.log("User has permission to add moderator:", userInfo);
+      fetchInfrastructureTypes();
+      setValue("assignedModeratorId", userInfo._id);
+    } else {
+      console.log("User does not have permission:", userInfo);
+      toast.error("You don't have permission to add a moderator.");
+    }
+  }, [userInfo, setValue]);
 
   const checkEmailExists = async (email) => {
     try {
@@ -88,38 +100,34 @@ export function SubModRegisterForm({ onClose }) {
   };
 
   const onSubmit = async (data) => {
-    const { name, email, password, infrastructureType, assignedModeratorId } = data;
-  
+    const { name, email, password, infrastructureType } = data;
+
     const emailExists = await checkEmailExists(email);
     if (emailExists) {
-      setError("email", { type: "manual", message: "Email is already in use." });
+      setError("email", {
+        type: "manual",
+        message: "Email is already in use.",
+      });
       return;
     }
-  
+
     try {
-      const response = await axios.post(`/api/users/${assignedModeratorId}/submoderators`, { 
-        name, 
-        email, 
-        password, 
-        infra_type: infrastructureType 
+      await createSubModerator({
+        name,
+        email,
+        password,
+        infra_type: infrastructureType,
       });
-  
+
       toast.success("Moderator account added successfully!");
       onClose();
       form.reset();
     } catch (err) {
       console.log(err);
-      const errorMessage = err.response?.data?.message || "An error occurred during registration.";
+      const errorMessage =
+        err.response?.data?.message || "An error occurred during registration.";
       toast.error(errorMessage);
     }
-  };
-  
-
-  const handleInfrastructureChange = (value) => {
-    console.log(value)
-    setValue("infrastructureType", value);
-    const matchedModerators = moderators.filter(mod => mod.infra_type._id === value);
-    setFilteredModerators(matchedModerators);
   };
 
   return (
@@ -163,7 +171,9 @@ export function SubModRegisterForm({ onClose }) {
                     {...field}
                   />
                 </FormControl>
-                <FormDescription className="text-xs">Manually create a gmail account for this account.</FormDescription>
+                <FormDescription className="text-xs">
+                  Manually create a gmail account for this account.
+                </FormDescription>
               </FormItem>
             )}
           />
@@ -190,11 +200,18 @@ export function SubModRegisterForm({ onClose }) {
                       onClick={() => setPasswordVisible(!passwordVisible)}
                       className="absolute inset-y-0 right-3 flex items-center text-sm"
                     >
-                      {passwordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+                      {passwordVisible ? (
+                        <EyeOff size={18} />
+                      ) : (
+                        <Eye size={18} />
+                      )}
                     </button>
                   </div>
                 </FormControl>
-                <FormDescription className="text-xs">This account must have the same password as its GMail password.</FormDescription>
+                <FormDescription className="text-xs">
+                  This account must have the same password as its GMail
+                  password.
+                </FormDescription>
               </FormItem>
             )}
           />
@@ -209,27 +226,16 @@ export function SubModRegisterForm({ onClose }) {
                   <FormMessage className="text-right" />
                 </div>
                 <FormControl>
-                  <Select
-                    value={field.value}
-                    onValueChange={handleInfrastructureChange}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select infrastructure type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {infrastructureTypes.length === 0 ? (
-                        <SelectItem value="notypes" disabled>
-                          No types available
-                        </SelectItem>
-                      ) : (
-                        infrastructureTypes.map((type) => (
-                          <SelectItem key={type._id} value={type._id}>
-                            {type.infra_name}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
+                  {/* Display read-only value instead of select */}
+                  <Input
+                    value={
+                      infrastructureTypes.find(
+                        (type) => type._id === field.value
+                      )?.infra_name || "Loading..."
+                    }
+                    readOnly
+                    className="bg-gray-100"
+                  />
                 </FormControl>
               </FormItem>
             )}
@@ -245,27 +251,12 @@ export function SubModRegisterForm({ onClose }) {
                   <FormMessage className="text-right" />
                 </div>
                 <FormControl>
-                  <Select
-                    value={field.value}
-                    onValueChange={(value) => setValue("assignedModeratorId", value)}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select assigned moderator" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredModerators.length === 0 ? (
-                        <SelectItem value="nomoderators" disabled>
-                          No moderators available
-                        </SelectItem>
-                      ) : (
-                        filteredModerators.map((mod) => (
-                          <SelectItem key={mod._id} value={mod._id}>
-                            {mod.name}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
+                  {/* Display read-only value instead of select */}
+                  <Input
+                    value={userInfo.name}
+                    readOnly
+                    className="bg-gray-100"
+                  />
                 </FormControl>
               </FormItem>
             )}
