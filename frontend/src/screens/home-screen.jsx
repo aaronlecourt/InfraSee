@@ -143,7 +143,7 @@ function HomeScreen() {
       {/* MORE CONTENT */}
       <div ref={moreContentRef} className="pb-80 bg-black/5 flex flex-col items-center pt-6 px-5 sm:pt-12 justify-start rounded-t-full">
         <div className="pt-24 sm:pt-40 flex flex-col justify-center items-center gap-4 text-center">
-          <div className="flex justify-evenly w-full">
+          {/* <div className="flex justify-evenly w-full">
             <div className="flex flex-col items-center">
               <div className="bg-white/70 border w-10 h-10 rounded-full flex items-center justify-center">
                 <p className="text-base font-bold">{reportCounts.pending}</p>
@@ -164,7 +164,7 @@ function HomeScreen() {
               </div>
               <h3 className="text-xs font-semibold text-muted-foreground">Resolved</h3>
             </div>
-          </div>
+          </div> */}
           <p className="max-w-md mt-5">
             With already over <b>{reports.length} reports</b> made. We continue
             to offer reporting services for the following infrastructure types.
