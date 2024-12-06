@@ -28,7 +28,7 @@ const detailsSchema = z.object({
   report_desc: z
     .string()
     .min(1, "Report description is required.")
-    .min(25, "Report description must contain at least 25 characters.")
+    // .min(25, "Report description must contain at least 25 characters.")
     .max(150, "Report description is limited to 150 characters only."),
   report_img: z.string().url().min(1, "Image is required."),
 });

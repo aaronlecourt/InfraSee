@@ -110,7 +110,7 @@ function HomeScreen() {
         <img
           src="/bg-parallax.png"
           alt="Descriptive Alt Text"
-          className="fixed bottom-0 left-0 w-full h-[80vh] md:h-screen object-cover z-0"
+          className="fixed bottom-0 left-0 w-full h-[80vh] md:h-[70vh] object-cover z-0"
         />
 
         {/* Content Container */}

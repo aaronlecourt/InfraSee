@@ -15,6 +15,20 @@ const statusIcons = {
   Pending: "/pins/pins_-01.png",
   Dismissed: "/pins/pins_-05.png",
 };
+const infraTypeIcons = {
+  "Power and Energy": "/pins/power_energy.png",
+  "Water and Waste": "/pins/water_waste.png",
+  "Transportation": "/pins/transportation.png",
+  "Telecommunications": "/pins/telecom.png",
+  "Commercial": "/pins/commercial.png",
+};
+// const infraTypeDescriptions = {
+//   "Power and Energy": "Power and Energy",
+//   "Water and Waste": "Water and Waste",
+//   Transportation: "Transportation",
+//   Telecommunications: "Telecommunications",
+//   Commercial: "Commercial",
+// };
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
@@ -62,7 +76,21 @@ export const ReportMarker = ({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <img
+        {isPublicMap ? (
+          <img
+          src={
+            infraTypeIcons[report.infraType?.infra_name]
+          }
+          alt={report.infraType?.infra_name}
+          className="marker-icon"
+          style={{
+            height: isHovered ? "3rem" : "2.5rem",
+            transform: isHovered ? "translateY(-0.5rem)" : "translateY(0)",
+            transition: "height 0.3s ease, transform 0.3s ease",
+          }}
+        />
+        ) : (
+          <img
           src={
             statusIcons[report.report_status?.stat_name] || "/pins/pins_-06.png"
           }
@@ -74,6 +102,7 @@ export const ReportMarker = ({
             transition: "height 0.3s ease, transform 0.3s ease",
           }}
         />
+        )}
       </AdvancedMarker>
 
       {isActive && infoWindowVisible && (
@@ -93,9 +122,11 @@ export const ReportMarker = ({
                 <div className="text-[0.95rem] leading-none font-bold">
                   {truncateDescription(report.report_desc)}
                 </div>
-                <div className="px-2 font-medium text-xs rounded-sm border-muted-foreground border text-muted-foreground">
-                  {report.report_status?.stat_name}
-                </div>
+                {!isPublicMap && (
+                  <div className="px-2 font-medium text-xs rounded-sm border-muted-foreground border text-muted-foreground">
+                    {report.report_status?.stat_name}
+                  </div>
+                )}
               </div>
               <div className="flex justify-between font-medium text-[0.7rem] bg-muted border-gray-300 p-1 mt-1">
                 {!isPublicMap && <div>{report.report_by}</div>}
@@ -148,25 +179,26 @@ export const ReportMarker = ({
                 </div>
               </div>
             )}
-            {report.report_time_resolved && report.report_status.stat_name === "Resolved" && (
+            {!isPublicMap && report.report_time_resolved &&
+              report.report_status.stat_name === "Resolved" && (
+                <div className="flex">
+                  <div className="font-medium text-[0.7rem] bg-muted border-gray-300 p-1">
+                    TIME RESOLVED:
+                  </div>
+                  <div className="flex-grow font-medium text-[0.7rem] border-gray-300 p-1">
+                    {formatDate(report.report_time_resolved)}
+                  </div>
+                </div>
+              )}
+            {!isPublicMap && report.status_remark && (
               <div className="flex">
-                <div className="font-medium text-[0.7rem] bg-muted border-gray-300 p-1">
-                  TIME RESOLVED:
+                <div className="font-medium text-[0.7rem] bg-muted  border-gray-300 p-1">
+                  STATUS REMARKS:
                 </div>
                 <div className="flex-grow font-medium text-[0.7rem] border-gray-300 p-1">
-                  {formatDate(report.report_time_resolved)}
+                  {report.status_remark}
                 </div>
               </div>
-            )}
-              {!isPublicMap && report.status_remark && (
-              <div className="flex">
-              <div className="font-medium text-[0.7rem] bg-muted  border-gray-300 p-1">
-                STATUS REMARKS:
-              </div>
-              <div className="flex-grow font-medium text-[0.7rem] border-gray-300 p-1">
-                {report.status_remark}
-              </div>
-            </div>
             )}
           </div>
         </InfoWindow>

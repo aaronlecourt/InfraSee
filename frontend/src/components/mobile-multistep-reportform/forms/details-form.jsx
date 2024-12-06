@@ -176,7 +176,7 @@ const DetailsForm = ({ onClose, imagePreview, setImagePreview }) => {
             {errors.report_desc && (
               <FormMessage>{errors.report_desc.message}</FormMessage>
             )}
-            {descriptionLength} / 150
+            {/* {descriptionLength} / 150 */}
           </div>
         </FormItem>
       </div>

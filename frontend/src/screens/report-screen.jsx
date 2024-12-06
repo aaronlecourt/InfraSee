@@ -9,7 +9,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Menu, ChevronUp, ChevronDown, PenBoxIcon } from "lucide-react"; 
+import { Menu, PenBoxIcon } from "lucide-react";  // Removed GlobeIcon
 import { useNavigate } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { ReportCounter } from "@/components/elements/report-counter";
@@ -18,23 +18,22 @@ import PublicMaps from "@/components/elements/public-maps/publicmaps";
 import MultiStepForm from "@/components/mobile-multistep-reportform/mobile-report-form";
 import { DatePickerWithRange } from "@/components/elements/public-maps/datepickerwithrange";
 
-const statusIcons = {
-  "Unassigned": "/pins/pins_-04.png",
-  "In Progress": "/pins/pins_-02.png",
-  "Resolved": "/pins/pins_-03.png",
-  "Pending": "/pins/pins_-01.png",
-  "Dismissed": "/pins/pins_-05.png",
+
+const infraTypeIcons = {
+  "Power and Energy": "/pins/power_energy.png",
+  "Water and Waste": "/pins/water_waste.png",
+  "Transportation": "/pins/transportation.png",
+  "Telecommunications": "/pins/telecom.png",
+  "Commercial": "/pins/commercial.png",
 };
 
-const statusDescriptions = {
-  All: "All",
-  Pending: "Pending",
-  "In Progress": "In Progress",
-  Resolved: "Resolved",
-  Dismissed: "Dismissed",
-  Unassigned: "Unassigned",
+// Fetch infrastructure types from API
+const fetchInfraTypes = async () => {
+  const response = await axios.get("/api/infrastructure-types");
+  return response.data; // Array of infrastructure types with { _id, infra_name }
 };
 
+// Fetch reports from the API
 const fetchReports = async () => {
   const response = await axios.get("/api/reports/");
   return response.data;
@@ -45,15 +44,30 @@ function ReportScreen() {
   const [isNavbarSheetOpen, setNavbarSheetOpen] = useState(false);
   const [isMultiStepFormOpen, setMultiStepFormOpen] = useState(false);
   const [showReportCounter, setShowReportCounter] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState("All");
+  const [selectedInfraType, setSelectedInfraType] = useState("All");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
   const [data, setData] = useState([]);
+  const [infraTypes, setInfraTypes] = useState([]); // State to store infrastructure types
 
   // Set default date range to today
   const today = new Date();
   const fromISO = new Date(today.setUTCHours(0, 0, 0, 0)).toISOString();
   const toISO = new Date(today.setUTCHours(23, 59, 59, 999)).toISOString();
   const [dateRange, setDateRange] = useState({ from: fromISO, to: toISO });
+
+  // Fetch data for infraTypes and reports
+  useEffect(() => {
+    const loadInfraTypes = async () => {
+      try {
+        const infraTypesData = await fetchInfraTypes();
+        setInfraTypes(infraTypesData);
+      } catch (error) {
+        console.error("Error fetching infrastructure types:", error);
+      }
+    };
+
+    loadInfraTypes();
+  }, []);
 
   useEffect(() => {
     socket.on("reportChange", loadReports);
@@ -101,8 +115,8 @@ function ReportScreen() {
     setShowReportCounter((prev) => !prev);
   };
 
-  const handleStatusChange = (status) => {
-    setSelectedStatus(status);
+  const handleInfraTypeChange = (infraTypeId) => {
+    setSelectedInfraType(infraTypeId);
   };
 
   const handleDateRangeChange = (range) => {
@@ -120,32 +134,32 @@ function ReportScreen() {
   };
 
   const filteredData = data.filter(report => {
-    // Exclude reports with status "Under Review" or "For Revision"
-    if (report.report_status.stat_name === "Under Review" || report.report_status.stat_name === "For Revision") {
-      // Temporarily set the status to "In Progress"
-      report.report_status.stat_name = "In Progress"; // Override status
-    }
-  
     const reportDate = new Date(report.createdAt);
-    // Normalize report date to UTC
     const normalizedReportDate = new Date(reportDate.setUTCHours(0, 0, 0, 0));
-  
+
     const { from, to } = dateRange;
-  
     const fromDate = from ? new Date(from).setUTCHours(0, 0, 0, 0) : null;
     const toDate = to ? new Date(to).setUTCHours(23, 59, 59, 999) : null;
-  
+
     const isInDateRange =
       (fromDate === null || normalizedReportDate >= fromDate) &&
       (toDate === null || normalizedReportDate <= toDate);
-  
-    const isStatusMatch = 
-      selectedStatus === "All" || 
-      report.report_status.stat_name === selectedStatus;
-  
-    return isInDateRange && isStatusMatch;
+
+    const isInfraTypeMatch =
+      selectedInfraType === "All" ||
+      report.infraType._id === selectedInfraType; // Match by ID
+
+    return isInDateRange && isInfraTypeMatch;
   });
-  
+
+  // Check if a report exists for a given infraType
+  const isInfraTypeEnabled = (infraTypeId) => {
+    if (infraTypeId === "All") {
+      return true; // "All" should always be enabled
+    }
+    return data.some((report) => report.infraType._id === infraTypeId);
+  };
+
   return (
     <HelmetProvider>
       <div className="flex flex-col min-h-screen">
@@ -194,41 +208,32 @@ function ReportScreen() {
               <DatePickerWithRange onDateSelect={handleDateRangeChange} />
             </div>
             <div className="flex gap-2 flex-wrap items-center">
-              {/* STATUS FILTERS */}
-              {["All", "Pending", "Resolved", "In Progress", "Dismissed", "Unassigned"].map(status => (
-                <div key={status} className="relative">
+              {/* INFRA TYPE FILTERS */}
+              {[{ _id: "All", infra_name: "All" }, ...infraTypes].map((infraType) => (
+                <div key={infraType._id || "All"} className="relative">
                   {/* Show description on mobile */}
-                  {isMobile && selectedStatus === status && (
+                  {isMobile && selectedInfraType === infraType._id && (
                     <div className="absolute left-0 -top-5 text-nowrap bg-white rounded-full border p-0.8 px-2 font-medium z-10 text-[0.7rem]">
-                      {statusDescriptions[status]}
+                      {infraType.infra_name}
                     </div>
                   )}
                   <Button
                     className="h-8 flex items-center gap-x-2 sm:w-auto sm:p-3 p-0 w-8 rounded-full text-xs"
-                    variant={selectedStatus === status ? "default" : "outline"}
-                    onClick={() => handleStatusChange(status)}
+                    variant={selectedInfraType === infraType._id ? "default" : "outline"}
+                    onClick={() => handleInfraTypeChange(infraType._id || "All")}
+                    disabled={!isInfraTypeEnabled(infraType._id)}
                   >
-                    {status !== "All" && (
+                    {infraType._id === "All" ? (
+                      <span>{infraType.infra_name}</span> // No icon for "All"
+                    ) : (
                       <>
-                        <img src={statusIcons[status]} alt={status} className="h-4" />
-                        <span className="sm:block hidden">{status}</span>
+                        <img src={infraTypeIcons[infraType.infra_name]} alt={infraType.infra_name} className="h-4" />
+                        <span className="sm:block hidden">{infraType.infra_name}</span>
                       </>
                     )}
-                    {status === "All" && <span>{status}</span>}
                   </Button>
-                  
                 </div>
               ))}
-              <Button
-                variant="default"
-                onClick={toggleReportCounter}
-                className="flex items-center justify-center w-5 h-5 p-0 rounded-full"
-              >
-                {!showReportCounter ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-              </Button>
-            </div>
-            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showReportCounter ? "max-h-40 opacity-100" : "max-h-0 opacity-0"}`}>
-              {showReportCounter && <ReportCounter data={data} />}
             </div>
           </div>
           {isMultiStepFormOpen && (
