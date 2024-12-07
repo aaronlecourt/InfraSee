@@ -85,7 +85,7 @@ const AdminDashboardScreen = () => {
     try {
       const data = await fetchAll();
       setAccountsData(data);
-      setAccountsCount(data.length);
+      // setAccountsCount(data.length);
     } catch (error) {
       console.error("Failed to fetch accounts", error);
     } finally {
@@ -99,6 +99,7 @@ const AdminDashboardScreen = () => {
       const data = await fetchModerators();
       const filteredModerators = data.filter((mod) => !mod.isSubModerator);
       setModeratorsData(filteredModerators);
+      setAccountsCount(data.length);
     } catch (error) {
       console.error("Failed to fetch moderators", error);
     } finally {
