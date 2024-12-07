@@ -21,6 +21,7 @@ import {
   getModeratorList,
   getSubModeratorList,
   checkEmailExists,
+  getSecondaryMods,
 } from "../controllers/user-controller.js";
 import { protect } from "../middleware/auth-middleware.js";
 
@@ -47,7 +48,8 @@ router.route("/password-reset").post(resetPassword);
 router.route("/change-password").put(protect, changePassword);
 router.route("/moderators").get(getModerators);
 router.route("/moderators-list").get(getModeratorList);
-router.route("/submoderators-list").get(getSubModeratorList);
+router.route("/secondary-mods").get(protect, getSecondaryMods);
+router.route("/submoderators-list").get(protect, getSubModeratorList);
 router.route("/check-email/:email").get(checkEmailExists);
 
 export default router;

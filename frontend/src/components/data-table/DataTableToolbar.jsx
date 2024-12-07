@@ -117,6 +117,21 @@ export function DataTableToolbar({ userInfo, table, activeTab, activeButton }) {
                 }}
               />
             )}
+          {userInfo.isModerator &&
+            (activeTab === "mods" ||
+              activeTab === "submods" ||
+              activeTab === "deactivated") && (
+              <>
+                <Input
+                  placeholder="Filter by Moderator Name"
+                  value={table.getColumn("name")?.getFilterValue() ?? ""}
+                  className="h-9"
+                  onChange={(event) => {
+                    table.getColumn("name")?.setFilterValue(event.target.value);
+                  }}
+                />
+              </>
+            )}
           {userInfo.isModerator && activeTab === "unassigned" && (
             <>
               <Input
@@ -359,36 +374,43 @@ export function DataTableToolbar({ userInfo, table, activeTab, activeButton }) {
                           Please fill in the details below.
                         </DialogDescription>
                       </DialogHeader>
-                      <RegisterForm onClose={() => setIsDialogOpen(false)} />
+                      <RegisterForm onClonse={() => setIsDialogOpen(false)} />
                     </DialogContent>
                   </Dialog>
                 </>
               )}
 
-              {userInfo.isModerator && userInfo.can_create && (
-                <>
-                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="filter"
-                        className="flex gap-2 ml-2"
-                      >
-                        <Plus size={15} />
-                        <p className="hidden md:block">Add Moderator</p>
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Add Moderator</DialogTitle>
-                        <DialogDescription>
-                          Please fill in the details below.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <RegisterForm onClose={() => setIsDialogOpen(false)} />
-                    </DialogContent>
-                  </Dialog>
-                  
+              {userInfo.isModerator &&
+                userInfo.can_create &&
+                activeTab === "mods" && (
+                  <>
+                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="filter"
+                          className="flex gap-2 ml-2"
+                        >
+                          <Plus size={15} />
+                          <p className="hidden md:block">Add Moderator</p>
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Add Moderator</DialogTitle>
+                          <DialogDescription>
+                            Please fill in the details below.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <RegisterForm onClose={() => setIsDialogOpen(false)} />
+                      </DialogContent>
+                    </Dialog>
+                  </>
+                )}
+
+              {userInfo.isModerator &&
+                userInfo.can_create &&
+                activeTab === "submods" && (
                   <Dialog
                     open={isSubModDialogOpen}
                     onOpenChange={setIsSubModDialogOpen}
@@ -397,7 +419,7 @@ export function DataTableToolbar({ userInfo, table, activeTab, activeButton }) {
                       <Button
                         variant="outline"
                         size="filter"
-                        className="flex gap-2 "
+                        className="flex gap-2 ml-2"
                       >
                         <UserRoundPlus size={15} />
                         <p className="hidden md:block">Add Sub Moderator</p>
@@ -415,8 +437,7 @@ export function DataTableToolbar({ userInfo, table, activeTab, activeButton }) {
                       />
                     </DialogContent>
                   </Dialog>
-                </>
-              )}
+                )}
             </div>
           </div>
         </div>

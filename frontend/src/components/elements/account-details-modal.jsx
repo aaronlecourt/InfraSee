@@ -32,8 +32,10 @@ export function AccountDetailsDialog({ isOpen, onClose, data }) {
                   </div>
                 </div>
                 <div className="w-full pt-2 text-primary flex flex-col gap-y-1">
-                  <p>Email: {data.email}</p>
-                  <p>Account Type: {data.infra_type?.infra_name}</p>
+                  {/* <p>Email: {data.email}</p> */}
+                  {data.infra_type?.infra_name && (
+                    <p>Infrastructure Type: {data.infra_type?.infra_name}</p>
+                  )}
                   <div className="flex gap-3 text-muted-foreground text-xs font-normal">
                     <p>Created On: {new Date(data.createdAt).toLocaleString()}</p>
                     <p>Last Updated: {new Date(data.updatedAt).toLocaleString()}</p>

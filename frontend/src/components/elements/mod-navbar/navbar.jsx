@@ -22,6 +22,7 @@ import {
   Ellipsis,
   DeleteIcon,
   Check,
+  UserCheck,
 } from "lucide-react";
 import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
@@ -356,6 +357,17 @@ const ModNavbar = ({
                   <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                {userInfo.can_create && (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => navigate("/moderator/accounts")}
+                    >
+                      <UserCheck className="mr-2 h-4 w-4 text-slate-950" />
+                      <span>Accounts</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4 text-slate-950" />
                   <span>Logout</span>

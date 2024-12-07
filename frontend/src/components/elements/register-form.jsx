@@ -46,7 +46,7 @@ const schema = z.object({
 
 export function RegisterForm({ onClose }) {
   const [registerUser] = useRegisterMutation();
-  const [moderatorUser] = useCreateModeratorMutation();
+  const [createModerator] = useCreateModeratorMutation();
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: {

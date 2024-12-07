@@ -693,13 +693,14 @@ const getModerators = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Get moderators by infrastructure type
-// @route   GET /api/moderators
+// @desc    Get Main Mods
+// @route   GET /api/moderators-list
 // @access  Public or Private based on your requirement
 const getModeratorList = asyncHandler(async (req, res) => {
   try {
     const moderators = await User.find({
       isModerator: true,
+      can_create: true,
       deactivated: false,
     })
       .populate("infra_type", "infra_name")
@@ -712,24 +713,70 @@ const getModeratorList = asyncHandler(async (req, res) => {
   }
 });
 
+
+// @desc    Get Secondary Mods for Current Moderator
+// @route   GET /api/secondary-mods
+// @access  Private
+const getSecondaryMods = asyncHandler(async (req, res) => {
+  try {
+    // Get the currently logged-in user's ID (this should be in the JWT token)
+    const loggedInUserId = req.user._id;
+
+    // Fetch the logged-in user (moderator) from the database
+    const loggedInUser = await User.findById(loggedInUserId)
+      .populate({
+        path: 'moderators', // Populate the 'moderators' field to get all secondary moderators
+        select: '', // Get all details of the secondary moderators
+      })
+      .populate('infra_type', 'infra_name'); // Optionally populate the infra_type for the logged-in moderator
+
+    // If no user found or user is not a moderator, return an error
+    if (!loggedInUser || !loggedInUser.isModerator) {
+      return res.status(404).json({ message: 'User not found or not a moderator' });
+    }
+
+    // Get all secondary moderators under the logged-in user's moderators array
+    const secondaryModerators = loggedInUser.moderators;
+
+    // If there are no secondary moderators, return an empty array or appropriate message
+    if (secondaryModerators.length === 0) {
+      return res.status(200).json({ message: 'No secondary moderators found' });
+    }
+
+    // Return the details of the secondary moderators
+    res.status(200).json(secondaryModerators);
+  } catch (error) {
+    console.error("Error fetching secondary moderators:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 // @desc    Get submoderators by infrastructure type
 // @route   GET /api/submoderators
 // @access  Public or Private based on your requirement
 const getSubModeratorList = asyncHandler(async (req, res) => {
   try {
+    // Assuming the logged-in user's ID is available in req.user._id
+    const loggedInUserId = req.user._id;
+
+    // Find submoderators associated with the logged-in user
     const subModerators = await User.find({
       isSubModerator: true,
       deactivated: false,
+      assignedModerator: loggedInUserId, // Filter by the logged-in user's assignedModerator
     })
       .populate("infra_type", "infra_name")
       .populate("assignedModerator", "name");
 
+    // Return the submoderators or an empty array if none are found
     res.status(200).json(subModerators.length ? subModerators : []);
   } catch (error) {
     console.error("Error fetching submoderators:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 // @desc    Check if email exists
 // @route   GET /api/users/check-email/:email
@@ -786,4 +833,5 @@ export {
   getSubModeratorList,
   getModeratorList,
   checkEmailExists,
+  getSecondaryMods
 };

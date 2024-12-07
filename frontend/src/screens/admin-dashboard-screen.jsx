@@ -45,7 +45,7 @@ const fetchReports = async () => {
 const AdminDashboardScreen = () => {
   const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.auth);
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("moderators");
   const [activeButton, setActiveButton] = useState("accounts");
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
@@ -327,17 +327,17 @@ const AdminDashboardScreen = () => {
           <div className="flex flex-col gap-2">
             <h1 className="text-xl font-bold text-gray-900">Accounts</h1>
             <span className="text-sm text-muted-foreground">
-              Manage all accounts in this page.
+              Manage all your main moderators' accounts in this page.
             </span>
 
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <div className="flex items-center gap-2">
                 <TabsList className="h-auto">
-                  <TabsTrigger value="all">All</TabsTrigger>
+                  {/* <TabsTrigger value="all">All</TabsTrigger> */}
                   <TabsTrigger value="moderators">Moderators</TabsTrigger>
-                  <TabsTrigger value="submoderators">
+                  {/* <TabsTrigger value="submoderators">
                     Sub Moderators
-                  </TabsTrigger>
+                  </TabsTrigger> */}
                   <TabsTrigger value="deactivated">Deactivated</TabsTrigger>
                 </TabsList>
               </div>

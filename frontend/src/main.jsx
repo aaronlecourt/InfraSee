@@ -28,6 +28,7 @@ import NotFoundPage from "./screens/not-found-screen.jsx";
 import AdminReportsScreen from "./screens/admin-reports.jsx";
 import UnauthorizedPage from "./screens/unauthorized-screen.jsx";
 import FAQScreen from "./screens/faq-screen.jsx";
+import ModeratorAccountsScreen from "./screens/moderator-accounts-screen.jsx";
 import { FormProvider } from "./FormContext";
 
 const router = createBrowserRouter(
@@ -39,6 +40,7 @@ const router = createBrowserRouter(
       <Route path="/moderator/login" element={<ModeratorLoginScreen />} />
       <Route path="/report" element={<ReportScreen />} />
       <Route path="/faqs" element={<FAQScreen />} />
+      
 
       {/* Private/Moderator routes */}
       <Route element={<PrivateRoute />}>
@@ -51,6 +53,8 @@ const router = createBrowserRouter(
           path="/moderator/dashboard"
           element={<ModeratorDashboardScreen />}
         />
+        {/* PROTECT THIS ROUTE FOR MAIN MODS ONLY */}
+        <Route path="/moderator/accounts" element={<ModeratorAccountsScreen/>} />
       </Route>
 
       {/* Submoderator routes */}
