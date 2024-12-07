@@ -1,6 +1,15 @@
 import React from "react";
 import { Badge } from "../ui/badge";
 
+// Define status icons
+const statusIcons = {
+  Unassigned: "/pins/pins_-04.png",
+  "In Progress": "/pins/pins_-02.png",
+  Resolved: "/pins/pins_-03.png",
+  Pending: "/pins/pins_-01.png",
+  Dismissed: "/pins/pins_-05.png",
+};
+
 export function ReportCounter({ data, userInfo, activeTab }) {
   const getStatusCounts = (reports) => {
     const counts = {
@@ -10,8 +19,8 @@ export function ReportCounter({ data, userInfo, activeTab }) {
       dismissed: { count: 0, new: 0 },
       pending: { count: 0, new: 0 },
       unassigned: { count: 0, new: 0 },
-      underReview: { count: 0, new: 0 }, // Added for internal counting
-      forRevision: { count: 0, new: 0 }, // Added for internal counting
+      underReview: { count: 0, new: 0 },
+      forRevision: { count: 0, new: 0 },
     };
 
     reports.forEach((report) => {
@@ -58,40 +67,38 @@ export function ReportCounter({ data, userInfo, activeTab }) {
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {/* <Card
-        title="Total Reports"
-        count={total.count}
-        description="All reports made"
-        badgeCount={userInfo && activeTab === "overview" ? total.new : null}
-      /> */}
       <Card
         title="In Progress Reports"
         count={inprogress.count}
         description="Reports already being worked on"
         badgeCount={userInfo && activeTab === "overview" ? inprogress.new : null}
+        icon={statusIcons["In Progress"]}
       />
       <Card
         title="Resolved Reports"
         count={resolved.count}
         description="Finished or solved reports"
         badgeCount={userInfo && activeTab === "overview" ? resolved.new : null}
+        icon={statusIcons["Resolved"]}
       />
       <Card
         title="Unassigned Reports"
         count={unassigned.count}
         description="Reports currently handled by no one"
         badgeCount={userInfo && activeTab === "overview" ? unassigned.new : null}
+        icon={statusIcons["Unassigned"]}
       />
       <Card
         title="Pending Reports"
         count={pending.count}
         description="Pending or unseen reports"
         badgeCount={userInfo && activeTab === "overview" ? pending.new : null}
+        icon={statusIcons["Pending"]}
       />
     </div>
   );
 
-  function Card({ title, count, description, badgeCount }) {
+  function Card({ title, count, description, badgeCount, icon }) {
     return (
       <div className="relative border rounded-md bg-white">
         {badgeCount !== 0 && (
@@ -99,14 +106,18 @@ export function ReportCounter({ data, userInfo, activeTab }) {
             {badgeCount}
           </Badge>
         )}
-        <div className="p-2 flex sm:flex-col sm:p-3 items-center justify-between sm:items-start">
-          <p className="text-xs sm:text-sm text-wrap">{title}</p>
-          <h1 className="text-lg text-gray-300 sm:text-primary sm:text-3xl">
-            {count}
-          </h1>
-          <small className="text-xs sm:font-normal text-gray-500 hidden sm:block sm:text-xs">
-            {description}
-          </small>
+        <div className="p-2 flex sm:p-3 items-center justify-between sm:items-start">
+          <div className="">
+            <p className="text-xs sm:text-sm text-wrap">{title}</p>
+            <h1 className="text-lg text-gray-300 sm:text-primary sm:text-3xl">{count}</h1>
+            <small className="text-xs sm:font-normal text-gray-500 hidden sm:block sm:text-xs">
+              {description}
+            </small>
+          </div>
+          <div className="">
+            {/* Ensure the icon maintains its aspect ratio without stretching */}
+            <img src={icon} alt={`${title} icon`} className="h-10 mr-3 object-contain" />
+          </div>
         </div>
       </div>
     );

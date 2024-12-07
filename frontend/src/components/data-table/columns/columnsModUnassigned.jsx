@@ -86,20 +86,54 @@ export const columnsModUnassigned = [
     accessorKey: "report_status",
     title: "Status",
     header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title="Status"
-        className="text-[0.75rem]"
-      />
+      <>
+        <DataTableColumnHeader column={column} title="Status" />
+      </>
     ),
-    cell: ({ row }) => (
-      <Badge className="px-2" variant="default">
-        {row.getValue("report_status")?.stat_name || "Unknown"}
-      </Badge>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+    cell: ({ row }) => {
+      const status = row.getValue("report_status")?.stat_name || "Unknown";
+      
+      // Determine the badge color based on the status value
+      let badgeColor = "";
+      switch (status) {
+        case "Resolved":
+          badgeColor = "bg-[#16AF12] text-white"; // Green for Resolved
+          break;
+        case "Pending":
+          badgeColor = "bg-[#FF0000] text-white"; // Red for Pending
+          break;
+        case "In Progress":
+          badgeColor = "bg-[#000BCB] text-white"; // Blue for In Progress
+          break;
+        case "Dismissed":
+          badgeColor = "bg-[#5A5A5A] text-white"; // Grey for Dismissed
+          break;
+        case "Unassigned":
+          badgeColor = "bg-[#FFA500] text-white"; // Yellow for Unassigned
+          break;
+        case "For Revision":
+          badgeColor = "bg-black text-white"; // Black for For Revision
+          break;
+        case "Under Review":
+          badgeColor = "border border-black text-black bg-white"; // Black border for Under Review, no color
+          break;
+        default:
+          badgeColor = "bg-gray-300 text-black"; // Default color for unknown status
+          break;
+      }
+  
+      return (
+        <Badge className={`px-2 rounded-md ${badgeColor}`}>
+          {status}
+        </Badge>
+      );
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue("report_status")?._id);
+    },
+    enableSorting: true,
+    enableHiding: true,
+  }, 
   {
     accessorKey: "report_address",
     title: "Address",
