@@ -16,12 +16,6 @@ import { columnsSubMod } from "@/components/data-table/columns/columnsSubMod";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-// Fetch functions
-const fetchAll = async () => {
-  const response = await axios.get("/api/users/moderators");
-  return response.data;
-};
-
 const fetchModerators = async () => {
   const response = await axios.get("/api/users/moderators-list");
   return response.data;
@@ -80,19 +74,6 @@ const AdminDashboardScreen = () => {
     return () => socket.off("userChange", handleUserChange);
   }, []);
 
-  const loadAccounts = async () => {
-    setLoadingAccounts(true);
-    try {
-      const data = await fetchAll();
-      setAccountsData(data);
-      // setAccountsCount(data.length);
-    } catch (error) {
-      console.error("Failed to fetch accounts", error);
-    } finally {
-      setLoadingAccounts(false);
-    }
-  };
-
   const loadModerators = async () => {
     setLoadingModerators(true);
     try {
@@ -145,7 +126,6 @@ const AdminDashboardScreen = () => {
   };
 
   useEffect(() => {
-    loadAccounts();
     loadReports();
     loadModerators();
     loadSubModerators();

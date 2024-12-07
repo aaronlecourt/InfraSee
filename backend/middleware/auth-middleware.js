@@ -24,40 +24,30 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 });
 
-const admin = asyncHandler(async (req, res, next) => {
-  try {
-    if (req.user && req.user.isAdmin) {
+const authorize = (checkFn, errorMessage) =>
+  asyncHandler(async (req, res, next) => {
+    if (checkFn(req.user)) {
       next();
     } else {
       res.status(401);
-      throw new Error(
-        "Access denied: Admin privileges are required to access this resource."
-      );
+      throw new Error(errorMessage);
     }
-  } catch (error) {
-    res.status(500);
-    throw new Error(
-      "An unexpected error occurred while verifying admin privileges."
-    );
-  }
-});
+  });
 
-const moderator = asyncHandler(async (req, res, next) => {
-  try {
-    if (req.user && req.user.isModerator) {
-      next();
-    } else {
-      res.status(401);
-      throw new Error(
-        "Access denied: Moderator privileges are required to access this resource."
-      );
-    }
-  } catch (error) {
-    res.status(500);
-    throw new Error(
-      "An unexpected error occurred while verifying moderator privileges."
-    );
-  }
-});
+const admin = authorize(
+  (user) => user?.isAdmin,
+  "Access denied: Admin privileges are required to access this resource."
+);
 
-export { protect, admin, moderator };
+// const moderator = authorize(
+//   (user) => user?.isModerator,
+//   "Access denied: Moderator privileges are required to access this resource."
+// );
+
+// const mainModerator = authorize(
+//   (user) => user?.isModerator && user?.can_create,
+//   "Access denied: Main moderator privileges are required to access this resource."
+// );
+
+
+export { protect, admin };

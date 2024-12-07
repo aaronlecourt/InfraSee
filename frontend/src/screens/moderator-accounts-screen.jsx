@@ -24,7 +24,7 @@ const fetchSecondaryMods = async () => {
 };
 
 const fetchDeactivated = async () => {
-  const response = await axios.get("/api/users/deactivated");
+  const response = await axios.get("/api/users/deactivated-mods");
   return response.data;
 };
 

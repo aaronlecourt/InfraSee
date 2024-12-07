@@ -24,9 +24,9 @@ import AdminDashboardScreen from "./screens/admin-dashboard-screen.jsx";
 import ModeratorDashboardScreen from "./screens/moderator-dashboard-screen.jsx";
 import AdminRoute from "./components/admin-route.jsx";
 import ModeratorRoute from "./components/moderator-route.jsx";
+import MainModeratorRoute from "./components/main-moderator.jsx";
 import NotFoundPage from "./screens/not-found-screen.jsx";
 import AdminReportsScreen from "./screens/admin-reports.jsx";
-import UnauthorizedPage from "./screens/unauthorized-screen.jsx";
 import FAQScreen from "./screens/faq-screen.jsx";
 import ModeratorAccountsScreen from "./screens/moderator-accounts-screen.jsx";
 import { FormProvider } from "./FormContext";
@@ -35,12 +35,11 @@ const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
       <Route index element={<HomeScreen />} />
-      <Route path="/contact-us" element={<ContactUsScreen/>} />
+      <Route path="/contact-us" element={<ContactUsScreen />} />
       <Route path="/admin/login" element={<AdminLoginScreen />} />
       <Route path="/moderator/login" element={<ModeratorLoginScreen />} />
       <Route path="/report" element={<ReportScreen />} />
       <Route path="/faqs" element={<FAQScreen />} />
-      
 
       {/* Private/Moderator routes */}
       <Route element={<PrivateRoute />}>
@@ -54,12 +53,22 @@ const router = createBrowserRouter(
           element={<ModeratorDashboardScreen />}
         />
         {/* PROTECT THIS ROUTE FOR MAIN MODS ONLY */}
-        <Route path="/moderator/accounts" element={<ModeratorAccountsScreen/>} />
+      </Route>
+
+      {/* Main moderator routes */}
+      <Route element={<MainModeratorRoute/>}>
+        <Route
+          path="/moderator/accounts"
+          element={<ModeratorAccountsScreen />}
+        />
       </Route>
 
       {/* Submoderator routes */}
       <Route element={<SubModeratorRoute />}>
-        <Route path="/submoderator/dashboard" element={<SubModeratorDashboardScreen />} />
+        <Route
+          path="/submoderator/dashboard"
+          element={<SubModeratorDashboardScreen />}
+        />
         {/* Add more submoderator-specific routes as needed */}
       </Route>
 
@@ -79,9 +88,9 @@ const router = createBrowserRouter(
 ReactDOM.createRoot(document.getElementById("root")).render(
   <Provider store={store}>
     <React.StrictMode>
-        <FormProvider>
-          <RouterProvider router={router} />
-        </FormProvider>
+      <FormProvider>
+        <RouterProvider router={router} />
+      </FormProvider>
     </React.StrictMode>
   </Provider>
 );

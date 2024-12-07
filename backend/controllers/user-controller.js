@@ -499,6 +499,50 @@ const getDeactivatedUsers = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Get Deactivated Secondary Mods and Sub Mods for Current Moderator
+// @route   GET /api/deactivated-mods
+// @access  Private
+const getDeactivatedMods = asyncHandler(async (req, res) => {
+  try {
+    const loggedInUserId = req.user._id;
+
+    // Find the logged-in user and populate necessary fields
+    const loggedInUser = await User.findById(loggedInUserId)
+      .populate({
+        path: 'moderators', 
+        select: '', 
+      })
+      .populate({
+        path: 'subModerators',
+        select: '',
+      })
+      .populate('infra_type', 'infra_name');
+
+    if (!loggedInUser || !loggedInUser.isModerator) {
+      return res.status(404).json({ message: 'User not found or not a moderator' });
+    }
+
+    // Get both secondary moderators and sub-moderators
+    const allModerators = [
+      ...loggedInUser.moderators, 
+      ...loggedInUser.subModerators
+    ];
+
+    // Filter for deactivated moderators (both secondary and sub)
+    const deactivatedModerators = allModerators.filter(mod => mod.deactivated === true);
+
+    if (deactivatedModerators.length === 0) {
+      return res.status(200).json({ message: 'No deactivated moderators found' });
+    }
+
+    // Return the list of deactivated moderators
+    res.status(200).json(deactivatedModerators);
+  } catch (error) {
+    console.error("Error fetching deactivated moderators:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // @desc    Logout user / clear cookie
 // @route   POST /api/users/logout
 // @access  Public
@@ -719,34 +763,27 @@ const getModeratorList = asyncHandler(async (req, res) => {
 // @access  Private
 const getSecondaryMods = asyncHandler(async (req, res) => {
   try {
-    // Get the currently logged-in user's ID (this should be in the JWT token)
     const loggedInUserId = req.user._id;
 
-    // Fetch the logged-in user (moderator) from the database
     const loggedInUser = await User.findById(loggedInUserId)
       .populate({
-        path: 'moderators', // Populate the 'moderators' field to get all secondary moderators
-        select: '', // Get all details of the secondary moderators
+        path: 'moderators', 
+        select: '', 
       })
-      .populate('infra_type', 'infra_name'); // Optionally populate the infra_type for the logged-in moderator
-
-    // If no user found or user is not a moderator, return an error
+      .populate('infra_type', 'infra_name');
     if (!loggedInUser || !loggedInUser.isModerator) {
       return res.status(404).json({ message: 'User not found or not a moderator' });
     }
 
-    // Get all secondary moderators under the logged-in user's moderators array
     const secondaryModerators = loggedInUser.moderators;
 
-    // Filter out the deactivated moderators
     const activeModerators = secondaryModerators.filter(mod => mod.deactivated === false);
 
-    // If there are no active secondary moderators, return an empty array or appropriate message
+    
     if (activeModerators.length === 0) {
       return res.status(200).json({ message: 'No active secondary moderators found' });
     }
 
-    // Return the details of the active secondary moderators
     res.status(200).json(activeModerators);
   } catch (error) {
     console.error("Error fetching secondary moderators:", error);
@@ -826,6 +863,7 @@ export {
   deactivateModerator,
   reactivateModerator,
   getDeactivatedUsers,
+  getDeactivatedMods,
   logoutUser,
   getUserProfile,
   updateUserProfile,
