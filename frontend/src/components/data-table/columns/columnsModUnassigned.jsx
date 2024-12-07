@@ -87,7 +87,7 @@ export const columnsModUnassigned = [
     title: "Status",
     header: ({ column }) => (
       <>
-        <DataTableColumnHeader column={column} title="Status" />
+        <DataTableColumnHeader column={column} title="Status" className="text-[0.75rem]"/>
       </>
     ),
     cell: ({ row }) => {
@@ -131,8 +131,8 @@ export const columnsModUnassigned = [
     filterFn: (row, id, value) => {
       return value.includes(row.getValue("report_status")?._id);
     },
-    enableSorting: true,
-    enableHiding: true,
+    enableSorting: false,
+    enableHiding: false,
   }, 
   {
     accessorKey: "report_address",
