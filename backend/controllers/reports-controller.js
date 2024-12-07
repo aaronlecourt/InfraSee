@@ -269,9 +269,12 @@ const getModeratorReports = asyncHandler(async (req, res) => {
       throw new Error("Access denied: User is not a moderator.");
     }
 
+    // Determine which moderator's ID to use
+    const moderatorId = user.can_create ? userId : user.assignedModerator;
+
     // Fetch reports assigned to the moderator
     const reports = await Report.find({
-      report_mod: userId,
+      report_mod: moderatorId,
       is_hidden: false,
     })
       .populate("report_mod", "name")
@@ -324,6 +327,7 @@ const getModeratorReports = asyncHandler(async (req, res) => {
   }
 });
 
+
 const getModeratorHiddenReports = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
@@ -340,9 +344,12 @@ const getModeratorHiddenReports = asyncHandler(async (req, res) => {
       throw new Error("Access denied: User is not a moderator.");
     }
 
+    // Determine which moderator's ID to use
+    const moderatorId = user.can_create ? userId : user.assignedModerator;
+
     // Fetch hidden reports assigned to the moderator
     const reports = await Report.find({
-      report_mod: userId,
+      report_mod: moderatorId,
       is_hidden: true,
     })
       .populate("report_mod", "name")
@@ -350,7 +357,7 @@ const getModeratorHiddenReports = asyncHandler(async (req, res) => {
       .populate("infraType", "_id infra_name");
 
     if (!reports || reports.length === 0) {
-      return res.status(200).json([]);
+      return res.status(200).json([]); // Return empty array with 200 OK
     }
 
     res.json(reports);
@@ -368,6 +375,7 @@ const getModeratorHiddenReports = asyncHandler(async (req, res) => {
     }
   }
 });
+
 
 const getSubModeratorReports = asyncHandler(async (req, res) => {
   try {

@@ -60,11 +60,28 @@ const notifyModeratorOnSubmodAction = asyncHandler(async (report, isApproved, su
 // Fetch notifications for a user
 const getUserNotifications = asyncHandler(async (req, res) => {
   try {
+    const userId = req.user._id;
+
+    if (!userId) {
+      res.status(400);
+      throw new Error("User ID is missing in the request.");
+    }
+
+    // Ensure the user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(403);
+      throw new Error("Access denied: User not found.");
+    }
+
+    // If the user is a moderator, fetch notifications for both the user and their assignedModerator
+    const userNotificationsId = user.isModerator ? [userId, user.assignedModerator] : [userId];
+
     const notifications = await Notification.find({
-      user: req.user._id,
+      user: { $in: userNotificationsId },
     })
       .populate("report")
-      .sort({ createdAt: -1 }); // Sort by createdAt (newest first)
+      .sort({ createdAt: -1 });
 
     res.json(notifications);
   } catch (error) {
