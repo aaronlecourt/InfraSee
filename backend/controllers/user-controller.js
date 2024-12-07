@@ -738,18 +738,22 @@ const getSecondaryMods = asyncHandler(async (req, res) => {
     // Get all secondary moderators under the logged-in user's moderators array
     const secondaryModerators = loggedInUser.moderators;
 
-    // If there are no secondary moderators, return an empty array or appropriate message
-    if (secondaryModerators.length === 0) {
-      return res.status(200).json({ message: 'No secondary moderators found' });
+    // Filter out the deactivated moderators
+    const activeModerators = secondaryModerators.filter(mod => mod.deactivated === false);
+
+    // If there are no active secondary moderators, return an empty array or appropriate message
+    if (activeModerators.length === 0) {
+      return res.status(200).json({ message: 'No active secondary moderators found' });
     }
 
-    // Return the details of the secondary moderators
-    res.status(200).json(secondaryModerators);
+    // Return the details of the active secondary moderators
+    res.status(200).json(activeModerators);
   } catch (error) {
     console.error("Error fetching secondary moderators:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 
 // @desc    Get submoderators by infrastructure type
