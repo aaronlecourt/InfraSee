@@ -9,6 +9,7 @@ import {
   notifyModeratorOnNewReport,
   notifyModeratorOnSubmodAction,
 } from "./notifications-controller.js";
+
 // ORIGINAL createReport
 // const createReport = asyncHandler(async (req, res, io) => {
 //   try {
@@ -135,6 +136,7 @@ import {
 // });
 
 // createReport with 3 limit
+
 const createReport = asyncHandler(async (req, res, io) => {
   try {
     const {
@@ -775,124 +777,6 @@ const deleteReport = asyncHandler(async (req, res) => {
   }
 });
 
-// const updateReportStatus = asyncHandler(async (req, res, io) => {
-//   const reportId = req.params.id;
-//   const {
-//     report_status: statusId,
-//     modID: modId,
-//     status_remark,
-//     report_time_resolved,
-//   } = req.body; // Updated destructuring
-
-//   try {
-//     // Find the report
-//     const report = await Report.findById(reportId).populate("report_mod");
-//     if (!report) {
-//       return res.status(404).json({ message: "Report not found" });
-//     }
-
-//     // Find the moderator who is updating the report
-//     const moderator = await User.findById(modId).populate("subModerators");
-//     if (!moderator) {
-//       return res.status(404).json({ message: "Moderator not found" });
-//     }
-
-//     // Find relevant statuses
-//     const resolvedStatus = await Status.findOne({ stat_name: "Resolved" });
-//     const underReviewStatus = await Status.findOne({ stat_name: "Under Review" });
-//     const unassignedStatus = await Status.findOne({ stat_name: "Unassigned" });
-//     const forRevisionStatus = await Status.findOne({ stat_name: "For Revision" });
-
-//     // Prepare update data for the report
-//     const updateData = {
-//       report_status: statusId,
-//       status_remark,
-//       is_new: true,
-//       request_time: null,
-//       report_time_resolved: report_time_resolved,
-//       submod_is_new: false,
-//     };
-
-//     // Check if the status is being set to "Resolved"
-//     if (statusId === resolvedStatus._id.toString()) {
-//       // Check if the moderator has submoderators
-//       if (moderator.subModerators.length > 0) {
-//         // If there are submoderators, set the status to "Under Review" and is_requested to true
-//         updateData.report_status = underReviewStatus._id;
-//         updateData.is_requested = true;
-//         updateData.request_time = Date.now();
-//         updateData.submod_is_new = true;
-//         // updateData.under_submod = true;
-//       } else {
-//         // If no submoderators, set the status to "Resolved"
-//         updateData.report_status = resolvedStatus._id;
-//         updateData.is_requested = false;
-//         updateData.request_time = null;
-//         updateData.report_time_resolved = Date.now();
-//       }
-//     }
-
-//     // Check if the status is being set to "Unassigned"
-//     if (statusId === unassignedStatus._id.toString()) {
-//       // If the status is "Unassigned", clear the assigned moderator
-//       await Report.findByIdAndUpdate(reportId, { $unset: { report_mod: "" } });
-//     }
-
-//     // Update the report with new status and information
-//     const updatedReport = await Report.findByIdAndUpdate(reportId, updateData, {
-//       new: true,
-//     }).populate({
-//       path: "report_status",
-//       select: "stat_name",
-//     });
-
-//     // Notify submoderators if the report status is requested
-//     await notifySubmoderatorOnStatusChange(updatedReport);
-
-//     // Only send SMS notification if:
-//     // 1. The status is not "Under Review" or "For Revision"
-//     // 2. The status is not "Resolved" AND there are submoderators
-//     if (
-//       ![
-//         underReviewStatus._id.toString(),
-//         forRevisionStatus._id.toString(),
-//       ].includes(statusId) &&
-//       !(statusId === resolvedStatus._id.toString() && moderator.subModerators.length > 0)
-//     ) {
-//       // Construct the message for the SMS
-//       const statusName = updatedReport.report_status.stat_name;
-//       const remarks = updatedReport.status_remark || "No additional remarks.";
-//       const moderatorName = moderator.name;
-//       const reporterName = updatedReport.report_by;
-
-//       const message = [
-//         `Hello ${reporterName}! ${moderatorName} has successfully updated your report status to '${statusName}'`,
-//         `Remarks: ${remarks}`,
-//         `\n[InfraSee]`,
-//       ].join("\n");
-
-//       // Emit the SMS event to the socket
-//       io.emit("sms sender", {
-//         phone_number: report.report_contactNum,
-//         message,
-//       });
-//       console.log("SMS sender event emitted to socket:", {
-//         phone_number: report.report_contactNum,
-//         message,
-//       });
-//     }
-
-//     // Return success response
-//     res.status(200).json({
-//       message: "Report status updated successfully",
-//       report: updatedReport,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "An error occurred", error });
-//   }
-// });
-
 const updateReportStatus = asyncHandler(async (req, res, io) => {
   const reportId = req.params.id;
   const {
@@ -900,7 +784,7 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
     modID: modId,
     status_remark,
     report_time_resolved,
-  } = req.body; // Updated destructuring
+  } = req.body; 
 
   try {
     // Find the report
@@ -1030,6 +914,70 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
   }
 });
 
+const updateInfraType = asyncHandler(async (req, res, io) => {
+  const reportId = req.params.id;
+  const { infraTypeId } = req.body; // The new infraType ID passed in the request body
+  const userId = req.user._id;
+
+  try {
+    // Find the logged-in user to check if they are a moderator (not a submoderator)
+    const user = await User.findById(userId);
+    if (!user || !user.isModerator) { 
+      return res
+        .status(403)
+        .json({ message: "Access denied: User is not a moderator." });
+    }
+
+    // Find the report
+    const report = await Report.findById(reportId);
+    if (!report) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+
+    // Change the infraType
+    const previousInfraType = report.infraType; // Store the previous infraType to notify the user
+    report.infraType = infraTypeId;
+    await report.save();
+
+    // Get the reporter's phone number
+    const phoneNumber = report.report_contactNum;
+
+    // Validate the phone number (check if it's not null, undefined, or empty)
+    if (!phoneNumber || phoneNumber.trim() === "") {
+      console.log("Error: Invalid phone number. Cannot send SMS.");
+      return res.status(400).json({ message: "Invalid phone number" });
+    }
+
+    console.log("Sending SMS to:", phoneNumber);
+
+    // Construct the SMS message to notify the reporter of the infraType change
+    const message = [
+      `[InfraSee]`,
+      `Hello ${report.report_by}! The infrastructure type for your report has been updated.`,
+      `New InfraType: ${infraTypeId}`, 
+      `Previous InfraType: ${previousInfraType}`,
+    ].join("\n");
+
+    // Emit the SMS event to the socket to notify the consumer (reporter)
+    io.emit("sms sender", {
+      phone_number: phoneNumber,
+      message,
+    });
+
+    console.log("SMS sender event emitted to socket:", {
+      phone_number: phoneNumber,
+      message,
+    });
+
+    res.status(200).json({ message: "InfraType updated and SMS sent", report });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "An error occurred", error });
+  }
+});
+
+
+
 const submodApproval = asyncHandler(async (req, res, io) => {
   const reportId = req.params.id;
   const { isAccepted, remarks } = req.body; // submoderator will pass true/false for isAccepted
@@ -1107,7 +1055,6 @@ const submodApproval = asyncHandler(async (req, res, io) => {
     res.status(500).json({ message: "An error occurred", error });
   }
 });
-
 
 const submodReject = async (req, res) => {
   const reportId = req.params.id;
@@ -1327,6 +1274,7 @@ export {
   restoreReport,
   deleteReport,
   updateReportStatus,
+  updateInfraType,
   submodApproval,
   submodReject,
   getUnassignedReports,

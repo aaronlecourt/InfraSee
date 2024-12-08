@@ -117,9 +117,19 @@ export function DataTable({
     setSelectedReport(null);
   };
 
-  const handleTransfer = async() => {
-    // PUT TRANSFER LOGIC HERE
-  }
+  const handleTransfer = async (selectedInfrastructure, reportId) => {
+    try {
+      const response = await axios.put(`/api/reports/infra-type/${reportId}`, {
+        infraTypeId: selectedInfrastructure,
+      });
+      if (response.status === 200) {
+        toast.success("Report transferred successfully!");
+      }
+    } catch (error) {
+      console.error("Error transferring report:", error);
+      toast.error("Failed to transfer the report. Please try again.");
+    }
+  };
 
   const setAsSeen = async (reportId) => {
     console.log("Setting as seen for ID:", reportId);
@@ -251,6 +261,7 @@ export function DataTable({
         onClose={() => setTransferDialogOpen(false)}
         onConfirm={handleTransfer}
         selectedInfraType={selectedReport?.infraType?._id}
+        reportId={selectedReport?._id}
       />      
     </div>
   );

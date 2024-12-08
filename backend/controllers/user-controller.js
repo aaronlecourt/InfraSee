@@ -483,10 +483,9 @@ const getDeactivatedUsers = asyncHandler(async (req, res) => {
   try {
     // Fetch users where `deactivated` is true and either `isModerator` or `isSubModerator` is true
     const deactivatedUsers = await User.find({
-      $or: [
-        { isModerator: true, deactivated: true },
-        { isSubModerator: true, deactivated: true },
-      ],
+      isModerator: true,
+      can_create: true,
+      deactivated: true,
     }).populate("infra_type", "infra_name");
 
     // Return deactivated users, even if the array is empty

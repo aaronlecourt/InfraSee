@@ -8,7 +8,7 @@ const infrastructureTypeSchema = mongoose.Schema({
     unique: true
   }
 }, {
-  timestamps: true // Adds createdAt and updatedAt fields
+  timestamps: true
 });
 
 // Check if the model already exists

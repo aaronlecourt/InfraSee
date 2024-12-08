@@ -18,38 +18,65 @@ import {
   SelectItem,
 } from "../ui/select";
 
+// Fetching the list of available infrastructure types
+const fetchInfrastructureTypes = async () => {
+  try {
+    const response = await axios.get("/api/infrastructure-types");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching infrastructure types:", error);
+    return []; // Return empty array on error
+  }
+};
+
 export function ConfirmTransferModal({
   isOpen,
   onClose,
   onConfirm,
   selectedInfraType, // The previously selected infrastructure type
+  reportId, // The reportId that we are updating
 }) {
   const [infrastructureTypes, setInfrastructureTypes] = useState([]);
   const [selectedInfrastructure, setSelectedInfrastructure] = useState(selectedInfraType);
-
-  useEffect(() => {
-    // Fetch infrastructure types from API
-    const fetchInfrastructureTypes = async () => {
-      try {
-        const response = await axios.get("/api/infrastructure-types");
-        setInfrastructureTypes(response.data); // Assuming the API returns an array of infrastructure types
-      } catch (error) {
-        console.error("Error fetching infrastructure types:", error);
-      }
-    };
-
-    if (isOpen) {
-      fetchInfrastructureTypes();
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    // When selectedInfraType changes, update selectedInfrastructure
-    setSelectedInfrastructure(selectedInfraType);
-  }, [selectedInfraType]);
+  const [loadingInfrastructureType, setLoadingInfrastructureType] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSelectChange = (value) => {
     setSelectedInfrastructure(value);
+  };
+
+  useEffect(() => {
+    // Update selectedInfrastructure when selectedInfraType prop changes
+    setSelectedInfrastructure(selectedInfraType);
+  }, [selectedInfraType]);
+
+  useEffect(() => {
+    // Fetch infrastructure types when modal is opened
+    const fetchData = async () => {
+      if (isOpen) {
+        setLoadingInfrastructureType(true); 
+        const fetchedInfrastructureTypes = await fetchInfrastructureTypes();
+        setInfrastructureTypes(fetchedInfrastructureTypes);
+        setLoadingInfrastructureType(false);
+      }
+    };
+
+    fetchData();
+  }, [isOpen]);
+
+  const handleConfirm = async () => {
+    try {
+      if (!selectedInfrastructure) {
+        setErrorMessage("Please select an infrastructure type.");
+        return;
+      }
+
+      await onConfirm(selectedInfrastructure, reportId);
+      onClose(); 
+    } catch (error) {
+      console.error("Error updating infrastructure type:", error);
+      setErrorMessage("Failed to update infrastructure type. Please try again.");
+    }
   };
 
   return (
@@ -62,6 +89,8 @@ export function ConfirmTransferModal({
             infrastructure type, or do the contents of the report not align with
             this infrastructure?
           </DialogDescription>
+
+          {/* Select input for infrastructure types */}
           <Select value={selectedInfrastructure} onValueChange={handleSelectChange}>
             <SelectTrigger>
               <SelectValue placeholder="Select Infrastructure Type" />
@@ -69,7 +98,9 @@ export function ConfirmTransferModal({
             <SelectContent>
               <SelectGroup>
                 <SelectLabel>Infrastructure Types</SelectLabel>
-                {infrastructureTypes.length > 0 ? (
+                {loadingInfrastructureType ? (
+                  <SelectItem disabled>Loading...</SelectItem> // Show loading state
+                ) : infrastructureTypes.length > 0 ? (
                   infrastructureTypes.map((type) => (
                     <SelectItem key={type._id} value={type._id}>
                       {type.infra_name} {/* Displaying the infrastructure name */}
@@ -81,14 +112,18 @@ export function ConfirmTransferModal({
               </SelectGroup>
             </SelectContent>
           </Select>
+
+          {/* Error message if infraType selection is not made */}
+          {errorMessage && (
+            <div className="text-red-500 text-sm mt-2">{errorMessage}</div>
+          )}
+
           <div className="flex justify-end pt-2">
-            <Button variant="outline" onClick={onClose} className="mr-2">
+            <Button variant="outline" onClick={() => onClose(false)} className="mr-2">
               Cancel
             </Button>
             <Button
-              onClick={() => {
-                onConfirm(selectedInfrastructure); // Pass selected infrastructure to the onConfirm handler
-              }}
+              onClick={handleConfirm} // Confirm the infrastructure type change
               className="text-white"
             >
               Transfer

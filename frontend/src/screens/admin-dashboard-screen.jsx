@@ -61,7 +61,6 @@ const AdminDashboardScreen = () => {
 
   useEffect(() => {
     const handleUserChange = async () => {
-      await loadAccounts();
       await loadReports();
       await loadModerators();
       await loadSubModerators();

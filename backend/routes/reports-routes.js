@@ -11,6 +11,7 @@ import {
   deleteReport,
   createReport,
   updateReportStatus,
+  updateInfraType,
   submodApproval,
   submodReject,
   getUnassignedReports,
@@ -50,6 +51,7 @@ router.route("/status/:id").put(protect, (req, res) => updateReportStatus(req, r
 router.route("/approval/:id").put(protect, (req, res) => submodApproval(req, res, req.app.get('io')));
 router.route("/reject/:id").put(protect, submodReject);
 router.route("/accept/:id").put(protect, (req, res) => updateOnAccept(req, res, req.app.get('io')));
+router.route("/infra-type/:id").put(protect, (req, res) => updateInfraType(req, res, req.app.get('io')));
 
 
 export default router;
