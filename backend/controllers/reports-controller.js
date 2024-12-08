@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 import Report from "../models/reports-model.js";
 import User from "../models/user-model.js";
 import Status from "../models/status-model.js";
+import InfrastructureType from "../models/infrastructureType-model.js";
 import { sendSMSNotification } from "../config/socket.js";
 
 import {
@@ -914,13 +915,13 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
   }
 });
 
+
 const updateInfraType = asyncHandler(async (req, res, io) => {
   const reportId = req.params.id;
-  const { infraTypeId } = req.body; // The new infraType ID passed in the request body
+  const { infraTypeId } = req.body; 
   const userId = req.user._id;
 
   try {
-    // Find the logged-in user to check if they are a moderator (not a submoderator)
     const user = await User.findById(userId);
     if (!user || !user.isModerator) { 
       return res
@@ -934,12 +935,24 @@ const updateInfraType = asyncHandler(async (req, res, io) => {
       return res.status(404).json({ message: "Report not found" });
     }
 
-    // Change the infraType
-    const previousInfraType = report.infraType; // Store the previous infraType to notify the user
+    // Find the new infraType by infraTypeId
+    const infraType = await InfrastructureType.findById(infraTypeId);
+    if (!infraType) {
+      return res.status(404).json({ message: "Infrastructure type not found" });
+    }
+
+    let previousInfraTypeName = '';
+    if (report.infraType) {
+      const previousInfraType = await InfrastructureType.findById(report.infraType);
+      if (previousInfraType) {
+        previousInfraTypeName = previousInfraType.infra_name; 
+      }
+    }
+
+    // Change the infraType in the report to the new infraType ID
     report.infraType = infraTypeId;
     await report.save();
 
-    // Get the reporter's phone number
     const phoneNumber = report.report_contactNum;
 
     // Validate the phone number (check if it's not null, undefined, or empty)
@@ -954,8 +967,8 @@ const updateInfraType = asyncHandler(async (req, res, io) => {
     const message = [
       `[InfraSee]`,
       `Hello ${report.report_by}! The infrastructure type for your report has been updated.`,
-      `New InfraType: ${infraTypeId}`, 
-      `Previous InfraType: ${previousInfraType}`,
+      `New InfraType: ${infraType.infra_name}`, // Using the name from the new infraType
+      `Previous InfraType: ${previousInfraTypeName || 'Not Set'}`, // Using the name of the previous infraType, if available
     ].join("\n");
 
     // Emit the SMS event to the socket to notify the consumer (reporter)
@@ -975,6 +988,7 @@ const updateInfraType = asyncHandler(async (req, res, io) => {
     res.status(500).json({ message: "An error occurred", error });
   }
 });
+
 
 
 
