@@ -20,11 +20,12 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Check } from "lucide-react";
+import { ArrowBigRightDash, Check } from "lucide-react";
 import { DataTablePagination } from "../data-table/DataTablePagination";
 import { DataTableToolbar } from "../data-table/DataTableToolbar";
 import { ReportDetailsDialog } from "../elements/report-details-modal";
 import { ConfirmAssignDialog } from "../elements/confirm-assign-modal";
+import { ConfirmTransferModal } from "../elements/confirm-transfer-modal";
 
 export function DataTable({
   userInfo,
@@ -41,6 +42,7 @@ export function DataTable({
 
   const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);
   const [isConfirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [isTransferDialogOpen, setTransferDialogOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [dialogData, setDialogData] = useState(null);
 
@@ -109,6 +111,10 @@ export function DataTable({
     setSelectedReport(null);
   };
 
+  const handleTransfer = async() => {
+    // PUT TRANSFER LOGIC HERE
+  }
+
   const setAsSeen = async (reportId) => {
     console.log("Setting as seen for ID:", reportId);
     try {
@@ -173,6 +179,7 @@ export function DataTable({
                     );
                   })}
                   {activeTab === "unassigned" && (
+                    <>
                     <TableCell>
                       <div className="flex justify-end">
                         <Button
@@ -182,12 +189,29 @@ export function DataTable({
                             event.stopPropagation();
                             handleOpenConfirmDialog(row.original);
                           }}
-                          className="flex items-center mr-2"
+                          className="flex items-center text-green-500 border border-green-500 hover:text-white hover:bg-green-500"
                         >
                           <Check size={15} className="mr-1" /> Accept Report
                         </Button>
                       </div>
                     </TableCell>
+                    {/* TRANSFER REPORT TRIGGER */}
+                    <TableCell>
+                      <div className="flex justify-end">
+                        <Button
+                          variant="link"
+                          size="sm"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleOpenConfirmDialog(row.original);
+                          }}
+                          className="flex items-center text-red-500"
+                        >
+                          <ArrowBigRightDash size={15} className="mr-1" /> Transfer Report
+                        </Button>
+                      </div>
+                    </TableCell>
+                    </>
                   )}
                 </TableRow>
               ))
@@ -216,6 +240,11 @@ export function DataTable({
         onClose={() => setConfirmDialogOpen(false)}
         onConfirm={handleAccept}
       />
+      <ConfirmTransferModal
+        isOpen={isTransferDialogOpen}
+        onClose={() => setTransferDialogOpen(false)}
+        onConfirm={handleTransfer}
+      />      
     </div>
   );
 }
