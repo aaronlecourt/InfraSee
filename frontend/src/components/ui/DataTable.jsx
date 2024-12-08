@@ -33,7 +33,7 @@ export function DataTable({
   data,
   activeTab,
   activeButton,
-  selectedNotificationId
+  selectedNotificationId,
 }) {
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState({});
@@ -55,7 +55,7 @@ export function DataTable({
       rowSelection,
       columnFilters,
     },
-    getRowId: row => row._id,
+    getRowId: (row) => row._id,
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
@@ -72,7 +72,9 @@ export function DataTable({
   // Effect to select the row matching selectedNotificationId
   useEffect(() => {
     if (selectedNotificationId) {
-      const rowToSelect = data.find(row => row._id === selectedNotificationId);
+      const rowToSelect = data.find(
+        (row) => row._id === selectedNotificationId
+      );
       if (rowToSelect) {
         setRowSelection({ [rowToSelect._id]: true });
       }
@@ -96,7 +98,7 @@ export function DataTable({
 
   const handleOpenTransferDialog = (report) => {
     setSelectedReport(report);
-    console.log(selectedReport)
+    console.log(selectedReport);
     setTransferDialogOpen(true);
   };
 
@@ -117,37 +119,12 @@ export function DataTable({
     setSelectedReport(null);
   };
 
-  // const handleTransfer = async (selectedInfrastructure, reportId) => {
-  //   try {
-  //     const response = await axios.put(`/api/reports/infra-type/${reportId}`, {
-  //       infraTypeId: selectedInfrastructure,
-  //     });
-  //     if (response.status === 200) {
-  //       toast.success("Report transferred successfully!");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error transferring report:", error);
-  //     toast.error("Failed to transfer the report. Please try again.");
-  //   }
-  // };
-
   const handleTransfer = async (selectedInfrastructure, reportId) => {
     try {
-      // Make the API call to update the report with the new infrastructure type
       const response = await axios.put(`/api/reports/infra-type/${reportId}`, {
         infraTypeId: selectedInfrastructure,
       });
-  
       if (response.status === 200) {
-        // After transferring, notify moderators
-        const updatedReport = response.data; // Assuming the updated report is returned
-  
-        // Send a request to notify the moderators
-        await axios.post('/api/notification/notifications/transferred-report', {
-          report: updatedReport,
-        });
-  
-        // Show the success message
         toast.success("Report transferred successfully!");
       }
     } catch (error) {
@@ -155,7 +132,6 @@ export function DataTable({
       toast.error("Failed to transfer the report. Please try again.");
     }
   };
-  
 
   const setAsSeen = async (reportId) => {
     console.log("Setting as seen for ID:", reportId);
@@ -222,37 +198,38 @@ export function DataTable({
                   })}
                   {activeTab === "unassigned" && (
                     <>
-                    <TableCell>
-                      <div className="flex justify-end">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleOpenConfirmDialog(row.original);
-                          }}
-                          className="flex items-center text-green-500 border border-green-500 hover:text-white hover:bg-green-500"
-                        >
-                          <Check size={15} className="mr-1" /> Accept Report
-                        </Button>
-                      </div>
-                    </TableCell>
-                    {/* TRANSFER REPORT TRIGGER */}
-                    <TableCell>
-                      <div className="flex justify-end">
-                        <Button
-                          variant="link"
-                          size="sm"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleOpenTransferDialog(row.original);
-                          }}
-                          className="flex items-center text-red-500"
-                        >
-                          <ArrowBigRightDash size={15} className="mr-1" /> Transfer Report
-                        </Button>
-                      </div>
-                    </TableCell>
+                      <TableCell>
+                        <div className="flex justify-end">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleOpenConfirmDialog(row.original);
+                            }}
+                            className="flex items-center text-green-500 border border-green-500 hover:text-white hover:bg-green-500"
+                          >
+                            <Check size={15} className="mr-1" /> Accept Report
+                          </Button>
+                        </div>
+                      </TableCell>
+                      {/* TRANSFER REPORT TRIGGER */}
+                      <TableCell>
+                        <div className="flex justify-end">
+                          <Button
+                            variant="link"
+                            size="sm"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleOpenTransferDialog(row.original);
+                            }}
+                            className="flex items-center text-red-500"
+                          >
+                            <ArrowBigRightDash size={15} className="mr-1" />{" "}
+                            Transfer Report
+                          </Button>
+                        </div>
+                      </TableCell>
                     </>
                   )}
                 </TableRow>
@@ -288,7 +265,7 @@ export function DataTable({
         onConfirm={handleTransfer}
         selectedInfraType={selectedReport?.infraType?._id}
         reportId={selectedReport?._id}
-      />      
+      />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import {
   notifySubmoderatorOnStatusChange,
   notifyModeratorOnNewReport,
   notifyModeratorOnSubmodAction,
+  notifyModeratorOnTransferredReport
 } from "./notifications-controller.js";
 
 // ORIGINAL createReport
@@ -916,12 +917,86 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
 });
 
 
+// const updateInfraType = asyncHandler(async (req, res, io) => {
+//   const reportId = req.params.id;
+//   const { infraTypeId } = req.body; 
+//   const userId = req.user._id;
+
+//   try {
+//     const user = await User.findById(userId);
+//     if (!user || !user.isModerator) { 
+//       return res
+//         .status(403)
+//         .json({ message: "Access denied: User is not a moderator." });
+//     }
+
+//     // Find the report
+//     const report = await Report.findById(reportId);
+//     if (!report) {
+//       return res.status(404).json({ message: "Report not found" });
+//     }
+
+//     // Find the new infraType by infraTypeId
+//     const infraType = await InfrastructureType.findById(infraTypeId);
+//     if (!infraType) {
+//       return res.status(404).json({ message: "Infrastructure type not found" });
+//     }
+
+//     let previousInfraTypeName = '';
+//     if (report.infraType) {
+//       const previousInfraType = await InfrastructureType.findById(report.infraType);
+//       if (previousInfraType) {
+//         previousInfraTypeName = previousInfraType.infra_name; 
+//       }
+//     }
+
+//     // Change the infraType in the report to the new infraType ID
+//     report.infraType = infraTypeId;
+//     await report.save();
+
+//     const phoneNumber = report.report_contactNum;
+
+//     // Validate the phone number (check if it's not null, undefined, or empty)
+//     if (!phoneNumber || phoneNumber.trim() === "") {
+//       console.log("Error: Invalid phone number. Cannot send SMS.");
+//       return res.status(400).json({ message: "Invalid phone number" });
+//     }
+
+//     console.log("Sending SMS to:", phoneNumber);
+
+//     // Construct the SMS message to notify the reporter of the infraType change
+//     const message = [
+//       `[InfraSee]`,
+//       `Hello ${report.report_by}! The infrastructure type for your report has been updated.`,
+//       `New InfraType: ${infraType.infra_name}`, // Using the name from the new infraType
+//       `Previous InfraType: ${previousInfraTypeName || 'Not Set'}`, // Using the name of the previous infraType, if available
+//     ].join("\n");
+
+//     // Emit the SMS event to the socket to notify the consumer (reporter)
+//     io.emit("sms sender", {
+//       phone_number: phoneNumber,
+//       message,
+//     });
+
+//     console.log("SMS sender event emitted to socket:", {
+//       phone_number: phoneNumber,
+//       message,
+//     });
+
+//     res.status(200).json({ message: "InfraType updated and SMS sent", report });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "An error occurred", error });
+//   }
+// });
+
 const updateInfraType = asyncHandler(async (req, res, io) => {
   const reportId = req.params.id;
   const { infraTypeId } = req.body; 
   const userId = req.user._id;
 
   try {
+    // Step 1: Check if the user is a moderator
     const user = await User.findById(userId);
     if (!user || !user.isModerator) { 
       return res
@@ -929,13 +1004,13 @@ const updateInfraType = asyncHandler(async (req, res, io) => {
         .json({ message: "Access denied: User is not a moderator." });
     }
 
-    // Find the report
+    // Step 2: Find the report by its ID
     const report = await Report.findById(reportId);
     if (!report) {
       return res.status(404).json({ message: "Report not found" });
     }
 
-    // Find the new infraType by infraTypeId
+    // Step 3: Find the new infrastructure type by infraTypeId
     const infraType = await InfrastructureType.findById(infraTypeId);
     if (!infraType) {
       return res.status(404).json({ message: "Infrastructure type not found" });
@@ -949,7 +1024,7 @@ const updateInfraType = asyncHandler(async (req, res, io) => {
       }
     }
 
-    // Change the infraType in the report to the new infraType ID
+    // Step 4: Update the infraType in the report
     report.infraType = infraTypeId;
     await report.save();
 
@@ -963,7 +1038,7 @@ const updateInfraType = asyncHandler(async (req, res, io) => {
 
     console.log("Sending SMS to:", phoneNumber);
 
-    // Construct the SMS message to notify the reporter of the infraType change
+    // Step 5: Construct the SMS message to notify the reporter of the infraType change
     const message = [
       `[InfraSee]`,
       `Hello ${report.report_by}! The infrastructure type for your report has been updated.`,
@@ -982,13 +1057,15 @@ const updateInfraType = asyncHandler(async (req, res, io) => {
       message,
     });
 
-    res.status(200).json({ message: "InfraType updated and SMS sent", report });
+    // Step 6: Notify relevant moderators about the infraType change
+    await notifyModeratorOnTransferredReport(report); // This function handles the notification logic
+
+    res.status(200).json({ message: "InfraType updated, SMS sent, and moderators notified", report });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "An error occurred", error });
   }
 });
-
 
 
 
