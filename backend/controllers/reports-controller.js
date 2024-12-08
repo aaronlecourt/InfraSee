@@ -9,7 +9,132 @@ import {
   notifyModeratorOnNewReport,
   notifyModeratorOnSubmodAction,
 } from "./notifications-controller.js";
+// ORIGINAL createReport
+// const createReport = asyncHandler(async (req, res, io) => {
+//   try {
+//     const {
+//       report_address,
+//       latitude,
+//       longitude,
+//       infraType, // This should be the ID of the infraType
+//       report_by,
+//       report_contactNum,
+//       report_desc,
+//       report_img,
+//     } = req.body;
 
+//     // Input validation
+//     if (
+//       !report_address ||
+//       !latitude ||
+//       !longitude ||
+//       !infraType ||
+//       !report_by ||
+//       !report_contactNum ||
+//       !report_desc ||
+//       !report_img
+//     ) {
+//       return res.status(400).json({ message: "All fields are required." });
+//     }
+
+//     // Haversine distance function
+//     const haversineDistance = (coords1, coords2) => {
+//       const toRad = (value) => (value * Math.PI) / 180;
+//       const lat1 = coords1[0],
+//         lon1 = coords1[1],
+//         lat2 = coords2[0],
+//         lon2 = coords2[1];
+//       const R = 6371e3; // Earth radius in meters
+//       const φ1 = toRad(lat1),
+//         φ2 = toRad(lat2);
+//       const Δφ = toRad(lat2 - lat1),
+//         Δλ = toRad(lon2 - lon1);
+
+//       const a =
+//         Math.sin(Δφ / 2) ** 2 +
+//         Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+//       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+//       return R * c; // Distance in meters
+//     };
+
+//     // Check for existing reports within 10 meters or at the same location
+//     const existingReports = await Report.find({ infraType }).populate(
+//       "report_status"
+//     );
+//     for (const report of existingReports) {
+//       const distance = haversineDistance(
+//         [latitude, longitude],
+//         [report.latitude, report.longitude]
+//       );
+
+//       // Check if the distance is less than or equal to 10 meters
+//       if (distance <= 10 && report.report_status.stat_name !== "Resolved") {
+//         return res.status(409).json({
+//           message: "A similar report has already been reported.",
+//         });
+//       }
+//     }
+
+//     // Create and save the new report
+//     const report = new Report({
+//       report_address,
+//       latitude,
+//       longitude,
+//       infraType, // This should be the ID of the infraType
+//       report_by,
+//       report_contactNum,
+//       report_desc,
+//       report_img,
+//     });
+
+//     const savedReport = await report.save();
+
+//     // Populate the saved report's infraType
+//     const populatedReport = await Report.findById(savedReport._id)
+//     .populate("infraType", "_id infra_name")
+//     .populate("report_status", "stat_name");
+
+//     // Notify relevant moderators
+//     await notifyModeratorOnNewReport(populatedReport);
+
+//     const statusName = populatedReport.report_status.stat_name;
+//     const reporterName = populatedReport.report_by;
+
+//     const message = [
+//       `[InfraSee]`,
+//       `Hello ${reporterName}! Your report has been successfully submitted and is now under review. You will receive updates when a moderator takes action on your report.`,
+//       `Status: ${statusName}`,
+//     ].join("\n");
+
+//     // Emit the SMS event to the socket
+//     io.emit("sms sender", { phone_number: populatedReport.report_contactNum, message });
+//     console.log("SMS sender event emitted to socket:", {
+//       phone_number: report.report_contactNum,
+//       message,
+//     });
+
+//     return res.status(201).json({
+//       message: "Report created successfully",
+//       report: populatedReport,
+//     });
+//   } catch (error) {
+//     console.error(`Error creating report: ${error.message}`);
+
+//     if (error.name === "ValidationError") {
+//       return res
+//         .status(422)
+//         .json({ message: "Validation error: " + error.message });
+//     } else if (error.code === 11000) {
+//       return res.status(409).json({ message: "Duplicate report found." });
+//     } else {
+//       return res
+//         .status(500)
+//         .json({ message: "Server error. Please try again later." });
+//     }
+//   }
+// });
+
+// createReport with 3 limit
 const createReport = asyncHandler(async (req, res, io) => {
   try {
     const {
@@ -57,22 +182,32 @@ const createReport = asyncHandler(async (req, res, io) => {
       return R * c; // Distance in meters
     };
 
-    // Check for existing reports within 10 meters or at the same location
-    const existingReports = await Report.find({ infraType }).populate(
-      "report_status"
-    );
+    // Find unresolved reports with the same infraType within 10 meters
+    const existingReports = await Report.find({
+      infraType,
+      report_status: { $ne: "Resolved" }, // Only unresolved reports
+    }).populate("report_status");
+
+    let similarReportsCount = 0;
+
+    // Check the distance between the new report and existing unresolved reports
     for (const report of existingReports) {
       const distance = haversineDistance(
         [latitude, longitude],
         [report.latitude, report.longitude]
       );
 
-      // Check if the distance is less than or equal to 10 meters
-      if (distance <= 10 && report.report_status.stat_name !== "Resolved") {
-        return res.status(409).json({
-          message: "A similar report has already been reported.",
-        });
+      // Count unresolved reports within 10 meters
+      if (distance <= 10) {
+        similarReportsCount++;
       }
+    }
+
+    // Allow up to 3 similar unresolved reports within 10 meters
+    if (similarReportsCount >= 3) {
+      return res.status(409).json({
+        message: "A similar report has already been reported 3 times within 10 meters. No further reports can be created until one of the reports is resolved.",
+      });
     }
 
     // Create and save the new report
@@ -91,8 +226,8 @@ const createReport = asyncHandler(async (req, res, io) => {
 
     // Populate the saved report's infraType
     const populatedReport = await Report.findById(savedReport._id)
-    .populate("infraType", "_id infra_name")
-    .populate("report_status", "stat_name");
+      .populate("infraType", "_id infra_name")
+      .populate("report_status", "stat_name");
 
     // Notify relevant moderators
     await notifyModeratorOnNewReport(populatedReport);
