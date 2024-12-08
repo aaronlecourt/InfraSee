@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/tooltip";
 // Fetch functions
 const fetchUsers = async () => {
-  const response = await axios.get("/api/users/moderators");
+  const response = await axios.get("/api/users/moderators-list");
   return response.data;
 };
 

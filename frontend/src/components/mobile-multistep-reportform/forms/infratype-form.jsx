@@ -43,7 +43,7 @@ const InfraTypeForm = ({ infraType, setInfraType }) => {
 
     const fetchModerators = async () => {
       try {
-        const response = await fetch("/api/users/moderators");
+        const response = await fetch("/api/users/moderators-list");
         const data = await response.json();
         setModeratedTypes(data.map(moderator => moderator.infra_type._id)); // Extracting infra_type._id
       } catch (error) {
