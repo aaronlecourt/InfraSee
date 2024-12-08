@@ -182,11 +182,17 @@ const createReport = asyncHandler(async (req, res, io) => {
       return R * c; // Distance in meters
     };
 
+    // Log input data
+    console.log("Creating report with data:", req.body);
+
     // Find unresolved reports with the same infraType within 10 meters
+    console.log("Finding existing reports with infraType:", infraType);
     const existingReports = await Report.find({
       infraType,
       report_status: { $ne: "Resolved" }, // Only unresolved reports
     }).populate("report_status");
+
+    console.log("Existing reports found:", existingReports);
 
     let similarReportsCount = 0;
 
@@ -196,8 +202,7 @@ const createReport = asyncHandler(async (req, res, io) => {
         [latitude, longitude],
         [report.latitude, report.longitude]
       );
-
-      // Count unresolved reports within 10 meters
+      console.log("Checking distance for report:", distance);
       if (distance <= 10) {
         similarReportsCount++;
       }
@@ -215,19 +220,22 @@ const createReport = asyncHandler(async (req, res, io) => {
       report_address,
       latitude,
       longitude,
-      infraType, // This should be the ID of the infraType
+      infraType,
       report_by,
       report_contactNum,
       report_desc,
       report_img,
     });
 
+    console.log("Saving report:", report);
     const savedReport = await report.save();
 
     // Populate the saved report's infraType
     const populatedReport = await Report.findById(savedReport._id)
       .populate("infraType", "_id infra_name")
       .populate("report_status", "stat_name");
+
+    console.log("Populated report:", populatedReport);
 
     // Notify relevant moderators
     await notifyModeratorOnNewReport(populatedReport);
@@ -244,7 +252,7 @@ const createReport = asyncHandler(async (req, res, io) => {
     // Emit the SMS event to the socket
     io.emit("sms sender", { phone_number: populatedReport.report_contactNum, message });
     console.log("SMS sender event emitted to socket:", {
-      phone_number: report.report_contactNum,
+      phone_number: populatedReport.report_contactNum,
       message,
     });
 
@@ -253,21 +261,18 @@ const createReport = asyncHandler(async (req, res, io) => {
       report: populatedReport,
     });
   } catch (error) {
-    console.error(`Error creating report: ${error.message}`);
+    console.error("Error creating report:", error);
 
     if (error.name === "ValidationError") {
-      return res
-        .status(422)
-        .json({ message: "Validation error: " + error.message });
+      return res.status(422).json({ message: "Validation error: " + error.message });
     } else if (error.code === 11000) {
       return res.status(409).json({ message: "Duplicate report found." });
     } else {
-      return res
-        .status(500)
-        .json({ message: "Server error. Please try again later." });
+      return res.status(500).json({ message: "Server error. Please try again later." });
     }
   }
 });
+
 
 const updateOnAccept = asyncHandler(async (req, res, io) => {
   try {
