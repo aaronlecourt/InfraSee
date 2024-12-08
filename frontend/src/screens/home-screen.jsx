@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react"; // Import useRef
+import React, { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
@@ -22,8 +22,9 @@ function HomeScreen() {
     inProgress: 0,
     resolved: 0,
   });
+  const [opacity, setOpacity] = useState(1); // State to control the opacity
   const navigate = useNavigate();
-  const moreContentRef = useRef(null); // Create a ref for the "MORE CONTENT" section
+  const moreContentRef = useRef(null);
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -58,6 +59,19 @@ function HomeScreen() {
 
     fetchReports();
     fetchInfraTypes();
+
+    const handleScroll = () => {
+      // Calculate opacity based on scroll position
+      const scrollY = window.scrollY;
+      const maxScroll = 300; // Maximum scroll value before opacity reaches 0
+      const newOpacity = Math.max(1 - scrollY / maxScroll, 0); // Ensure opacity doesn't go below 0
+      setOpacity(newOpacity);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   const iconMapping = {
@@ -110,7 +124,8 @@ function HomeScreen() {
         <img
           src="/bg-parallax.png"
           alt="Descriptive Alt Text"
-          className="fixed bottom-0 left-0 w-full h-[80vh] md:h-[70vh] object-cover z-0"
+          className="fixed bottom-0 left-0 w-full h-[80vh] md:h-screen object-cover z-0"
+          style={{ opacity }} // Apply dynamic opacity here
         />
 
         {/* Content Container */}
@@ -141,30 +156,8 @@ function HomeScreen() {
       </div>
 
       {/* MORE CONTENT */}
-      <div ref={moreContentRef} className="pb-80 bg-black/5 flex flex-col items-center pt-6 px-5 sm:pt-12 justify-start rounded-t-full">
+      <div ref={moreContentRef} className="pb-40 bg-black/5 flex flex-col items-center pt-6 px-5 sm:pt-12 justify-start rounded-t-full">
         <div className="pt-24 sm:pt-40 flex flex-col justify-center items-center gap-4 text-center">
-          {/* <div className="flex justify-evenly w-full">
-            <div className="flex flex-col items-center">
-              <div className="bg-white/70 border w-10 h-10 rounded-full flex items-center justify-center">
-                <p className="text-base font-bold">{reportCounts.pending}</p>
-              </div>
-              <h3 className="text-xs font-semibold text-muted-foreground">Pending</h3>
-            </div>
-
-            <div className="flex flex-col items-center">
-              <div className="bg-white/70 border w-10 h-10 rounded-full flex items-center justify-center">
-                <p className="text-base font-bold">{reportCounts.inProgress}</p>
-              </div>
-              <h3 className="text-xs font-semibold text-muted-foreground">In Progress</h3>
-            </div>
-
-            <div className="flex flex-col items-center">
-              <div className="bg-white/70 border w-10 h-10 rounded-full flex items-center justify-center">
-                <p className="text-base font-bold">{reportCounts.resolved}</p>
-              </div>
-              <h3 className="text-xs font-semibold text-muted-foreground">Resolved</h3>
-            </div>
-          </div> */}
           <p className="max-w-md mt-5">
             With already over <b>{reports.length} reports</b> made. We continue
             to offer reporting services for the following infrastructure types.
