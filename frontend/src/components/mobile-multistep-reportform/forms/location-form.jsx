@@ -42,16 +42,20 @@ const LocationForm = ({ setHasSetLocation, locationData, setLocationData }) => {
 
           if (accuracy > 100) {
             toast.error(
-              "Location accuracy is too low. Please check your device settings."
+              "Location accuracy is too low. Please ensure your device is equipped with GPS, or note that network conditions may affect geolocation accuracy."
             );
           } else {
             try {
               const fullAddress = await reverseGeocode(latitude, longitude);
-              setValue("report_address", fullAddress);
-              setValue("latitude", latitude);
-              setValue("longitude", longitude);
-              setLocationData({ address: fullAddress, latitude, longitude });
-              setHasSetLocation(true);
+              const isLocationSame = checkProximity(latitude, longitude, locationData.latitude, locationData.longitude);
+
+              if (!isLocationSame) {
+                setValue("report_address", fullAddress);
+                setValue("latitude", latitude);
+                setValue("longitude", longitude);
+                setLocationData({ address: fullAddress, latitude, longitude });
+                setHasSetLocation(true);
+              }
             } catch (error) {
               console.error("Reverse geocoding failed:", error);
               toast.error("Failed to get address for your location.");
@@ -127,7 +131,6 @@ const LocationForm = ({ setHasSetLocation, locationData, setLocationData }) => {
         const { lat, lng } = place.geometry.location.toJSON();
         const fullAddress = place.formatted_address;
         const placeName = place.name;
-
         if (
           lat < baguioBounds.south ||
           lat > baguioBounds.north ||
@@ -138,18 +141,22 @@ const LocationForm = ({ setHasSetLocation, locationData, setLocationData }) => {
           return;
         }
 
-        const combinedAddress = `${placeName}, ${fullAddress}`;
-        setLocationData({
-          address: combinedAddress,
-          latitude: lat,
-          longitude: lng,
-        });
-        updateMap(lat, lng);
-        setValue("report_address", combinedAddress);
-        setValue("latitude", lat);
-        setValue("longitude", lng);
-        setHasSetLocation(true);
-        setPredictions([]);
+        const isLocationSame = checkProximity(lat, lng, locationData.latitude, locationData.longitude);
+
+        if (!isLocationSame) {
+          const combinedAddress = `${placeName}, ${fullAddress}`;
+          setLocationData({
+            address: combinedAddress,
+            latitude: lat,
+            longitude: lng,
+          });
+          updateMap(lat, lng);
+          setValue("report_address", combinedAddress);
+          setValue("latitude", lat);
+          setValue("longitude", lng);
+          setHasSetLocation(true);
+          setPredictions([]);
+        }
       }
     });
   };
@@ -180,21 +187,24 @@ const LocationForm = ({ setHasSetLocation, locationData, setLocationData }) => {
             return;
           }
 
-          setLocationData({
-            address: fullAddress,
-            latitude: lat,
-            longitude: lng,
-          });
-          updateMap(lat, lng);
+          const isLocationSame = checkProximity(lat, lng, locationData.latitude, locationData.longitude);
 
-          // Update the input field with the full address
-          setValue("report_address", fullAddress);
-          if (inputRef.current) {
-            inputRef.current.value = fullAddress; // Directly update the input field value
+          if (!isLocationSame) {
+            setLocationData({
+              address: fullAddress,
+              latitude: lat,
+              longitude: lng,
+            });
+            updateMap(lat, lng);
+
+            setValue("report_address", fullAddress);
+            if (inputRef.current) {
+              inputRef.current.value = fullAddress; // Directly update the input field value
+            }
+            setValue("latitude", lat);
+            setValue("longitude", lng);
+            setHasSetLocation(true);
           }
-          setValue("latitude", lat);
-          setValue("longitude", lng);
-          setHasSetLocation(true);
         })
         .catch((error) => {
           console.error("Failed to reverse geocode:", error);
@@ -216,6 +226,13 @@ const LocationForm = ({ setHasSetLocation, locationData, setLocationData }) => {
         title: locationData.address,
       });
     }
+  };
+
+  const checkProximity = (lat1, lng1, lat2, lng2, tolerance = 0.0001) => {
+    const latDiff = Math.abs(lat1 - lat2);
+    const lngDiff = Math.abs(lng1 - lng2);
+
+    return latDiff < tolerance && lngDiff < tolerance;
   };
 
   return (
