@@ -45,16 +45,16 @@ export function ConfirmTransferModal({ isOpen, onClose, onConfirm }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
-        <DialogHeader>
+        <DialogHeader className="flex flex-col gap-1">
           <DialogTitle>Confirm Report Transfer</DialogTitle>
           <DialogDescription>
             Are you sure the report needs to be transferred to the selected
             infrastructure type, or do the contents of the report not align with
-            this infrastructure?
+            its current infrastructure type?
           </DialogDescription>
           <Select onValueChange={handleSelectChange}>
             <SelectTrigger>
-              <SelectValue placeholder="Select the correct Infrastructure Type" />
+              <SelectValue placeholder="Select Infrastructure Type" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>

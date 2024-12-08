@@ -94,6 +94,11 @@ export function DataTable({
     setConfirmDialogOpen(true);
   };
 
+  const handleOpenTransferDialog = (report) => {
+    setSelectedReport(report);
+    setTransferDialogOpen(true);
+  };
+
   const handleAccept = async () => {
     if (selectedReport) {
       try {
@@ -203,7 +208,7 @@ export function DataTable({
                           size="sm"
                           onClick={(event) => {
                             event.stopPropagation();
-                            handleOpenConfirmDialog(row.original);
+                            handleOpenTransferDialog(row.original);
                           }}
                           className="flex items-center text-red-500"
                         >
