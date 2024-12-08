@@ -2,6 +2,28 @@ import Notification from "../models/notifications-model.js";
 import User from "../models/user-model.js";
 import asyncHandler from "express-async-handler";
 
+// Notify Moderator when a report is transferred to them (similar to new report notification)
+const notifyModeratorOnTransferredReport = asyncHandler(async (report) => {
+  // Find moderators that match the infraType of the report
+  const moderators = await User.find({
+    infra_type: report.infraType,
+    isModerator: true,
+    deactivated: false,
+  });
+
+  // Create notifications for each matching moderator
+  for (const moderator of moderators) {
+    const notification = new Notification({
+      user: moderator._id,
+      report: report._id,
+      message: `A new report has been transferred to your infrastructure type: ${report.report_desc}`,
+      notification_type: "newReport",  // Similar to new report notification type
+    });
+    await notification.save();
+  }
+});
+
+
 // Notification Service to handle notification creation
 const notifyModeratorOnNewReport = asyncHandler(async (report) => {
     // Find moderators that match the infraType of the report
@@ -159,5 +181,6 @@ export {
   getUserNotifications,
   markNotificationAsRead,
   deleteNotification,
-  markNotificationAsUnread
+  markNotificationAsUnread,
+  notifyModeratorOnTransferredReport
 };

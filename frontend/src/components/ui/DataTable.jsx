@@ -117,12 +117,37 @@ export function DataTable({
     setSelectedReport(null);
   };
 
+  // const handleTransfer = async (selectedInfrastructure, reportId) => {
+  //   try {
+  //     const response = await axios.put(`/api/reports/infra-type/${reportId}`, {
+  //       infraTypeId: selectedInfrastructure,
+  //     });
+  //     if (response.status === 200) {
+  //       toast.success("Report transferred successfully!");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error transferring report:", error);
+  //     toast.error("Failed to transfer the report. Please try again.");
+  //   }
+  // };
+
   const handleTransfer = async (selectedInfrastructure, reportId) => {
     try {
+      // Make the API call to update the report with the new infrastructure type
       const response = await axios.put(`/api/reports/infra-type/${reportId}`, {
         infraTypeId: selectedInfrastructure,
       });
+  
       if (response.status === 200) {
+        // After transferring, notify moderators
+        const updatedReport = response.data; // Assuming the updated report is returned
+  
+        // Send a request to notify the moderators
+        await axios.post('/api/notifications/transferred-report', {
+          report: updatedReport,
+        });
+  
+        // Show the success message
         toast.success("Report transferred successfully!");
       }
     } catch (error) {
@@ -130,6 +155,7 @@ export function DataTable({
       toast.error("Failed to transfer the report. Please try again.");
     }
   };
+  
 
   const setAsSeen = async (reportId) => {
     console.log("Setting as seen for ID:", reportId);
