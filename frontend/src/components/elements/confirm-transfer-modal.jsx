@@ -29,6 +29,17 @@ const fetchInfrastructureTypes = async () => {
   }
 };
 
+// Fetching active moderators
+const fetchActiveModerators = async () => {
+  try {
+    const response = await axios.get("/api/users/moderators");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching moderators:", error);
+    return []; // Return empty array on error
+  }
+};
+
 export function ConfirmTransferModal({
   isOpen,
   onClose,
@@ -40,6 +51,7 @@ export function ConfirmTransferModal({
   const [selectedInfrastructure, setSelectedInfrastructure] = useState(selectedInfraType);
   const [loadingInfrastructureType, setLoadingInfrastructureType] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [activeModerators, setActiveModerators] = useState([]);
 
   const handleSelectChange = (value) => {
     setSelectedInfrastructure(value);
@@ -51,12 +63,30 @@ export function ConfirmTransferModal({
   }, [selectedInfraType]);
 
   useEffect(() => {
-    // Fetch infrastructure types when modal is opened
+    // Fetch infrastructure types and active moderators when modal is opened
     const fetchData = async () => {
       if (isOpen) {
-        setLoadingInfrastructureType(true); 
+        setLoadingInfrastructureType(true);
+
+        // Fetch infrastructure types
         const fetchedInfrastructureTypes = await fetchInfrastructureTypes();
-        setInfrastructureTypes(fetchedInfrastructureTypes);
+
+        // Fetch active moderators
+        const fetchedModerators = await fetchActiveModerators();
+
+        // Filter infrastructure types by active moderators' infra_type
+        const activeInfraTypes = new Set(
+          fetchedModerators
+            .filter((moderator) => !moderator.deactivated) // Ensure the moderator is active
+            .map((moderator) => moderator.infra_type._id) // Map to infrastructure type IDs
+        );
+
+        // Filter infrastructure types that match the active moderators' infra_type
+        const filteredInfrastructureTypes = fetchedInfrastructureTypes.filter(
+          (infraType) => activeInfraTypes.has(infraType._id)
+        );
+
+        setInfrastructureTypes(filteredInfrastructureTypes);
         setLoadingInfrastructureType(false);
       }
     };
@@ -72,7 +102,7 @@ export function ConfirmTransferModal({
       }
 
       await onConfirm(selectedInfrastructure, reportId);
-      onClose(); 
+      onClose();
     } catch (error) {
       console.error("Error updating infrastructure type:", error);
       setErrorMessage("Failed to update infrastructure type. Please try again.");
