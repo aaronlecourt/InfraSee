@@ -182,17 +182,11 @@ const createReport = asyncHandler(async (req, res, io) => {
       return R * c; // Distance in meters
     };
 
-    // Log input data
-    console.log("Creating report with data:", req.body);
-
     // Find unresolved reports with the same infraType within 10 meters
-    console.log("Finding existing reports with infraType:", infraType);
     const existingReports = await Report.find({
-      infraType,
-      report_status: { $ne: "Resolved" }, // Only unresolved reports
-    }).populate("report_status");
-
-    console.log("Existing reports found:", existingReports);
+      infraType, // Ensure this is the correct infraType ID
+      report_status: { $ne: "66d25906baae7f52f54793f5" }, // Use "Resolved" ObjectId directly here
+    }).populate("report_status", "stat_name"); // Populate the report_status field with stat_name
 
     let similarReportsCount = 0;
 
@@ -202,7 +196,8 @@ const createReport = asyncHandler(async (req, res, io) => {
         [latitude, longitude],
         [report.latitude, report.longitude]
       );
-      console.log("Checking distance for report:", distance);
+
+      // Count unresolved reports within 10 meters
       if (distance <= 10) {
         similarReportsCount++;
       }
@@ -227,15 +222,12 @@ const createReport = asyncHandler(async (req, res, io) => {
       report_img,
     });
 
-    console.log("Saving report:", report);
     const savedReport = await report.save();
 
-    // Populate the saved report's infraType
+    // Populate the saved report's infraType and report_status
     const populatedReport = await Report.findById(savedReport._id)
       .populate("infraType", "_id infra_name")
       .populate("report_status", "stat_name");
-
-    console.log("Populated report:", populatedReport);
 
     // Notify relevant moderators
     await notifyModeratorOnNewReport(populatedReport);
@@ -272,7 +264,6 @@ const createReport = asyncHandler(async (req, res, io) => {
     }
   }
 });
-
 
 const updateOnAccept = asyncHandler(async (req, res, io) => {
   try {
