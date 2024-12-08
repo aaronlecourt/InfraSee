@@ -143,7 +143,7 @@ export function DataTable({
         const updatedReport = response.data; // Assuming the updated report is returned
   
         // Send a request to notify the moderators
-        await axios.post('/api/notifications/transferred-report', {
+        await axios.post('/api/notification/notifications/transferred-report', {
           report: updatedReport,
         });
   
