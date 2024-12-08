@@ -96,6 +96,7 @@ export function DataTable({
 
   const handleOpenTransferDialog = (report) => {
     setSelectedReport(report);
+    console.log(selectedReport)
     setTransferDialogOpen(true);
   };
 
@@ -249,6 +250,7 @@ export function DataTable({
         isOpen={isTransferDialogOpen}
         onClose={() => setTransferDialogOpen(false)}
         onConfirm={handleTransfer}
+        selectedInfraType={selectedReport?.infraType?._id}
       />      
     </div>
   );

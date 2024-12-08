@@ -18,9 +18,14 @@ import {
   SelectItem,
 } from "../ui/select";
 
-export function ConfirmTransferModal({ isOpen, onClose, onConfirm }) {
+export function ConfirmTransferModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  selectedInfraType, // The previously selected infrastructure type
+}) {
   const [infrastructureTypes, setInfrastructureTypes] = useState([]);
-  const [selectedInfrastructure, setSelectedInfrastructure] = useState(null);
+  const [selectedInfrastructure, setSelectedInfrastructure] = useState(selectedInfraType);
 
   useEffect(() => {
     // Fetch infrastructure types from API
@@ -38,6 +43,11 @@ export function ConfirmTransferModal({ isOpen, onClose, onConfirm }) {
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    // When selectedInfraType changes, update selectedInfrastructure
+    setSelectedInfrastructure(selectedInfraType);
+  }, [selectedInfraType]);
+
   const handleSelectChange = (value) => {
     setSelectedInfrastructure(value);
   };
@@ -45,24 +55,24 @@ export function ConfirmTransferModal({ isOpen, onClose, onConfirm }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
-        <DialogHeader className="flex flex-col gap-1">
+        <DialogHeader>
           <DialogTitle>Confirm Report Transfer</DialogTitle>
           <DialogDescription>
             Are you sure the report needs to be transferred to the selected
             infrastructure type, or do the contents of the report not align with
-            its current infrastructure type?
+            this infrastructure?
           </DialogDescription>
-          <Select onValueChange={handleSelectChange}>
+          <Select value={selectedInfrastructure} onValueChange={handleSelectChange}>
             <SelectTrigger>
               <SelectValue placeholder="Select Infrastructure Type" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectLabel>Transfer to</SelectLabel>
+                <SelectLabel>Infrastructure Types</SelectLabel>
                 {infrastructureTypes.length > 0 ? (
                   infrastructureTypes.map((type) => (
                     <SelectItem key={type._id} value={type._id}>
-                      {type.infra_name}
+                      {type.infra_name} {/* Displaying the infrastructure name */}
                     </SelectItem>
                   ))
                 ) : (
@@ -77,11 +87,11 @@ export function ConfirmTransferModal({ isOpen, onClose, onConfirm }) {
             </Button>
             <Button
               onClick={() => {
-                onConfirm(selectedInfrastructure);
+                onConfirm(selectedInfrastructure); // Pass selected infrastructure to the onConfirm handler
               }}
               className="text-white"
             >
-              Confirm
+              Transfer
             </Button>
           </div>
         </DialogHeader>
