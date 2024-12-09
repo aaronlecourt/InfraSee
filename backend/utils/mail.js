@@ -36,7 +36,7 @@ const sendWelcomeEmail = async (user, name, email) => {
   const mailOptions = {
     from: "i.iirs.infrasee@gmail.com",
     to: user.email,
-    subject: "Welcome to Infrasee - Moderator Role",
+    subject: "Welcome to Infrasee - Your Account Details",
     text: `Hello ${name},
 
 Welcome to the Infrasee system! We are excited to have you on board as a valued moderator representing ${name}. Thank you for applying as a user of Infrasee a platform dedicated to streamlining infrastructure issue reporting and resolution.  
