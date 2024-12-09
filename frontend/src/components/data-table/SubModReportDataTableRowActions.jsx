@@ -75,6 +75,7 @@ export function SubModReportDataTableRowActions({ row }) {
     try {
       const response = await axios.put(`/api/reports/reject/${reportId}`, {
         isAccepted: false, // Pass false to indicate rejection
+        remarks: dialogData?.status_remark
       });
       toast.success(response.data.message || "Report successfully rejected!");
       setRejectDialogOpen(false);

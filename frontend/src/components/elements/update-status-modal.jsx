@@ -37,7 +37,8 @@ const baseSchema = z.object({
 const resolvedSchema = baseSchema.extend({
   report_time_resolved: z
     .string()
-    .min(1, "Time resolved is required when status is 'Resolved'"),
+    .nonempty("Time resolved is required when status is 'Resolved'")
+    .transform((val) => new Date(val).toISOString()),
 });
 
 const getSchema = (selectedStatus) => {
@@ -73,6 +74,10 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
     data?.report_status.stat_name || ""
   );
   const currentStatus = data?.report_status.stat_name || "";
+  const previousTimeResolved = data?.report_time_resolved
+    ? new Date(data.report_time_resolved)
+    : null;
+  const previousRemarks = data?.status_remark || "";
   const today = new Date();
   const [remarksLength, setRemarksLength] = useState(0);
   const [dismissReason, setDismissReason] = useState("");
@@ -81,8 +86,10 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
     resolver: zodResolver(getSchema(selectedStatus)),
     defaultValues: {
       status: data?.report_status?._id || "",
-      remarks: "",
-      report_time_resolved: "",
+      remarks: previousRemarks || "",
+      report_time_resolved: previousTimeResolved
+        ? previousTimeResolved.toISOString()
+        : "",
     },
   });
 
@@ -121,9 +128,16 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
       if (selectedStatus === "Resolved" && value.report_time_resolved) {
         methods.clearErrors("report_time_resolved");
       }
+      if (value.remarks) {
+        methods.clearErrors("remarks");
+      }
     });
     return () => subscription.unsubscribe();
   }, [watch, selectedStatus, methods]);
+
+  useEffect(() => {
+    setValue("remarks", previousRemarks || "");
+  }, [previousRemarks, setValue]);
 
   const onSubmit = async (formData) => {
     const reportId = data._id;
@@ -335,10 +349,12 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                                     className="mt-1"
                                     rows="3"
                                     maxLength={150}
+                                    value={field.value || previousRemarks}
                                     onChange={(e) => {
                                       setRemarksLength(e.target.value.length);
                                       field.onChange(e);
                                     }}
+                                    disabled={!!previousRemarks}
                                   />
                                 )}
                               />
@@ -364,7 +380,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                                 control={control}
                                 render={({ field }) => (
                                   <DateTimePicker
-                                    value={field.value}
+                                    value={field.value || previousTimeResolved}
                                     onChange={(value) => {
                                       field.onChange(value);
                                       if (value) {

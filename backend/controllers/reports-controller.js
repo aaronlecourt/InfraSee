@@ -1099,6 +1099,7 @@ const submodApproval = asyncHandler(async (req, res, io) => {
       report.is_requested = false;
       report.is_new = true; // Optionally reset the "new" flag
       report.submod_is_new = false;
+      report.status_remark = remarks || "No remarks provided";
       // report.under_submod = false;
       await report.save();
 
@@ -1149,7 +1150,7 @@ const submodApproval = asyncHandler(async (req, res, io) => {
 
 const submodReject = async (req, res) => {
   const reportId = req.params.id;
-  const { isAccepted } = req.body; // submoderator will pass true/false for isAccepted
+  const { isAccepted, remarks  } = req.body; // submoderator will pass true/false for isAccepted
   const userId = req.user._id;
 
   try {
@@ -1178,6 +1179,7 @@ const submodReject = async (req, res) => {
       report.is_requested = false; // Set to false since it's no longer requested
       report.is_new = true; // Optionally reset the "new" flag
       report.submod_is_new = false; // Set to false after submod read process
+      report.status_remark = remarks || "No remarks provided";
       // report.request_time = null;
       // report.under_submod = false;
       await report.save();

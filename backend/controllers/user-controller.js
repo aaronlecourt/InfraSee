@@ -193,7 +193,6 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-
 // @desc    Create a new moderator
 // @route   POST /api/users/moderators
 // @access  Private (only moderators with can_create privilege)
@@ -216,6 +215,10 @@ const createModerator = asyncHandler(async (req, res) => {
       .json({ message: "That email has already been used. Try again." });
   }
 
+  const parentModerator = await User.findById(req.user._id).select(
+    "subModerators"
+  );
+
   // Create the new moderator
   const moderator = await User.create({
     name,
@@ -225,7 +228,7 @@ const createModerator = asyncHandler(async (req, res) => {
     isModerator: true,
     can_create: false,
     moderators: [],
-    subModerators: [],
+    subModerators: parentModerator?.subModerators || [],
   });
 
   if (moderator) {
@@ -250,6 +253,7 @@ const createModerator = asyncHandler(async (req, res) => {
         _id: req.user._id,
         name: req.user.name,
       },
+      subModerators: moderator.subModerators,
     });
   } else {
     res.status(400).json({ message: "Invalid moderator data" });
