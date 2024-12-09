@@ -4,7 +4,7 @@ import Report from "../models/reports-model.js";
 import Status from "../models/status-model.js";
 import generateToken from "../utils/generate-token.js";
 import generateOtp from "../utils/otp-generator.js";
-import sendOtpEmail from "../utils/mail.js";
+import { sendOtpEmail, sendWelcomeEmail } from "../utils/mail.js";
 
 // @desc    Auth user & get token
 // @route   POST /api/users/auth
@@ -135,7 +135,9 @@ const registerUser = asyncHandler(async (req, res) => {
   const userExists = await User.findOne({ email });
 
   if (userExists) {
-    res.status(400).json({ message: "That email has already been used. Try again." });
+    res
+      .status(400)
+      .json({ message: "That email has already been used. Try again." });
     return;
   }
 
@@ -154,10 +156,19 @@ const registerUser = asyncHandler(async (req, res) => {
 
   if (user) {
     if (user.isModerator) {
-      const currentUser = await User.findById(user._id).populate('moderators');
+      const currentUser = await User.findById(user._id).populate("moderators");
 
-      user.can_create = currentUser.moderators.length === 0 ? true : false;
+      user.can_create =
+        currentUser.moderators.length === 0 &&
+        currentUser.subModerators.length === 0;
       await user.save();
+
+      try {
+        await sendWelcomeEmail(user, name, email);
+        console.log("Welcome email sent to:", user.email);
+      } catch (error) {
+        console.error("Failed to send welcome email:", error.message);
+      }
     }
 
     // Generate the token
@@ -192,7 +203,8 @@ const createModerator = asyncHandler(async (req, res) => {
   // Check if the requesting user is a moderator with can_create privilege
   if (!(req.user && req.user.isModerator && req.user.can_create)) {
     return res.status(403).json({
-      message: "Access denied: Only moderators with the 'can_create' privilege can create moderators.",
+      message:
+        "Access denied: Only moderators with the 'can_create' privilege can create moderators.",
     });
   }
 
@@ -211,9 +223,9 @@ const createModerator = asyncHandler(async (req, res) => {
     password,
     infra_type,
     isModerator: true,
-    can_create: false, 
-    moderators: [], 
-    subModerators: [], 
+    can_create: false,
+    moderators: [],
+    subModerators: [],
   });
 
   if (moderator) {
@@ -243,7 +255,6 @@ const createModerator = asyncHandler(async (req, res) => {
     res.status(400).json({ message: "Invalid moderator data" });
   }
 });
-
 
 // @desc    Create a new submoderator
 // @route   POST /api/users/submoderators
@@ -289,7 +300,9 @@ const createSubModerator = asyncHandler(async (req, res) => {
     });
 
     // Populate the current user's details (assigned moderator)
-    const populatedModerator = await User.findById(req.user._id).select("_id name");
+    const populatedModerator = await User.findById(req.user._id).select(
+      "_id name"
+    );
 
     res.status(201).json({
       _id: submoderator._id,
@@ -298,15 +311,14 @@ const createSubModerator = asyncHandler(async (req, res) => {
       infra_type: submoderator.infra_type,
       isSubModerator: submoderator.isSubModerator,
       assignedModerator: {
-        _id: populatedModerator._id,  
-        name: populatedModerator.name, 
+        _id: populatedModerator._id,
+        name: populatedModerator.name,
       },
     });
   } else {
     res.status(400).json({ message: "Invalid submoderator data" });
   }
 });
-
 
 // @desc    Delete a user
 // @route   DELETE /api/users/:id
@@ -508,30 +520,36 @@ const getDeactivatedMods = asyncHandler(async (req, res) => {
     // Find the logged-in user and populate necessary fields
     const loggedInUser = await User.findById(loggedInUserId)
       .populate({
-        path: 'moderators', 
-        select: '', 
+        path: "moderators",
+        select: "",
       })
       .populate({
-        path: 'subModerators',
-        select: '',
+        path: "subModerators",
+        select: "",
       })
-      .populate('infra_type', 'infra_name');
+      .populate("infra_type", "infra_name");
 
     if (!loggedInUser || !loggedInUser.isModerator) {
-      return res.status(404).json({ message: 'User not found or not a moderator' });
+      return res
+        .status(404)
+        .json({ message: "User not found or not a moderator" });
     }
 
     // Get both secondary moderators and sub-moderators
     const allModerators = [
-      ...loggedInUser.moderators, 
-      ...loggedInUser.subModerators
+      ...loggedInUser.moderators,
+      ...loggedInUser.subModerators,
     ];
 
     // Filter for deactivated moderators (both secondary and sub)
-    const deactivatedModerators = allModerators.filter(mod => mod.deactivated === true);
+    const deactivatedModerators = allModerators.filter(
+      (mod) => mod.deactivated === true
+    );
 
     if (deactivatedModerators.length === 0) {
-      return res.status(200).json({ message: 'No deactivated moderators found' });
+      return res
+        .status(200)
+        .json({ message: "No deactivated moderators found" });
     }
 
     // Return the list of deactivated moderators
@@ -756,7 +774,6 @@ const getModeratorList = asyncHandler(async (req, res) => {
   }
 });
 
-
 // @desc    Get Secondary Mods for Current Moderator
 // @route   GET /api/secondary-mods
 // @access  Private
@@ -766,21 +783,26 @@ const getSecondaryMods = asyncHandler(async (req, res) => {
 
     const loggedInUser = await User.findById(loggedInUserId)
       .populate({
-        path: 'moderators', 
-        select: '', 
+        path: "moderators",
+        select: "",
       })
-      .populate('infra_type', 'infra_name');
+      .populate("infra_type", "infra_name");
     if (!loggedInUser || !loggedInUser.isModerator) {
-      return res.status(404).json({ message: 'User not found or not a moderator' });
+      return res
+        .status(404)
+        .json({ message: "User not found or not a moderator" });
     }
 
     const secondaryModerators = loggedInUser.moderators;
 
-    const activeModerators = secondaryModerators.filter(mod => mod.deactivated === false);
+    const activeModerators = secondaryModerators.filter(
+      (mod) => mod.deactivated === false
+    );
 
-    
     if (activeModerators.length === 0) {
-      return res.status(200).json({ message: 'No active secondary moderators found' });
+      return res
+        .status(200)
+        .json({ message: "No active secondary moderators found" });
     }
 
     res.status(200).json(activeModerators);
@@ -789,8 +811,6 @@ const getSecondaryMods = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
-
 
 // @desc    Get submoderators by infrastructure type
 // @route   GET /api/submoderators
@@ -816,7 +836,6 @@ const getSubModeratorList = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 
 // @desc    Check if email exists
 // @route   GET /api/users/check-email/:email
@@ -874,5 +893,5 @@ export {
   getSubModeratorList,
   getModeratorList,
   checkEmailExists,
-  getSecondaryMods
+  getSecondaryMods,
 };
