@@ -788,9 +788,13 @@ const getSecondaryMods = asyncHandler(async (req, res) => {
     const loggedInUser = await User.findById(loggedInUserId)
       .populate({
         path: "moderators",
-        select: "",
-      })
-      .populate("infra_type", "_id infra_name");
+        select: "", // You can modify this to select fields you need from moderators
+        populate: {
+          path: "infra_type",  // Populate infra_type for each moderator
+          select: "_id infra_name"  // Only select _id and infra_name for infra_type
+        }
+      });
+
     if (!loggedInUser || !loggedInUser.isModerator) {
       return res
         .status(404)
