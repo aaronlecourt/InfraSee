@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useUpdateUserMutation } from "@/slices/users-api-slice";
-import { useLogoutMutation } from "@/slices/users-api-slice";
-import { logout } from "@/slices/auth-slice";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -9,7 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import axios from "axios";
 import { toast } from "sonner";
-import { Button } from "../ui/button";
 import {
   Form,
   FormField,
@@ -60,7 +57,7 @@ export function ModAccount({ user, userInfo }) {
   const [infrastructureTypes, setInfrastructureTypes] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [updateUser, { isLoading }] = useUpdateUserMutation();
-  const [logoutApiCall] = useLogoutMutation();
+  // const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -102,16 +99,16 @@ export function ModAccount({ user, userInfo }) {
     }
   }, [user, reset]);
 
-  const handleLogout = async () => {
-    try {
-      await logoutApiCall().unwrap();
-      dispatch(logout());
-      navigate("/moderator/login");
-    } catch (err) {
-      console.log(err);
-      toast.error("Failed to log out.");
-    }
-  };
+  // const handleLogout = async () => {
+  //   try {
+  //     await logoutApiCall().unwrap();
+  //     dispatch(logout());
+  //     navigate("/moderator/login");
+  //   } catch (err) {
+  //     console.log(err);
+  //     toast.error("Failed to log out.");
+  //   }
+  // };
 
   const onSubmit = async (data) => {
     const { name, email, infrastructureType } = data;
@@ -128,7 +125,7 @@ export function ModAccount({ user, userInfo }) {
       toast.success("Account updated successfully!");
 
       // Initiate the countdown before logging out
-      startLogoutCountdown(3);
+      // startLogoutCountdown(3);
 
     } catch (err) {
       handleUpdateError(err);
@@ -136,22 +133,22 @@ export function ModAccount({ user, userInfo }) {
   };
 
   // Function to manage logout countdown
-  const startLogoutCountdown = (seconds) => {
-    let countdown = seconds;
+  // const startLogoutCountdown = (seconds) => {
+  //   let countdown = seconds;
 
-    const countdownInterval = setInterval(() => {
-      if (countdown <= 0) {
-        clearInterval(countdownInterval);
-        toast.dismiss();
-        toast.info("You have been logged out to apply changes.");
-        handleLogout(); 
-      } else {
-        toast.dismiss();
-        toast(`Logging out in ${countdown} seconds to apply changes.`);
-        countdown -= 1; 
-      }
-    }, 1000);
-  };
+  //   const countdownInterval = setInterval(() => {
+  //     if (countdown <= 0) {
+  //       clearInterval(countdownInterval);
+  //       toast.dismiss();
+  //       toast.info("You have been logged out to apply changes.");
+  //       handleLogout(); 
+  //     } else {
+  //       toast.dismiss();
+  //       toast(`Logging out in ${countdown} seconds to apply changes.`);
+  //       countdown -= 1; 
+  //     }
+  //   }, 1000);
+  // };
 
   const handleUpdateError = (error) => {
     const errorMessage = error?.data?.message || "An error occurred during the update.";
@@ -177,7 +174,7 @@ export function ModAccount({ user, userInfo }) {
     <div>
       <h1 className="text-xl font-bold mb-2">Account</h1>
       <p className="text-gray-500 text-sm mb-4">
-        Update your account settings here.
+        View your account details here. As per policy, your details can only be edited by the one who created your account.
       </p>
       <hr className="mb-4" />
 
@@ -199,6 +196,8 @@ export function ModAccount({ user, userInfo }) {
                   <Input
                     placeholder="Enter a new moderator name"
                     autoComplete="name"
+                    readOnly
+                    className="cursor-not-allowed bg-gray-100 text-gray-500" 
                     {...field}
                   />
                 </FormControl>
@@ -220,6 +219,8 @@ export function ModAccount({ user, userInfo }) {
                     type="email"
                     placeholder="Enter a new email address"
                     autoComplete="email"
+                    readOnly
+                    className="cursor-not-allowed bg-gray-100 text-gray-500" 
                     {...field}
                   />
                 </FormControl>
@@ -252,14 +253,14 @@ export function ModAccount({ user, userInfo }) {
             )}
           />
 
-          <Button type="submit" className="w-full mt-4" disabled={isLoading}>
+          {/* <Button type="submit" className="w-full mt-4" disabled={isLoading}>
             {isLoading ? "Updating..." : "Update Account"}
-          </Button>
+          </Button> */}
 
           {/* Moved DialogTrigger inside Dialog */}
           {!userInfo.isSubModerator && (
-            <Dialog>
-            <DialogTrigger asChild>
+          <Dialog>
+            {/* <DialogTrigger asChild>
               <Button
                 variant="outline"
                 className="flex gap-x-2 w-full text-destructive font-semibold"
@@ -267,7 +268,7 @@ export function ModAccount({ user, userInfo }) {
                 <UserRoundXIcon size={15} />
                 Deactivate Account
               </Button>
-            </DialogTrigger>
+            </DialogTrigger> */}
 
             {/* Confirmation Dialog */}
             <DialogPortal>

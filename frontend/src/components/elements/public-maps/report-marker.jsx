@@ -14,6 +14,8 @@ const statusIcons = {
   Resolved: "/pins/pins_-03.png",
   Pending: "/pins/pins_-01.png",
   Dismissed: "/pins/pins_-05.png",
+  "Under Review": "/pins/pins_-07.png",
+  "For Revision": "/pins/pins_-06.png",
 };
 const infraTypeIcons = {
   "Power and Energy": "/pins/power_energy.png",
@@ -92,7 +94,7 @@ export const ReportMarker = ({
         ) : (
           <img
           src={
-            statusIcons[report.report_status?.stat_name] || "/pins/pins_-06.png"
+            statusIcons[report.report_status?.stat_name] || "/pins/pins_-08.png"
           }
           alt={report.report_status?.stat_name}
           className="marker-icon"

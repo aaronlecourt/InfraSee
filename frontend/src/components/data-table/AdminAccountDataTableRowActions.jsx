@@ -12,13 +12,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AccountDetailsDialog } from "../elements/account-details-modal";
 import { ConfirmDeactivateDialog } from "../elements/deactivate-confirm-modal";
-import { Edit, Eye, RefreshCcw, Trash2 } from "lucide-react";
+import { Edit, Edit2, Eye, RefreshCcw, Trash2 } from "lucide-react";
 import { useDeactivateModeratorMutation, useReactivateModeratorMutation } from "@/slices/users-api-slice";
 import { ConfirmReactivateDialog } from "../elements/reactivate-confirm-modal";
 import { toast } from 'sonner';
+import { EditAccountModal } from "../elements/edit-account-modal";
 
 export function AdminAccountDataTableRowActions({ row }) {
   const [isShowDetailsDialogOpen, setShowDetailsDialogOpen] = useState(false);
+  const [isShowEditDialogOpen, setShowEditDialogOpen] = useState(false);
   const [isDeactivateDialogOpen, setDeactivateDialogOpen] = useState(false);
   const [isReactivateDialogOpen, setReactivateDialogOpen] = useState(false);
   const [dialogData, setDialogData] = useState(null);
@@ -30,6 +32,11 @@ export function AdminAccountDataTableRowActions({ row }) {
   const handleShowDetails = () => {
     setDialogData(row.original);
     setShowDetailsDialogOpen(true);
+  };
+
+  const handleEditDetails = () => {
+    setDialogData(row.original);
+    setShowEditDialogOpen(true);
   };
 
   const handleDeactivate = async () => {
@@ -60,6 +67,7 @@ export function AdminAccountDataTableRowActions({ row }) {
 
   const handleCloseDialog = () => {
     setShowDetailsDialogOpen(false);
+    setShowEditDialogOpen(false);
     setDeactivateDialogOpen(false);
   };
 
@@ -76,6 +84,14 @@ export function AdminAccountDataTableRowActions({ row }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-[160px]">
+        <DropdownMenuItem
+            className="flex gap-2"
+            onClick={() => handleEditDetails()}
+          >
+            <Edit2 size={14} className="text-muted-foreground" />
+            Edit Details
+            </DropdownMenuItem>
+            <DropdownMenuSeparator/>
         <DropdownMenuItem
             className="flex gap-2"
             onClick={() => handleShowDetails()}
@@ -122,6 +138,11 @@ export function AdminAccountDataTableRowActions({ row }) {
         isOpen={isReactivateDialogOpen}
         onClose={handleCloseDialog}
         onConfirm={handleReactivate}
+      />
+      <EditAccountModal
+        isOpen={isShowEditDialogOpen}
+        onClose={handleCloseDialog}
+        data={dialogData}
       />
     </>
   );

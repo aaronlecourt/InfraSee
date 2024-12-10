@@ -790,7 +790,7 @@ const getSecondaryMods = asyncHandler(async (req, res) => {
         path: "moderators",
         select: "",
       })
-      .populate("infra_type", "infra_name");
+      .populate("infra_type", "_id infra_name");
     if (!loggedInUser || !loggedInUser.isModerator) {
       return res
         .status(404)
