@@ -50,7 +50,7 @@ export function EditAccountModal({ isOpen, onClose, data }) {
   const [infrastructureTypes, setInfrastructureTypes] = useState([]);
   const [updateUser, { isLoading }] = useUpdateUserMutation();
   const { userInfo } = useSelector((state) => state.auth);
-  
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -121,11 +121,7 @@ export function EditAccountModal({ isOpen, onClose, data }) {
                 <FormItem>
                   <FormLabel className="font-bold">Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Enter name"
-                      autoComplete="name"
-                      {...field}
-                    />
+                    <Input placeholder="Enter name" autoComplete="name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -140,21 +136,14 @@ export function EditAccountModal({ isOpen, onClose, data }) {
                 <FormItem>
                   <FormLabel className="font-bold">Email</FormLabel>
                   <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="Enter email"
-                      autoComplete="email"
-                      {...field}
-                    />
+                    <Input type="email" placeholder="Enter email" autoComplete="email" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {userInfo.isModerator && (
-              <>
-              {/* Infrastructure Type Field */}
+            {/* Infrastructure Type Field */}
             <FormField
               control={control}
               name="infrastructureType"
@@ -164,15 +153,15 @@ export function EditAccountModal({ isOpen, onClose, data }) {
                   <FormControl>
                     <Select
                       onValueChange={field.onChange}
-                      value={field.value} // Controlled value
+                      value={field.value}
+                      disabled={!userInfo.isAdmin}
                     >
                       <SelectTrigger>
                         <SelectValue
                           placeholder="Select infrastructure type"
                           value={
-                            infrastructureTypes.find(
-                              (type) => type._id === field.value
-                            )?.infra_name || "Select"
+                            infrastructureTypes.find((type) => type._id === field.value)
+                              ?.infra_name || "Select"
                           }
                         />
                       </SelectTrigger>
@@ -189,8 +178,6 @@ export function EditAccountModal({ isOpen, onClose, data }) {
                 </FormItem>
               )}
             />
-              </>
-            )}
 
             <Button type="submit" className="w-full mt-4" disabled={isLoading}>
               {isLoading ? "Updating..." : "Update Account"}
