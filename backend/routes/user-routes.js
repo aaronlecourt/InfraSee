@@ -44,7 +44,8 @@ router.route("/logout").post(logoutUser);
 router
   .route("/profile")
   .get(protect, getUserProfile)
-  .put(protect, updateUserProfile);
+  // .put(protect, updateUserProfile);
+  .put(updateUserProfile)
 router.route("/verify-otp").post(verifyOtp);
 router.route("/password-reset/request").post(requestPasswordReset);
 router.route("/password-reset").post(resetPassword);
