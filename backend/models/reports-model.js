@@ -7,11 +7,11 @@ const reportSchema = mongoose.Schema(
   {
     is_new: {
       type: Boolean,
-      default: true
+      default: true,
     },
     submod_is_new: {
       type: Boolean,
-      default: true
+      default: true,
     },
     report_mod: {
       type: mongoose.Schema.Types.ObjectId,
@@ -71,24 +71,24 @@ const reportSchema = mongoose.Schema(
     },
     is_approved: {
       type: Boolean,
-      default: false, 
+      default: false,
     },
     is_requested: {
       type: Boolean,
       default: false,
     },
-    report_time_resolved:{
+    report_time_resolved: {
       type: Date,
       default: null,
-      nullable: true, 
+      nullable: true,
     },
-    request_time:{
+    request_time: {
       type: Date,
       default: null,
-      nullable: true, 
+      nullable: true,
     },
     unassignedAt: {
-      type: Date, 
+      type: Date,
       default: null,
     },
   },
@@ -97,9 +97,18 @@ const reportSchema = mongoose.Schema(
   }
 );
 
-reportSchema.index({ unassignedAt: 1 }, { expireAfterSeconds: 10 * 60 });
+reportSchema.index({ unassignedAt: 1 }, { expireAfterSeconds: 1 * 60 });
 
 const Report = mongoose.models.Report || mongoose.model("Report", reportSchema);
 
-Report.createIndexes();
+(async function initializeIndexes() {
+  try {
+    await Report.syncIndexes();
+    console.log("Indexes synced successfully.");
+  } catch (error) {
+    console.error("Error syncing indexes:", error);
+  }
+})();
+
 export default Report;
+

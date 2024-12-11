@@ -39,23 +39,14 @@ export const setupChangeStream = (collectionName, eventName, io) => {
     // Only handle delete events from the 'reports' collection
     if (change.operationType === 'delete' && collectionName === 'reports') {
       const deletedReportId = change.documentKey._id;
-      
-      try {
-        const deletedReport = await mongoose.model('Report').findById(deletedReportId);
 
-        if (deletedReport) {
-          const message = [
-            `InfraSee`,
-            `Hello ${deletedReport.report_by}, your report with ID ${deletedReportId} has been deleted due to inactivity.`,
-            `If this was a mistake, please resubmit the report.`,
-          ].join("\n");
+      const message = [
+        `InfraSee`,
+        `Hello, your report with ID ${deletedReportId} has been deleted due to inactivity.`,
+        `If this was a mistake, please resubmit the report.`,
+      ].join("\n");
 
-          // Send the SMS notification via the socket
-          sendSMSNotification(io, deletedReport.report_contactNum, message);
-        }
-      } catch (error) {
-        console.error('Error fetching deleted report:', error);
-      }
+      sendSMSNotification(io, change.fullDocument.report_contactNum, message);
     } else {
       // Emit other change events as needed
       io.emit(eventName, change);
