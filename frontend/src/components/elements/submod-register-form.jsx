@@ -171,9 +171,7 @@ export function SubModRegisterForm({ onClose }) {
                     {...field}
                   />
                 </FormControl>
-                <FormDescription className="text-xs">
-                  Manually create a gmail account for this account.
-                </FormDescription>
+                
               </FormItem>
             )}
           />
@@ -208,10 +206,7 @@ export function SubModRegisterForm({ onClose }) {
                     </button>
                   </div>
                 </FormControl>
-                <FormDescription className="text-xs">
-                  This account must have the same password as its GMail
-                  password.
-                </FormDescription>
+                
               </FormItem>
             )}
           />
