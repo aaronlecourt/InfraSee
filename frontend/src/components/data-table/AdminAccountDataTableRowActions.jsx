@@ -84,7 +84,9 @@ export function AdminAccountDataTableRowActions({ row }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-[160px]">
-        <DropdownMenuItem
+        {!row.original.deactivated && (
+          <>
+          <DropdownMenuItem
             className="flex gap-2"
             onClick={() => handleEditDetails()}
           >
@@ -92,6 +94,8 @@ export function AdminAccountDataTableRowActions({ row }) {
             Edit Details
             </DropdownMenuItem>
             <DropdownMenuSeparator/>
+          </>
+        )}
         <DropdownMenuItem
             className="flex gap-2"
             onClick={() => handleShowDetails()}
