@@ -91,6 +91,7 @@ export function EditAccountModal({ isOpen, onClose, data }) {
     const { name, email, infrastructureType } = formData;
     try {
       await updateUser({
+        _id: data._id,
         name,
         email,
         infra_type: infrastructureType,

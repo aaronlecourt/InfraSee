@@ -642,10 +642,11 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     console.log("Request Params:", req.params);
     console.log("Request User:", req.user);
 
-    const user = await User.findById(req.user?._id);
+    // const user = await User.findById(req.user?._id);
+    const user = await User.findById(req.body?._id);
 
     if (!user) {
-      console.error("User not found for ID:", req.user?._id);
+      console.error("User not found for ID:", req.body?._id);
       res.status(404);
       throw new Error("User not found");
     }
