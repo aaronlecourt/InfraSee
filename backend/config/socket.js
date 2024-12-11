@@ -31,24 +31,28 @@ const createSocketServer = (server) => {
 
 
 export const setupChangeStream = (collectionName, eventName, io) => {
-  const changeStream = mongoose.connection.collection(collectionName).watch();
+  const changeStream = mongoose.connection.collection(collectionName).watch([], {
+    fullDocumentBeforeChange: 'required',
+  });
 
   changeStream.on('change', asyncHandler(async (change) => {
     console.log(`Change detected in ${collectionName}:`, change);
 
-    // Only handle delete events from the 'reports' collection
     if (change.operationType === 'delete' && collectionName === 'reports') {
-      const deletedReportId = change.documentKey._id;
+      const fullDocument = change.fullDocumentBeforeChange;
 
-      const message = [
-        `InfraSee`,
-        `Hello, your report with ID ${deletedReportId} has been deleted due to inactivity.`,
-        `If this was a mistake, please resubmit the report.`,
-      ].join("\n");
+      if (fullDocument) {
+        const message = [
+          `InfraSee`,
+          `Hello ${fullDocument.report_by}, your report with ID ${change.documentKey._id} has been deleted due to inactivity.`,
+          `If this was a mistake, please resubmit the report.`,
+        ].join("\n");
 
-      sendSMSNotification(io, change.fullDocument.report_contactNum, message);
+        sendSMSNotification(io, fullDocument.report_contactNum, message);
+      } else {
+        console.error('Full document not available for delete operation.');
+      }
     } else {
-      // Emit other change events as needed
       io.emit(eventName, change);
     }
   }));
