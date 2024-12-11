@@ -87,12 +87,19 @@ const reportSchema = mongoose.Schema(
       default: null,
       nullable: true, 
     },
+    unassignedAt: {
+      type: Date, 
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 );
 
+reportSchema.index({ unassignedAt: 1 }, { expireAfterSeconds: 10 * 60 });
+
 const Report = mongoose.models.Report || mongoose.model("Report", reportSchema);
 
+Report.createIndexes();
 export default Report;

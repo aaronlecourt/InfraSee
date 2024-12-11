@@ -1,5 +1,6 @@
 import { Server } from 'socket.io';
 import mongoose from 'mongoose';
+import asyncHandler from 'express-async-handler';
 
 
 const sendSMSNotification = (io, phoneNumber, message) => {
@@ -32,10 +33,34 @@ const createSocketServer = (server) => {
 export const setupChangeStream = (collectionName, eventName, io) => {
   const changeStream = mongoose.connection.collection(collectionName).watch();
 
-  changeStream.on('change', (change) => {
+  changeStream.on('change', asyncHandler(async (change) => {
     console.log(`Change detected in ${collectionName}:`, change);
-    io.emit(eventName, change);
-  });
+
+    // Only handle delete events from the 'reports' collection
+    if (change.operationType === 'delete' && collectionName === 'reports') {
+      const deletedReportId = change.documentKey._id;
+      
+      try {
+        const deletedReport = await mongoose.model('Report').findById(deletedReportId);
+
+        if (deletedReport) {
+          const message = [
+            `InfraSee`,
+            `Hello ${deletedReport.report_by}, your report with ID ${deletedReportId} has been deleted due to inactivity.`,
+            `If this was a mistake, please resubmit the report.`,
+          ].join("\n");
+
+          // Send the SMS notification via the socket
+          sendSMSNotification(io, deletedReport.report_contactNum, message);
+        }
+      } catch (error) {
+        console.error('Error fetching deleted report:', error);
+      }
+    } else {
+      // Emit other change events as needed
+      io.emit(eventName, change);
+    }
+  }));
 
   changeStream.on('error', (error) => {
     console.error(`Change stream error on ${collectionName}:`, error);
