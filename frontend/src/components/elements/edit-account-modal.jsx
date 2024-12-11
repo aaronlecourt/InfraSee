@@ -155,7 +155,8 @@ export function EditAccountModal({ isOpen, onClose, data }) {
                     <Select
                       onValueChange={field.onChange}
                       value={field.value}
-                      disabled={!userInfo.isAdmin}
+                      // disabled={!userInfo.isAdmin}
+                      disabled
                     >
                       <SelectTrigger>
                         <SelectValue
