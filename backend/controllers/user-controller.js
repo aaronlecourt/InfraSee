@@ -654,11 +654,12 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     console.log("User Object Before Update:", user);
 
     // Destructure the request body
-    const { name, email, isAdmin, isModerator, isSubModerator, password } = req.body;
+    const { name, email, infra_type, isAdmin, isModerator, isSubModerator, password } = req.body;
 
     // Update user properties only if they exist in the request body
     if (name) user.name = name;
     if (email) user.email = email;
+    if (infra_type) user.infra_type = infra_type;
     if (isAdmin !== undefined) user.isAdmin = isAdmin;
     if (isModerator !== undefined) user.isModerator = isModerator;
     if (isSubModerator !== undefined) user.isSubModerator = isSubModerator;
@@ -675,6 +676,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
         _id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
+        infra_type: updatedUser.infra_type,
         isAdmin: updatedUser.isAdmin,
         isModerator: updatedUser.isModerator,
         isSubModerator: updatedUser.isSubModerator,
