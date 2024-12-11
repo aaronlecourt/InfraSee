@@ -101,14 +101,41 @@ reportSchema.index({ unassignedAt: 1 }, { expireAfterSeconds: 1 * 60 });
 
 const Report = mongoose.models.Report || mongoose.model("Report", reportSchema);
 
-(async function initializeIndexes() {
+async function ensureIndexes() {
+  if (!mongoose.connection.readyState) {
+    console.error("Database connection is not ready.");
+    return;
+  }
+
+  const collection = mongoose.connection.db.collection("reports");
+
   try {
+    // Get existing indexes
+    const existingIndexes = await collection.indexes();
+    
+    // Find index by name
+    const unassignedAtIndex = existingIndexes.find(index => index.name === "unassignedAt_1");
+
+    // If the index exists with different options, drop it
+    if (unassignedAtIndex && unassignedAtIndex.expireAfterSeconds !== 60) {
+      console.log("Dropping conflicting index...");
+      await collection.dropIndex("unassignedAt_1");
+    }
+
+    // Sync the indexes after handling conflicts
     await Report.syncIndexes();
     console.log("Indexes synced successfully.");
   } catch (error) {
     console.error("Error syncing indexes:", error);
   }
-})();
+}
+
+// Ensure the connection is established before syncing indexes
+mongoose.connection.once('open', async () => {
+  await ensureIndexes();
+  console.log("Database connection established.");
+});
+
 
 export default Report;
 
