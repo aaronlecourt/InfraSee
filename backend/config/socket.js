@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import mongoose from "mongoose";
 import asyncHandler from "express-async-handler";
+import Status from "../models/status-model.js";
 
 const sendSMSNotification = (io, phoneNumber, message) => {
   io.emit("sms sender", { phone_number: phoneNumber, message });
@@ -43,19 +44,46 @@ export const setupChangeStream = (collectionName, eventName, io) => {
       console.log(`Change detected in ${collectionName}:`, change);
 
       if (change.operationType === "delete" && collectionName === "reports") {
-        const fullDocument = change.fullDocumentBeforeChange;
+        const { fullDocumentBeforeChange } = change;
 
-        if (fullDocument) {
+        if (!fullDocumentBeforeChange) {
+          console.error(
+            "No fullDocumentBeforeChange available for delete operation"
+          );
+          return;
+        }
+
+        const unassignedStatus = await Status.findOne({
+          stat_name: "Unassigned",
+        });
+
+        if (!unassignedStatus) {
+          console.error('Unable to find "Unassigned" status');
+          return;
+        }
+
+        if (
+          fullDocumentBeforeChange &&
+          String(fullDocumentBeforeChange.report_status) ===
+            String(unassignedStatus._id)
+        ) {
           const message = [
             `InfraSee`,
-            `Hello ${fullDocument.report_by}, your report was deleted due to inactivity as no moderator could take action.`,
+            `Hello ${fullDocumentBeforeChange.report_by}, your report was deleted as it was marked "Unassigned" and no moderator could take action.`,
             `Please resubmit if needed.`,
           ].join("\n");
 
-          sendSMSNotification(io, fullDocument.report_contactNum, message);
-        } else {
-          console.error("Full document not available for delete operation.");
+          sendSMSNotification(
+            io,
+            fullDocumentBeforeChange.report_contactNum,
+            message
+          );
         }
+        io.emit("reportChange", {
+          operationType: change.operationType,
+          documentKey: change.documentKey,
+          fullDocumentBeforeChange: change.fullDocumentBeforeChange,
+        });
       } else {
         io.emit(eventName, change);
       }
