@@ -595,18 +595,65 @@ const getUserProfile = asyncHandler(async (req, res) => {
 // @desc    Update user profile
 // @route   PUT /api/users/profile
 // @access  Private
+// const updateUserProfile = asyncHandler(async (req, res) => {
+//   try {
+//     const user = await User.findById(req.user?._id);
+
+//     if (!user) {
+//       res.status(404);
+//       throw new Error("User not found");
+//     }
+
+//     // Destructure the request body
+//     const { name, email, isAdmin, isModerator, isSubModerator, password } =
+//       req.body;
+
+//     // Update user properties only if they exist in the request body
+//     if (name) user.name = name;
+//     if (email) user.email = email;
+//     if (isAdmin !== undefined) user.isAdmin = isAdmin;
+//     if (isModerator !== undefined) user.isModerator = isModerator;
+//     if (isSubModerator !== undefined) user.isSubModerator = isSubModerator;
+//     if (password) user.password = password;
+
+//     const updatedUser = await user.save();
+
+//     // Respond with success message and updated user information
+//     res.status(200).json({
+//       message: "User profile updated successfully",
+//       user: {
+//         _id: updatedUser._id,
+//         name: updatedUser.name,
+//         email: updatedUser.email,
+//         isAdmin: updatedUser.isAdmin,
+//         isModerator: updatedUser.isModerator,
+//         isSubModerator: updatedUser.isSubModerator,
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Error updating user profile:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// });
 const updateUserProfile = asyncHandler(async (req, res) => {
   try {
-    const user = await User.findById(req._id);
+    console.log("Request Headers:", req.headers);
+    console.log("Request Body:", req.body);
+    console.log("Request Params:", req.params);
+    console.log("Request User:", req.user);
+
+    const user = await User.findById(req.user?._id);
 
     if (!user) {
+      console.error("User not found for ID:", req.user?._id);
       res.status(404);
       throw new Error("User not found");
     }
 
+    console.log("User Object Before Update:", user);
+
     // Destructure the request body
-    const { name, email, isAdmin, isModerator, isSubModerator, password } =
-      req.body;
+    const { name, email, isAdmin, isModerator, isSubModerator, password } = req.body;
 
     // Update user properties only if they exist in the request body
     if (name) user.name = name;
@@ -617,6 +664,8 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     if (password) user.password = password;
 
     const updatedUser = await user.save();
+
+    console.log("Updated User Object:", updatedUser);
 
     // Respond with success message and updated user information
     res.status(200).json({
@@ -635,6 +684,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 // @desc    Verify OTP
 // @route   POST /api/users/verify-otp
