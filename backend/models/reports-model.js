@@ -7,11 +7,11 @@ const reportSchema = mongoose.Schema(
   {
     is_new: {
       type: Boolean,
-      default: true
+      default: true,
     },
     submod_is_new: {
       type: Boolean,
-      default: true
+      default: true,
     },
     report_mod: {
       type: mongoose.Schema.Types.ObjectId,
@@ -71,21 +71,25 @@ const reportSchema = mongoose.Schema(
     },
     is_approved: {
       type: Boolean,
-      default: false, 
+      default: false,
     },
     is_requested: {
       type: Boolean,
       default: false,
     },
-    report_time_resolved:{
+    report_time_resolved: {
       type: Date,
       default: null,
-      nullable: true, 
+      nullable: true,
     },
-    request_time:{
+    request_time: {
       type: Date,
       default: null,
-      nullable: true, 
+      nullable: true,
+    },
+    unassignedAt: {
+      type: Date,
+      default: null,
     },
   },
   {
@@ -93,6 +97,45 @@ const reportSchema = mongoose.Schema(
   }
 );
 
+reportSchema.index({ unassignedAt: 1 }, { expireAfterSeconds: 1 * 60 });
+
 const Report = mongoose.models.Report || mongoose.model("Report", reportSchema);
 
+async function ensureIndexes() {
+  if (!mongoose.connection.readyState) {
+    console.error("Database connection is not ready.");
+    return;
+  }
+
+  const collection = mongoose.connection.db.collection("reports");
+
+  try {
+    // Get existing indexes
+    const existingIndexes = await collection.indexes();
+    
+    // Find index by name
+    const unassignedAtIndex = existingIndexes.find(index => index.name === "unassignedAt_1");
+
+    // If the index exists with different options, drop it
+    if (unassignedAtIndex && unassignedAtIndex.expireAfterSeconds !== 60) {
+      console.log("Dropping conflicting index...");
+      await collection.dropIndex("unassignedAt_1");
+    }
+
+    // Sync the indexes after handling conflicts
+    await Report.syncIndexes();
+    console.log("Indexes synced successfully.");
+  } catch (error) {
+    console.error("Error syncing indexes:", error);
+  }
+}
+
+// Ensure the connection is established before syncing indexes
+mongoose.connection.once('open', async () => {
+  await ensureIndexes();
+  console.log("Database connection established.");
+});
+
+
 export default Report;
+

@@ -3,13 +3,12 @@ import Report from "../models/reports-model.js";
 import User from "../models/user-model.js";
 import Status from "../models/status-model.js";
 import InfrastructureType from "../models/infrastructureType-model.js";
-import { sendSMSNotification } from "../config/socket.js";
 
 import {
   notifySubmoderatorOnStatusChange,
   notifyModeratorOnNewReport,
   notifyModeratorOnSubmodAction,
-  notifyModeratorOnTransferredReport
+  notifyModeratorOnTransferredReport,
 } from "./notifications-controller.js";
 
 // ORIGINAL createReport
@@ -139,13 +138,14 @@ import {
 
 // createReport with 3 limit
 
+
 const createReport = asyncHandler(async (req, res, io) => {
   try {
     const {
       report_address,
       latitude,
       longitude,
-      infraType, // This should be the ID of the infraType
+      infraType,
       report_by,
       report_contactNum,
       report_desc,
@@ -188,9 +188,9 @@ const createReport = asyncHandler(async (req, res, io) => {
 
     // Find unresolved reports with the same infraType within 10 meters
     const existingReports = await Report.find({
-      infraType, // Ensure this is the correct infraType ID
+      infraType,
       report_status: { $ne: "66d25906baae7f52f54793f5" }, // Use "Resolved" ObjectId directly here
-    }).populate("report_status", "stat_name"); // Populate the report_status field with stat_name
+    }).populate("report_status", "stat_name");
 
     let similarReportsCount = 0;
 
@@ -210,7 +210,8 @@ const createReport = asyncHandler(async (req, res, io) => {
     // Allow up to 3 similar unresolved reports within 10 meters
     if (similarReportsCount >= 3) {
       return res.status(409).json({
-        message: "A similar report has already been reported 3 times within 10 meters. No further reports can be created until one of the reports is resolved.",
+        message:
+          "A similar report has already been reported 3 times within 10 meters. No further reports can be created until one of the reports is resolved.",
       });
     }
 
@@ -224,6 +225,7 @@ const createReport = asyncHandler(async (req, res, io) => {
       report_contactNum,
       report_desc,
       report_img,
+      unassignedAt: new Date(),
     });
 
     const savedReport = await report.save();
@@ -246,7 +248,10 @@ const createReport = asyncHandler(async (req, res, io) => {
     ].join("\n");
 
     // Emit the SMS event to the socket
-    io.emit("sms sender", { phone_number: populatedReport.report_contactNum, message });
+    io.emit("sms sender", {
+      phone_number: populatedReport.report_contactNum,
+      message,
+    });
     console.log("SMS sender event emitted to socket:", {
       phone_number: populatedReport.report_contactNum,
       message,
@@ -260,11 +265,15 @@ const createReport = asyncHandler(async (req, res, io) => {
     console.error("Error creating report:", error);
 
     if (error.name === "ValidationError") {
-      return res.status(422).json({ message: "Validation error: " + error.message });
+      return res
+        .status(422)
+        .json({ message: "Validation error: " + error.message });
     } else if (error.code === 11000) {
       return res.status(409).json({ message: "Duplicate report found." });
     } else {
-      return res.status(500).json({ message: "Server error. Please try again later." });
+      return res
+        .status(500)
+        .json({ message: "Server error. Please try again later." });
     }
   }
 });
@@ -462,7 +471,6 @@ const getModeratorReports = asyncHandler(async (req, res) => {
   }
 });
 
-
 const getModeratorHiddenReports = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
@@ -510,7 +518,6 @@ const getModeratorHiddenReports = asyncHandler(async (req, res) => {
     }
   }
 });
-
 
 const getSubModeratorReports = asyncHandler(async (req, res) => {
   try {
@@ -786,7 +793,7 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
     modID: modId,
     status_remark,
     report_time_resolved,
-  } = req.body; 
+  } = req.body;
 
   try {
     // Find the report
@@ -803,7 +810,9 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
 
     // Find relevant statuses
     const resolvedStatus = await Status.findOne({ stat_name: "Resolved" });
-    const underReviewStatus = await Status.findOne({ stat_name: "Under Review" });
+    const underReviewStatus = await Status.findOne({
+      stat_name: "Under Review",
+    });
     const unassignedStatus = await Status.findOne({ stat_name: "Unassigned" });
     const dismissedStatus = await Status.findOne({ stat_name: "Dismissed" });
     const inProgressStatus = await Status.findOne({ stat_name: "In Progress" });
@@ -820,7 +829,7 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
     };
 
     // Prepare message variable to store the custom message
-    let customMessage = '';
+    let customMessage = "";
 
     // Determine status transition and set custom messages
     if (statusId === resolvedStatus._id.toString()) {
@@ -843,6 +852,7 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
     // Handle Pending to Unassigned
     else if (statusId === unassignedStatus._id.toString()) {
       updateData.report_status = unassignedStatus._id;
+      updateData.unassignedAt = new Date();
       customMessage = `We've mistakenly accepted your report and have returned it to unassigned status for other moderators to address.`;
       await Report.findByIdAndUpdate(reportId, { $unset: { report_mod: "" } });
     }
@@ -860,7 +870,10 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
     }
 
     // Handle In Progress to Resolved
-    else if (statusId === resolvedStatus._id.toString() && report.report_status.toString() === inProgressStatus._id.toString()) {
+    else if (
+      statusId === resolvedStatus._id.toString() &&
+      report.report_status.toString() === inProgressStatus._id.toString()
+    ) {
       updateData.report_status = resolvedStatus._id;
       updateData.is_requested = false;
       updateData.report_time_resolved = Date.now();
@@ -868,8 +881,9 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
     }
 
     // Update the report with new status and information
-    const updatedReport = await Report.findByIdAndUpdate(reportId, updateData, { new: true })
-      .populate({ path: "report_status", select: "stat_name" });
+    const updatedReport = await Report.findByIdAndUpdate(reportId, updateData, {
+      new: true,
+    }).populate({ path: "report_status", select: "stat_name" });
 
     // Notify submoderators if the report status is requested
     await notifySubmoderatorOnStatusChange(updatedReport);
@@ -877,11 +891,15 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
     // Only send SMS notification if:
     // 1. The status is not "Under Review" or "For Revision"
     // 2. The status is not "Resolved" AND there are submoderators
-    if (![underReviewStatus._id.toString()].includes(statusId) &&
-      !(statusId === resolvedStatus._id.toString() && moderator.subModerators.length > 0)) {
-      
+    if (
+      ![underReviewStatus._id.toString()].includes(statusId) &&
+      !(
+        statusId === resolvedStatus._id.toString() &&
+        moderator.subModerators.length > 0
+      )
+    ) {
       // Construct the message for the SMS
-      
+
       const remarks = updatedReport.status_remark || "No additional remarks.";
       const moderatorName = moderator.name;
       const reporterName = updatedReport.report_by;
@@ -916,15 +934,14 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
   }
 });
 
-
 // const updateInfraType = asyncHandler(async (req, res, io) => {
 //   const reportId = req.params.id;
-//   const { infraTypeId } = req.body; 
+//   const { infraTypeId } = req.body;
 //   const userId = req.user._id;
 
 //   try {
 //     const user = await User.findById(userId);
-//     if (!user || !user.isModerator) { 
+//     if (!user || !user.isModerator) {
 //       return res
 //         .status(403)
 //         .json({ message: "Access denied: User is not a moderator." });
@@ -946,7 +963,7 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
 //     if (report.infraType) {
 //       const previousInfraType = await InfrastructureType.findById(report.infraType);
 //       if (previousInfraType) {
-//         previousInfraTypeName = previousInfraType.infra_name; 
+//         previousInfraTypeName = previousInfraType.infra_name;
 //       }
 //     }
 
@@ -992,13 +1009,13 @@ const updateReportStatus = asyncHandler(async (req, res, io) => {
 
 const updateInfraType = asyncHandler(async (req, res, io) => {
   const reportId = req.params.id;
-  const { infraTypeId } = req.body; 
+  const { infraTypeId } = req.body;
   const userId = req.user._id;
 
   try {
     // Step 1: Check if the user is a moderator
     const user = await User.findById(userId);
-    if (!user || !user.isModerator) { 
+    if (!user || !user.isModerator) {
       return res
         .status(403)
         .json({ message: "Access denied: User is not a moderator." });
@@ -1016,11 +1033,13 @@ const updateInfraType = asyncHandler(async (req, res, io) => {
       return res.status(404).json({ message: "Infrastructure type not found" });
     }
 
-    let previousInfraTypeName = '';
+    let previousInfraTypeName = "";
     if (report.infraType) {
-      const previousInfraType = await InfrastructureType.findById(report.infraType);
+      const previousInfraType = await InfrastructureType.findById(
+        report.infraType
+      );
       if (previousInfraType) {
-        previousInfraTypeName = previousInfraType.infra_name; 
+        previousInfraTypeName = previousInfraType.infra_name;
       }
     }
 
@@ -1040,10 +1059,10 @@ const updateInfraType = asyncHandler(async (req, res, io) => {
 
     // Step 5: Construct the SMS message to notify the reporter of the infraType change
     const message = [
-      `[InfraSee]`,
-      `Hello ${report.report_by}! The infrastructure type for your report has been updated.`,
-      `New InfraType: ${infraType.infra_name}`, // Using the name from the new infraType
-      `Previous InfraType: ${previousInfraTypeName || 'Not Set'}`, // Using the name of the previous infraType, if available
+      `InfraSee`,
+      `Hello ${report.report_by}!`,
+      `Your report has been changed to: ${infraType.infra_name}`,
+      `From: ${previousInfraTypeName || 'Not Set'}`
     ].join("\n");
 
     // Emit the SMS event to the socket to notify the consumer (reporter)
@@ -1060,14 +1079,17 @@ const updateInfraType = asyncHandler(async (req, res, io) => {
     // Step 6: Notify relevant moderators about the infraType change
     await notifyModeratorOnTransferredReport(report); // This function handles the notification logic
 
-    res.status(200).json({ message: "InfraType updated, SMS sent, and moderators notified", report });
+    res
+      .status(200)
+      .json({
+        message: "InfraType updated, SMS sent, and moderators notified",
+        report,
+      });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "An error occurred", error });
   }
 });
-
-
 
 const submodApproval = asyncHandler(async (req, res, io) => {
   const reportId = req.params.id;
@@ -1150,7 +1172,7 @@ const submodApproval = asyncHandler(async (req, res, io) => {
 
 const submodReject = async (req, res) => {
   const reportId = req.params.id;
-  const { isAccepted, remarks  } = req.body; // submoderator will pass true/false for isAccepted
+  const { isAccepted, remarks } = req.body; // submoderator will pass true/false for isAccepted
   const userId = req.user._id;
 
   try {
@@ -1353,7 +1375,6 @@ const markAsUnreadSub = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
-
 
 export {
   createReport,
