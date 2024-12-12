@@ -69,9 +69,9 @@ export function RegisterForm({ onClose }) {
         if (userInfo && userInfo.isAdmin) {
           // If the user is an admin, use all infrastructure types and set a default value
           setInfrastructureTypes(response.data);
-          if (response.data.length > 0) {
-            setValue("infrastructureType", response.data[0]._id); // Set default value to the first item
-          }
+          // if (response.data.length > 0) {
+          //   setValue("infrastructureType", response.data[0]._id); // Set default value to the first item
+          // }
         } else if (userInfo && userInfo.infra_type) {
           // If the user is a moderator, filter by allowed infra_type
           const allowedInfraType = userInfo.infra_type._id;
@@ -90,10 +90,10 @@ export function RegisterForm({ onClose }) {
       userInfo &&
       (userInfo.isAdmin || (userInfo.isModerator && userInfo.can_create))
     ) {
-      console.log("User has permission to add moderator:", userInfo);
+      // console.log("User has permission to add moderator:", userInfo);
       fetchInfrastructureTypes();
     } else {
-      console.log("User does not have permission:", userInfo);
+      // console.log("User does not have permission:", userInfo);
       toast.error("You don't have permission to add a moderator.");
     }
   }, [userInfo, setValue]);
@@ -147,8 +147,8 @@ export function RegisterForm({ onClose }) {
       form.reset();
     } catch (err) {
       console.log(err);
-      const errorMessage =
-        err.data?.message || "An error occurred during registration.";
+      const errorMessage = err.data?.message;
+        // err.data?.message || "An error occurred during registration.";
       toast.error(errorMessage);
     }
   };
