@@ -24,16 +24,16 @@ import {
   checkEmailExists,
   getSecondaryMods,
 } from "../controllers/user-controller.js";
-import {
-  protect,
-} from "../middleware/auth-middleware.js";
+import { protect } from "../middleware/auth-middleware.js";
 
 const router = express.Router();
 
 router.route("/").post(registerUser);
 router.route("/:moderatorId/moderators").post(protect, createModerator);
 router.route("/:moderatorId/submoderators").post(protect, createSubModerator);
-router.route("/:moderatorId/deactivate").put(protect, deactivateModerator);
+router
+  .route("/:moderatorId/deactivate")
+  .put(protect, (req, res) => deactivateModerator(req, res, req.app.get("io")));
 router.route("/:moderatorId/reactivate").put(protect, reactivateModerator);
 router.route("/deactivated").get(protect, getDeactivatedUsers);
 router.route("/delete/:id").delete(protect, deleteUser);
@@ -45,7 +45,7 @@ router
   .route("/profile")
   .get(protect, getUserProfile)
   // .put(protect, updateUserProfile);
-  .put(updateUserProfile)
+  .put(updateUserProfile);
 router.route("/verify-otp").post(verifyOtp);
 router.route("/password-reset/request").post(requestPasswordReset);
 router.route("/password-reset").post(resetPassword);

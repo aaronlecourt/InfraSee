@@ -367,7 +367,7 @@ const deleteUser = asyncHandler(async (req, res) => {
   }
 });
 
-const deactivateModerator = asyncHandler(async (req, res) => {
+const deactivateModerator = asyncHandler(async (req, res, io) => {
   const { moderatorId } = req.params;
 
   try {
@@ -410,6 +410,8 @@ const deactivateModerator = asyncHandler(async (req, res) => {
           ? "Moderator and submoderators deactivated successfully"
           : "Moderator deactivated successfully. No submoderators found.";
 
+      io.emit("userChange", { userId: moderatorId });
+
       return res.status(200).json({ message });
     } else if (user.isSubModerator) {
       // Check if the assigned moderator has any reports with "Under Review" or "For Revision" status
@@ -437,6 +439,9 @@ const deactivateModerator = asyncHandler(async (req, res) => {
 
       // Proceed with deactivation of submoderator
       await User.findByIdAndUpdate(moderatorId, { deactivated: true });
+
+      io.emit("userChange", { userId: moderatorId });
+
       return res
         .status(200)
         .json({ message: "Submoderator deactivated successfully" });
@@ -668,7 +673,15 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     console.log("User Object Before Update:", user);
 
     // Destructure the request body
-    const { name, email, infra_type, isAdmin, isModerator, isSubModerator, password } = req.body;
+    const {
+      name,
+      email,
+      infra_type,
+      isAdmin,
+      isModerator,
+      isSubModerator,
+      password,
+    } = req.body;
 
     // Update user properties only if they exist in the request body
     if (name) user.name = name;
@@ -701,7 +714,6 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
 
 // @desc    Verify OTP
 // @route   POST /api/users/verify-otp
@@ -852,15 +864,14 @@ const getSecondaryMods = asyncHandler(async (req, res) => {
   try {
     const loggedInUserId = req.user._id;
 
-    const loggedInUser = await User.findById(loggedInUserId)
-      .populate({
-        path: "moderators",
-        select: "", // You can modify this to select fields you need from moderators
-        populate: {
-          path: "infra_type",  // Populate infra_type for each moderator
-          select: "_id infra_name"  // Only select _id and infra_name for infra_type
-        }
-      });
+    const loggedInUser = await User.findById(loggedInUserId).populate({
+      path: "moderators",
+      select: "", // You can modify this to select fields you need from moderators
+      populate: {
+        path: "infra_type", // Populate infra_type for each moderator
+        select: "_id infra_name", // Only select _id and infra_name for infra_type
+      },
+    });
 
     if (!loggedInUser || !loggedInUser.isModerator) {
       return res

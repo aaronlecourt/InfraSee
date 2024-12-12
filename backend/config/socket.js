@@ -84,6 +84,35 @@ export const setupChangeStream = (collectionName, eventName, io) => {
           documentKey: change.documentKey,
           fullDocumentBeforeChange: change.fullDocumentBeforeChange,
         });
+      } // Handling the "update" operation for "users"
+      else if (
+        change.operationType === "update" &&
+        collectionName === "users"
+      ) {
+        const { updateDescription, fullDocumentBeforeChange } = change;
+
+        // Check if the `deactivated` field was updated to `true`
+        if (updateDescription.updatedFields.deactivated === true) {
+          const userId = fullDocumentBeforeChange._id.toString();
+
+          // Emit a specific event notifying about the deactivation
+          io.emit("userDeactivated", {
+            userId,
+            message: "This user has been deactivated.",
+            timestamp: new Date().toISOString(),
+          });
+
+          // Optionally, log this information
+          console.log(`User ${userId} has been deactivated.`);
+        }
+
+        // Emit a general user change event (optional)
+        io.emit("userChange", {
+          operationType: change.operationType,
+          documentKey: change.documentKey,
+          fullDocumentBeforeChange: change.fullDocumentBeforeChange,
+          updateDescription: change.updateDescription,
+        });
       } else {
         io.emit(eventName, change);
       }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import socket from "@/utils/socket-connect";
 import { Spinner } from "@/components/ui/spinner";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch  } from "react-redux";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import { Overview } from "@/components/elements/overview";
@@ -16,6 +16,9 @@ import { columnsModHidden } from "@/components/data-table/columns/columnsModHidd
 import { SkeletonTable } from "@/components/elements/skeletontable";
 import ModNavbar from "@/components/elements/mod-navbar/navbar";
 import { columnsModUnassigned } from "@/components/data-table/columns/columnsModUnassigned";
+import { useLogoutMutation } from "@/slices/users-api-slice";
+import { logout } from "@/slices/auth-slice";
+import { useNavigate } from "react-router-dom";
 
 const fetchReports = async () => {
   const response = await axios.get("/api/reports/moderator/reports");
@@ -43,6 +46,9 @@ const ModeratorDashboardScreen = () => {
   const [loadingUnassigned, setLoadingUnassigned] = useState(true);
   const [highlightedId, setHighlightedId] = useState();
   const [selectedNotificationId, setSelectedNotificationId] = useState(null);
+  const [logoutApiCall] = useLogoutMutation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     socket.on("reportChange", (change) => {
@@ -56,6 +62,26 @@ const ModeratorDashboardScreen = () => {
       socket.off("reportChange");
     };
   }, []);
+
+  useEffect(() => {
+    socket.on("userDeactivated", async (data) => {
+      console.log("User deactivated:", data);
+      if (data.userId === userInfo?._id) {
+        alert("You have been deactivated. Please contact your Moderator.");
+        try {
+          await logoutApiCall().unwrap();
+          dispatch(logout());
+          navigate("/moderator/login");
+        } catch (error) {
+          console.error("Failed to log out after deactivation:", error);
+        }
+      }
+    });
+
+    return () => {
+      socket.off("userDeactivated");
+    };
+  }, [logoutApiCall]);
 
   // Fetch data
   const loadReports = async () => {
