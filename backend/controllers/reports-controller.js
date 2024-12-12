@@ -138,7 +138,6 @@ import {
 
 // createReport with 3 limit
 
-
 const createReport = asyncHandler(async (req, res, io) => {
   try {
     const {
@@ -283,17 +282,22 @@ const updateOnAccept = asyncHandler(async (req, res, io) => {
     const reportId = req.params.id;
     const userId = req.user._id;
 
+    const pendingStatus = await Status.findOne({ stat_name: "Pending" });
+
+    if (!pendingStatus) {
+      throw new Error("Status 'Pending' not found");
+    }
+
     const report = await Report.findByIdAndUpdate(
       reportId,
       {
         report_mod: userId,
-        report_status: "66d258f9baae7f52f54793f4",
+        report_status: pendingStatus,
         is_new: true,
+        unassignedAt: null,
       },
       { new: true }
-    )
-      .populate("report_mod", "name")
-      .populate("report_status", "stat_name");
+    ).populate("report_mod", "name");
 
     if (!report) {
       res.status(404);
@@ -1062,7 +1066,7 @@ const updateInfraType = asyncHandler(async (req, res, io) => {
       `InfraSee`,
       `Hello ${report.report_by}!`,
       `Your report has been changed to: ${infraType.infra_name}`,
-      `From: ${previousInfraTypeName || 'Not Set'}`
+      `From: ${previousInfraTypeName || "Not Set"}`,
     ].join("\n");
 
     // Emit the SMS event to the socket to notify the consumer (reporter)
@@ -1079,12 +1083,10 @@ const updateInfraType = asyncHandler(async (req, res, io) => {
     // Step 6: Notify relevant moderators about the infraType change
     await notifyModeratorOnTransferredReport(report); // This function handles the notification logic
 
-    res
-      .status(200)
-      .json({
-        message: "InfraType updated, SMS sent, and moderators notified",
-        report,
-      });
+    res.status(200).json({
+      message: "InfraType updated, SMS sent, and moderators notified",
+      report,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "An error occurred", error });
