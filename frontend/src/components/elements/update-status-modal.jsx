@@ -343,7 +343,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                                     className="mt-1"
                                     rows="3"
                                     maxLength={150}
-                                    value={previousTimeResolved ? field.value : ""}
+                                    value={previousTimeResolved ? previousRemarks : field.value}
                                     onChange={(e) => {
                                       setRemarksLength(e.target.value.length);
                                       field.onChange(e);
