@@ -19,7 +19,7 @@ export const exportExcel = (rows, userInfo, activeTab, activeButton, table) => {
   const visibleColumns = table.getVisibleLeafColumns();
 
   const labeledColumns = visibleColumns.filter(
-    (column) => column.accessorFn && column.accessorFn !== undefined
+    (column) => column.accessorFn && column.accessorFn !== undefined && column.id !== "is_new"
   );
 
   console.log("Filtered Labeled Columns:", labeledColumns);
