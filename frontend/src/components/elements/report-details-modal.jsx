@@ -12,6 +12,7 @@ import { PhoneCall, UserCircleIcon } from "lucide-react";
 import { Maximize } from "lucide-react"; // Import the Maximize icon
 import { format } from "date-fns";
 import { date } from "zod";
+import { Badge } from "../ui/badge";
 
 export function ReportDetailsDialog({ isOpen, onClose, data }) {
   const formatDate = (dateString) => {
@@ -78,7 +79,7 @@ export function ReportDetailsDialog({ isOpen, onClose, data }) {
                       Requested for review on: {formatDate(data.request_time)}
                     </p>
                   )}
-                  {data.status_remark && <p>Remarks: {data.status_remark}</p>}
+                  {data.status_remark && <p className="flex-col flex items-start"><Badge className="bg-black mb-2 rounded-sm"><span className="px-2">Remarks</span></Badge> {data.status_remark}</p>}
                 </div>
               </div>
             ) : (
