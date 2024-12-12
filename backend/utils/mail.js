@@ -39,19 +39,24 @@ const sendWelcomeEmail = async (user, name, email) => {
     subject: "Welcome to Infrasee - Your Account Details",
     text: `Hello ${name},
 
-Welcome to the Infrasee system! We are excited to have you on board as a valued moderator representing ${name}. Thank you for applying as a user of Infrasee a platform dedicated to streamlining infrastructure issue reporting and resolution.  
+Welcome to the Infrasee system! We are excited to have you on board as a valued ${user.isSubModerator ? 'sub-moderator' : 'moderator'} representing ${name}. Thank you for applying as a user of Infrasee a platform dedicated to streamlining infrastructure issue reporting and resolution.  
 
-Here are the details of your account:  
-Email Address: ${email}  
+Here are the details of your account:  
+Email Address: ${email}  
 Temporary Password: P@ssword123 
 
-Please log in using these credentials at https://infrasee.onrender.com/moderator/login. For security reasons, we recommend changing your password immediately upon logging in.  
+Please log in using these credentials at https://infrasee.onrender.com/moderator/login. For security reasons, we recommend changing your password immediately upon logging in.  
 
-As a moderator, you will have access to tools and resources designed to help you efficiently manage reports related to your company's services. Should you have any questions or require assistance, feel free to reach out to us.
+${user.isSubModerator ?
+  `As a sub-moderator, you will have access to tools and resources designed to help you efficiently verify the resolution times made by moderators of the reports related to your company's services.` :
+  `As a moderator, you will have access to tools and resources designed to help you efficiently manage reports related to your company's services.`
+}
 
-Thank you for joining Infrasee We look forward to your contributions in improving infrastructure services for the community.  
+Should you have any questions or require assistance, feel free to reach out to us.
 
-Best regards,  
+Thank you for joining Infrasee. We look forward to your contributions in improving infrastructure services for the community.  
+
+Best regards,  
 The Infrasee Team
 
 `,
