@@ -21,11 +21,6 @@ const fetchModerators = async () => {
   return response.data;
 };
 
-const fetchSubModerators = async () => {
-  const response = await axios.get("/api/users/submoderators-list");
-  return response.data;
-};
-
 const fetchDeactivated = async () => {
   const response = await axios.get("/api/users/deactivated");
   return response.data;
@@ -46,7 +41,6 @@ const AdminDashboardScreen = () => {
 
   const [accountsData, setAccountsData] = useState([]);
   const [moderatorsData, setModeratorsData] = useState([]);
-  const [subModeratorsData, setSubModeratorsData] = useState([]);
   const [deactivatedData, setDeactivatedData] = useState([]);
   const [reportsData, setReportsData] = useState([]);
 
@@ -56,14 +50,12 @@ const AdminDashboardScreen = () => {
   const [loadingReports, setLoadingReports] = useState(true);
   const [loadingAccounts, setLoadingAccounts] = useState(true);
   const [loadingModerators, setLoadingModerators] = useState(true);
-  const [loadingSubModerators, setLoadingSubModerators] = useState(true);
   const [loadingDeactivated, setLoadingDeactivated] = useState(true);
 
   useEffect(() => {
     const handleUserChange = async () => {
       await loadReports();
       await loadModerators();
-      await loadSubModerators();
       await loadDeactivated();
     };
 
@@ -84,18 +76,6 @@ const AdminDashboardScreen = () => {
       console.error("Failed to fetch moderators", error);
     } finally {
       setLoadingModerators(false);
-    }
-  };
-
-  const loadSubModerators = async () => {
-    setLoadingSubModerators(true);
-    try {
-      const data = await fetchSubModerators();
-      setSubModeratorsData(data);
-    } catch (error) {
-      console.error("Failed to fetch sub-moderators", error);
-    } finally {
-      setLoadingSubModerators(false);
     }
   };
 
@@ -127,7 +107,6 @@ const AdminDashboardScreen = () => {
   useEffect(() => {
     loadReports();
     loadModerators();
-    loadSubModerators();
     loadDeactivated();
   }, []);
 
@@ -353,24 +332,6 @@ const AdminDashboardScreen = () => {
                     activeButton={activeButton}
                     data={moderatorsData}
                     columns={columnsAccounts}
-                    userInfo={userInfo}
-                  />
-                )}
-              </TabsContent>
-              <TabsContent value="submoderators">
-                {loadingSubModerators ? (
-                  <div className="flex flex-col gap-2 items-center justify-center h-full">
-                    <Spinner size="large" />
-                    <span className="text-sm text-muted-foreground">
-                      Loading Submoderators
-                    </span>
-                  </div>
-                ) : (
-                  <DataTable
-                    activeTab={activeTab}
-                    activeButton={activeButton}
-                    data={subModeratorsData}
-                    columns={columnsSubMod}
                     userInfo={userInfo}
                   />
                 )}
