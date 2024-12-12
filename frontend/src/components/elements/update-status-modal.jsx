@@ -348,7 +348,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                                       setRemarksLength(e.target.value.length);
                                       field.onChange(e);
                                     }}
-                                    disabled={!!previousRemarks}
+                                    disabled={previousTimeResolved}
                                   />
                                 )}
                               />
