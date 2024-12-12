@@ -32,7 +32,7 @@ const sendOtpEmail = async (user, otp) => {
 };
 
 // Function to send Welcome email
-const sendWelcomeEmail = async (user, name, email) => {
+const sendWelcomeEmail = async (user, name, email, password) => {
   const mailOptions = {
     from: "i.iirs.infrasee@gmail.com",
     to: user.email,
@@ -43,7 +43,7 @@ Welcome to the Infrasee system! We are excited to have you on board as a valued 
 
 Here are the details of your account:  
 Email Address: ${email}  
-Temporary Password: ${user.password}
+Temporary Password: ${password}
 
 Please log in using these credentials at https://infrasee.onrender.com/moderator/login. For security reasons, we recommend changing your password immediately upon logging in.  
 

@@ -164,7 +164,7 @@ const registerUser = asyncHandler(async (req, res) => {
       await user.save();
 
       try {
-        await sendWelcomeEmail(user, name, email);
+        await sendWelcomeEmail(user, name, email, password);
         console.log("Welcome email sent to:", user.email);
       } catch (error) {
         console.error("Failed to send welcome email:", error.message);
@@ -243,7 +243,7 @@ const createModerator = asyncHandler(async (req, res) => {
     });
 
     try {
-      await sendWelcomeEmail(moderator, name, email);
+      await sendWelcomeEmail(moderator, name, email, password);
       console.log("Welcome email sent to:", moderator.email);
     } catch (error) {
       console.error("Failed to send welcome email:", error.message);
@@ -316,7 +316,7 @@ const createSubModerator = asyncHandler(async (req, res) => {
     );
 
     try {
-      await sendWelcomeEmail(submoderator, name, email);
+      await sendWelcomeEmail(submoderator, name, email, password);
       console.log("Welcome email sent to:", submoderator.email);
     } catch (error) {
       console.error("Failed to send welcome email:", error.message);
