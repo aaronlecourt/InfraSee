@@ -242,6 +242,13 @@ const createModerator = asyncHandler(async (req, res) => {
       assignedModerator: req.user._id,
     });
 
+    try {
+      await sendWelcomeEmail(moderator, name, email);
+      console.log("Welcome email sent to:", moderator.email);
+    } catch (error) {
+      console.error("Failed to send welcome email:", error.message);
+    }
+
     res.status(201).json({
       _id: moderator._id,
       name: moderator.name,
@@ -307,6 +314,13 @@ const createSubModerator = asyncHandler(async (req, res) => {
     const populatedModerator = await User.findById(req.user._id).select(
       "_id name"
     );
+
+    try {
+      await sendWelcomeEmail(submoderator, name, email);
+      console.log("Welcome email sent to:", submoderator.email);
+    } catch (error) {
+      console.error("Failed to send welcome email:", error.message);
+    }
 
     res.status(201).json({
       _id: submoderator._id,
