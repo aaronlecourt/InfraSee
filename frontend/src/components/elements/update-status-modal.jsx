@@ -317,6 +317,7 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                       )}
                     </FormItem>
                   ) : (
+                    <>
                     <FormItem>
                       <FormLabel className="font-bold">Remarks</FormLabel>
                       <Controller
@@ -343,11 +344,13 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                         <FormMessage>{errors.remarks.message}</FormMessage>
                       )}
                     </FormItem>
+                    <div className="flex justify-between text-xs font-normal text-muted-foreground mt-1">
+                    {remarksLength} / 150
+                    </div>
+                    </>
                   )}
 
-                  <div className="flex justify-between text-xs font-normal text-muted-foreground mt-1">
-                    {remarksLength} / 150
-                  </div>
+                  
 
                   {selectedStatus === "Resolved" && (
                     <FormItem>

@@ -132,7 +132,7 @@ const ModeratorDashboardScreen = () => {
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
                 <TabsTrigger value="unassigned">Unassigned</TabsTrigger>
-                <TabsTrigger value="hidden">Hidden</TabsTrigger>
+                <TabsTrigger value="hidden">Archive</TabsTrigger>
               </TabsList>
             </div>
 
