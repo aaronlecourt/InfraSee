@@ -138,7 +138,7 @@ export function ModReportDataTableRowActions({ row }) {
               <DropdownMenuSeparator />
               <DropdownMenuItem className="flex gap-2" onClick={openHideDialog}>
                 <ArchiveIcon size={14} className="text-muted-foreground" />
-                Hide Report
+                Archive
               </DropdownMenuItem>
               </>
             )}

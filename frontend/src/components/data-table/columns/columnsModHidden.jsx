@@ -118,9 +118,9 @@ export const columnsModHidden = [
   },
   {
     accessorKey: "hidden_at",
-    title: "Hidden On",
+    title: "Archived On",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Hidden On" />
+      <DataTableColumnHeader column={column} title="Archived On" />
     ),
     cell: ({ row }) => (
       <div className="">{formatDate(row.getValue("hidden_at"))}</div>

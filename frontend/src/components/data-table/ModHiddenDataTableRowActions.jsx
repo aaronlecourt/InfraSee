@@ -89,7 +89,7 @@ export function ModHiddenDataTableRowActions({ row }) {
             className="flex gap-2"
           >
             <ArchiveRestore size={14} className="text-muted-foreground" />
-            Unhide
+            Restore
           </DropdownMenuItem>
 
         </DropdownMenuContent>
