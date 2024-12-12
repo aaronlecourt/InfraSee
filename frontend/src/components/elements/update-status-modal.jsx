@@ -299,12 +299,6 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                                 <SelectItem value="Not Credible">
                                   Not Credible
                                 </SelectItem>
-                                <SelectItem value="Mali Kasi">
-                                  Mali Kasi
-                                </SelectItem>
-                                <SelectItem value="Very Wrong">
-                                  Very Wrong
-                                </SelectItem>
                               </SelectGroup>
                             </SelectContent>
                           </Select>
