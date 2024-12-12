@@ -43,9 +43,15 @@ Welcome to the Infrasee system! We are excited to have you on board as a valued 
 
 Here are the details of your account:  
 Email Address: ${email}  
-Temporary Password: P@ssword123 
+Temporary Password: ${user.password}
 
 Please log in using these credentials at https://infrasee.onrender.com/moderator/login. For security reasons, we recommend changing your password immediately upon logging in.  
+
+To change your password, follow these step:
+1) Login using the provided account details above.
+2) Click on the ${user.isSubModerator ? 'S' : 'M'} account avatar on the top-right corner of your screen.
+3) Go to Settings, then go to the Security tab
+4) Provide the required password details. Click on 'Update Password' when finished.
 
 ${user.isSubModerator ?
   `As a sub-moderator, you will have access to tools and resources designed to help you efficiently verify the resolution times made by moderators of the reports related to your company's services.` :

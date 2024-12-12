@@ -320,19 +320,25 @@ export function UpdateStatusDialog({ isOpen, onClose, data }) {
                     <FormItem>
                       <FormLabel className="font-bold">Remarks</FormLabel>
                       <Controller
-                        name="remarks"
-                        control={control}
-                        render={({ field }) => (
-                          <Textarea
-                            {...field}
-                            id="remarks"
-                            placeholder={getRemarkPlaceholder()}
-                            className="mt-1"
-                            rows="3"
-                            maxLength={150}
-                          />
-                        )}
-                      />
+                                name="remarks"
+                                control={control}
+                                render={({ field }) => (
+                                  <Textarea
+                                    {...field}
+                                    id="remarks"
+                                    placeholder={getRemarkPlaceholder()}
+                                    className="mt-1"
+                                    rows="3"
+                                    maxLength={150}
+                                    value={previousTimeResolved ? previousRemarks : field.value}
+                                    onChange={(e) => {
+                                      setRemarksLength(e.target.value.length);
+                                      field.onChange(e);
+                                    }}
+                                    disabled={previousTimeResolved}
+                                  />
+                                )}
+                              />
                       {errors.remarks && (
                         <FormMessage>{errors.remarks.message}</FormMessage>
                       )}
