@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ModNavbar from "@/components/elements/mod-navbar/navbar";
-
+import socket from "@/utils/socket-connect";
 import { Settings, LogOut, LucideLayoutDashboard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -62,6 +62,26 @@ function SettingsScreen() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+
+  useEffect(() => {
+    socket.on("userDeactivated", async (data) => {
+      console.log("User deactivated:", data);
+      if (data.userId === userInfo?._id) {
+        alert("You have been deactivated. Please contact your Moderator.");
+        try {
+          await logoutApiCall().unwrap();
+          dispatch(logout());
+          navigate("/moderator/login");
+        } catch (error) {
+          console.error("Failed to log out after deactivation:", error);
+        }
+      }
+    });
+
+    return () => {
+      socket.off("userDeactivated");
+    };
+  }, [logoutApiCall]);
 
   const handleLogoClick = () => {
     navigate("/");

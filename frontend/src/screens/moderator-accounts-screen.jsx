@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
 import socket from "@/utils/socket-connect";
 import { Spinner } from "@/components/ui/spinner";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import axios from "axios";
 import ModNavbar from "@/components/elements/mod-navbar/navbar";
-
 import { columnsMainModAccounts } from "@/components/data-table/columns/columnsMainModAccounts";
 import { DataTable } from "@/components/ui/DataTable";
+import { useLogoutMutation } from "@/slices/users-api-slice";
+import { logout } from "@/slices/auth-slice";
+import { useNavigate } from "react-router-dom";
 
 // Fetch Submoderators
 const fetchSubModerators = async () => {
@@ -37,6 +38,9 @@ const ModeratorAccountsScreen = () => {
   const [loadingSecondaryMods, setLoadingSecondaryMods] = useState(true);
   const [loadingSubMods, setLoadingSubMods] = useState(true);
   const [loadingDeactivated, setLoadingDeactivated] = useState(true);
+    const [logoutApiCall] = useLogoutMutation();
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
   const loadSecondaryMods = async () => {
     setLoadingSecondaryMods(true);
@@ -80,6 +84,7 @@ const ModeratorAccountsScreen = () => {
     loadSubMods();
     loadDeactivated();
   }, []);
+
   useEffect(() => {
     const handleUserChange = async () => {
       await loadSecondaryMods();
@@ -92,6 +97,26 @@ const ModeratorAccountsScreen = () => {
     // Cleanup the listener when component unmounts
     return () => socket.off("userChange", handleUserChange);
   }, []);
+
+  useEffect(() => {
+    socket.on("userDeactivated", async (data) => {
+      console.log("User deactivated:", data);
+      if (data.userId === userInfo?._id) {
+        alert("You have been deactivated. Please contact your Moderator.");
+        try {
+          await logoutApiCall().unwrap();
+          dispatch(logout());
+          navigate("/moderator/login");
+        } catch (error) {
+          console.error("Failed to log out after deactivation:", error);
+        }
+      }
+    });
+
+    return () => {
+      socket.off("userDeactivated");
+    };
+  }, [logoutApiCall]);
 
   return (
     <HelmetProvider>

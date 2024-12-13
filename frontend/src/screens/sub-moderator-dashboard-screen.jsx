@@ -1,25 +1,20 @@
 import React, { useState, useEffect } from "react";
 import socket from "@/utils/socket-connect";
 import { Spinner } from "@/components/ui/spinner";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-
-import { Overview } from "@/components/elements/overview";
-import { HiddenReports } from "@/components/elements/hidden-reports";
-import { Unassigned } from "@/components/elements/unassigned";
-import { Reports } from "@/components/elements/reports";
 
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import axios from "axios";
 import { columnsModReports } from "@/components/data-table/columns/columnsModReports";
-import { columnsModHidden } from "@/components/data-table/columns/columnsModHidden";
-import { Button } from "@/components/ui/button";
 import { SkeletonTable } from "@/components/elements/skeletontable";
 import SubModNavbar from "@/components/elements/mod-navbar/submodnavbar";
-import { columnsModUnassigned } from "@/components/data-table/columns/columnsModUnassigned";
 import { columnsSubModReports } from "@/components/data-table/columns/columnsSubModReports";
 import { SubOverview } from "@/components/elements/sub-overview";
 import { SubReports } from "@/components/elements/sub-reports";
+import { useLogoutMutation } from "@/slices/users-api-slice";
+import { logout } from "@/slices/auth-slice";
+import { useNavigate } from "react-router-dom";
 
 const fetchReports = async () => {
   const response = await axios.get("/api/reports/submoderator/reports");
@@ -32,6 +27,9 @@ const SubModeratorDashboardScreen = () => {
   const [reports, setReports] = useState([]);
   const [loadingReports, setLoadingReports] = useState(true);
   const [selectedNotificationId, setSelectedNotificationId] = useState(null);
+  const [logoutApiCall] = useLogoutMutation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     socket.on("reportChange", (change) => {
@@ -60,6 +58,26 @@ const SubModeratorDashboardScreen = () => {
   useEffect(() => {
     loadReports();
   }, []);
+
+  useEffect(() => {
+    socket.on("userDeactivated", async (data) => {
+      console.log("User deactivated:", data);
+      if (data.userId === userInfo?._id) {
+        alert("You have been deactivated. Please contact your Moderator.");
+        try {
+          await logoutApiCall().unwrap();
+          dispatch(logout());
+          navigate("/moderator/login");
+        } catch (error) {
+          console.error("Failed to log out after deactivation:", error);
+        }
+      }
+    });
+
+    return () => {
+      socket.off("userDeactivated");
+    };
+  }, [logoutApiCall]);
 
   const goToReportsTab = () => {
     setActiveTab("reports");
