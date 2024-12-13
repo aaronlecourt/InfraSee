@@ -9,7 +9,7 @@ import EXPIRATION_TIME from "@/lib/constant";
 // Helper function to format dates
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return format(date, "MMMM dd, yyyy hh:mm aa");
+  return format(date, "MMM dd, yyyy hh:mm aa");
 };
 
 const LiveCountdownCell = ({ createdAt }) => {
@@ -54,7 +54,7 @@ const LiveCountdownCell = ({ createdAt }) => {
 
   // Construct a human-readable string
   let timeString = '';
-  if (days > 0) timeString += `${days} day${days > 1 ? 's' : ''} `;
+  if (days > 0) timeString += `${days} d${days > 1 ? 's' : ''} `;
   if (hours > 0 || days > 0) timeString += `${hours} hr${hours > 1 ? 's' : ''} `;
   if (minutes > 0 || hours > 0 || days > 0) timeString += `${minutes} min${minutes > 1 ? 's' : ''} `;
   timeString += `${seconds} sec${seconds > 1 ? 's' : ''}`;
