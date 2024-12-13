@@ -11,15 +11,15 @@ const formatDate = (dateString) => {
   return format(date, "MMM dd, yyyy hh:mm aa");
 };
 
-const LiveCountdownCell = ({ createdAt }) => {
+const LiveCountdownCell = ({ updatedAt }) => {
   const [countdown, setCountdown] = useState(0);
 
   useEffect(() => {
-    if (!createdAt) return;
+    if (!updatedAt) return;
 
-    // Parse the createdAt date
-    const createdAtDate = parseISO(createdAt);
-    const expiresAt = addSeconds(createdAtDate, 2 * 60); // Add expiration time
+    // Parse the updatedAt date
+    const updatedAtDate = parseISO(updatedAt);
+    const expiresAt = addSeconds(updatedAtDate, 2 * 60); // Add expiration time
 
     const updateCountdown = () => {
       const now = new Date();
@@ -36,13 +36,16 @@ const LiveCountdownCell = ({ createdAt }) => {
     // Update the countdown every second
     const intervalId = setInterval(updateCountdown, 1000);
 
-    // Cleanup interval when component is unmounted or createdAt changes
+    // Run the countdown immediately once on mount (for the initial value)
+    updateCountdown();
+
+    // Cleanup interval when component is unmounted or updatedAt changes
     return () => clearInterval(intervalId);
-  }, [createdAt]);
+  }, [updatedAt]); // Reset countdown when `updatedAt` changes
 
   // Format the countdown in a readable way
   if (countdown === "Expired") {
-    return <Badge variant="destructive2" className="text-[0.65rem] px-2 rounded-sm">Expired</Badge>;
+    return <Badge variant="destructive2" className="text-[0.65rem] px-2 rounded-sm">Deleting</Badge>;
   }
 
   // Manually calculate days, hours, minutes, and seconds
@@ -75,26 +78,16 @@ export const columnsModUnassigned = [
     accessorKey: "is_new",
     title: "",
     header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title=""
-        className="text-[0.75rem]"
-      />
+      <DataTableColumnHeader column={column} title="" className="text-[0.75rem]" />
     ),
     cell: ({ row }) => (
       <div className="whitespace-nowrap">
         {row.getValue("is_new") ? (
-          <Badge
-            variant="outline"
-            className="px-2 rounded-md border-none bg-muted-foreground text-white"
-          >
+          <Badge variant="outline" className="px-2 rounded-md border-none bg-muted-foreground text-white">
             Unread
           </Badge>
         ) : (
-          <Badge
-            variant="outline"
-            className="px-2 rounded-md border-muted-foreground/20 text-muted-foreground"
-          >
+          <Badge variant="outline" className="px-2 rounded-md border-muted-foreground/20 text-muted-foreground">
             Read
           </Badge>
         )}
@@ -106,13 +99,7 @@ export const columnsModUnassigned = [
   {
     accessorKey: "report_by",
     title: "Reported By",
-    header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title="Reported By"
-        className="text-[0.75rem]"
-      />
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Reported By" className="text-[0.75rem]" />,
     cell: ({ row }) => <div className="">{row.getValue("report_by")}</div>,
     enableSorting: false,
     enableHiding: false,
@@ -120,27 +107,15 @@ export const columnsModUnassigned = [
   {
     accessorKey: "report_desc",
     title: "Description",
-    header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title="Description"
-        className="text-[0.75rem]"
-      />
-    ),
-    cell: ({ row }) => <div className="">"{row.getValue("report_desc")}"</div>,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Description" className="text-[0.75rem]" />,
+    cell: ({ row }) => <div className="">{`"${row.getValue("report_desc")}"`}</div>,
     enableSorting: false,
     enableHiding: false,
   },
   {
     accessorKey: "report_status",
     title: "Status",
-    header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title="Status"
-        className="text-[0.75rem]"
-      />
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Status" className="text-[0.75rem]" />,
     cell: ({ row }) => {
       const status = row.getValue("report_status")?.stat_name || "Unknown";
       
@@ -172,7 +147,7 @@ export const columnsModUnassigned = [
           badgeColor = "bg-gray-300 text-black"; // Default color for unknown status
           break;
       }
-  
+
       return (
         <Badge className={`px-2 rounded-md ${badgeColor}`}>
           {status}
@@ -188,13 +163,7 @@ export const columnsModUnassigned = [
   {
     accessorKey: "report_address",
     title: "Address",
-    header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title="Address"
-        className="text-[0.75rem]"
-      />
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Address" className="text-[0.75rem]" />,
     cell: ({ row }) => <div className="">{row.getValue("report_address")}</div>,
     enableSorting: false,
     enableHiding: false,
@@ -202,16 +171,8 @@ export const columnsModUnassigned = [
   {
     accessorKey: "createdAt",
     title: "Created On",
-    header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title="Created On"
-        className="text-[0.75rem]"
-      />
-    ),
-    cell: ({ row }) => (
-      <div className="">{formatDate(row.getValue("createdAt"))}</div>
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Created On" className="text-[0.75rem]" />,
+    cell: ({ row }) => <div className="">{formatDate(row.getValue("createdAt"))}</div>,
     filterFn: (row, id, value) => {
       const rowDate = new Date(row.getValue(id));
       const [startDate, endDate] = value;
@@ -221,16 +182,10 @@ export const columnsModUnassigned = [
     enableHiding: false,
   },
   {
-    accessorKey: "createdAt", // Using createdAt and adding 3 days (EXPIRATION_TIME)
+    accessorKey: "updatedAt", // Using updatedAt instead of createdAt to calculate expiration
     title: "Expires In",
-    header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title="Expires In"
-        className="text-[0.75rem]"
-      />
-    ),
-    cell: ({ row }) => <LiveCountdownCell createdAt={row.getValue("createdAt")} />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Expires In" className="text-[0.75rem]" />,
+    cell: ({ row }) => <LiveCountdownCell updatedAt={row.getValue("updatedAt")} />,
     enableSorting: false,
     enableHiding: false,
   },
