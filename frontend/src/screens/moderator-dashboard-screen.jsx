@@ -19,7 +19,7 @@ import { columnsModUnassigned } from "@/components/data-table/columns/columnsMod
 import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
 import { useNavigate } from "react-router-dom";
-
+import { toast } from "sonner";
 const fetchReports = async () => {
   const response = await axios.get("/api/reports/moderator/reports");
   return response.data;
@@ -67,7 +67,7 @@ const ModeratorDashboardScreen = () => {
     socket.on("userDeactivated", async (data) => {
       console.log("User deactivated:", data);
       if (data.userId === userInfo?._id) {
-        alert("You have been deactivated. Please contact your Moderator.");
+        toast.error("You have been deactivated. Please contact your Moderator.");
         try {
           await logoutApiCall().unwrap();
           dispatch(logout());

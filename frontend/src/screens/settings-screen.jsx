@@ -19,6 +19,7 @@ import { ModReport } from "@/components/elements/mod-report";
 import { ModAccount } from "@/components/elements/mod-account";
 import axios from "axios";
 import SubModNavbar from "@/components/elements/mod-navbar/submodnavbar";
+import { toast } from "sonner";
 
 const fetchUserProfile = async () => {
   const response = await axios.get("/api/users/profile");
@@ -67,7 +68,7 @@ function SettingsScreen() {
     socket.on("userDeactivated", async (data) => {
       console.log("User deactivated:", data);
       if (data.userId === userInfo?._id) {
-        alert("You have been deactivated. Please contact your Moderator.");
+        toast.error("You have been deactivated. Please contact your Moderator.");
         try {
           await logoutApiCall().unwrap();
           dispatch(logout());

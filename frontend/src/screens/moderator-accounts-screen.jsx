@@ -11,7 +11,7 @@ import { DataTable } from "@/components/ui/DataTable";
 import { useLogoutMutation } from "@/slices/users-api-slice";
 import { logout } from "@/slices/auth-slice";
 import { useNavigate } from "react-router-dom";
-
+import { toast } from "sonner";
 // Fetch Submoderators
 const fetchSubModerators = async () => {
   const response = await axios.get("/api/users/submoderators-list");
@@ -102,7 +102,7 @@ const ModeratorAccountsScreen = () => {
     socket.on("userDeactivated", async (data) => {
       console.log("User deactivated:", data);
       if (data.userId === userInfo?._id) {
-        alert("You have been deactivated. Please contact your Moderator.");
+        toast.error("You have been deactivated. Please contact your Moderator.");
         try {
           await logoutApiCall().unwrap();
           dispatch(logout());
