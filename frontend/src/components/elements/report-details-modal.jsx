@@ -74,12 +74,20 @@ export function ReportDetailsDialog({ isOpen, onClose, data }) {
                     <p>LNG: {data.longitude}</p>
                   </div>
                   <br />
-                  {data.request_time && (
+                  {/* {data.request_time && (
                     <p>
                       Requested for review on: {formatDate(data.request_time)}
                     </p>
+                  )} */}
+                  {data.report_time_resolved && (
+                    <>
+                    <div className="flex w-full gap-2">
+                      <Badge className="rounded-sm bg-black px-2">Resolved On</Badge>
+                      {formatDate(data.report_time_resolved)}
+                    </div>
+                    </>
                   )}
-                  {data.status_remark && <p className="flex-col flex items-start"><Badge className="bg-black mb-2 rounded-sm"><span className="px-2">Remarks</span></Badge> {data.status_remark}</p>}
+                  {data.status_remark && <p className="flex items-start gap-2"><Badge className="bg-black mb-2 rounded-sm"><span className="px-2">Remarks</span></Badge> {data.status_remark}</p>}
                 </div>
               </div>
             ) : (

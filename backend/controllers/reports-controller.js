@@ -501,7 +501,8 @@ const getModeratorHiddenReports = asyncHandler(async (req, res) => {
     })
       .populate("report_mod", "name")
       .populate("report_status", "stat_name")
-      .populate("infraType", "_id infra_name");
+      .populate("infraType", "_id infra_name")
+      .sort({ hidden_at: -1 }); 
 
     if (!reports || reports.length === 0) {
       return res.status(200).json([]); // Return empty array with 200 OK
