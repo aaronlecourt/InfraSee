@@ -1,15 +1,67 @@
 import { DataTableColumnHeader } from "../DataTableColumnHeader";
 import { format } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "sonner";
 import { ModUnassignedDataTableRowActions } from "../ModUnassignedDataTableActions";
+import { differenceInSeconds, addSeconds, parseISO } from "date-fns";
+import { useState, useEffect } from "react";
 
+// Define EXPIRATION_TIME in seconds (3 days)
+const EXPIRATION_TIME = 3 * 24 * 60 * 60; // 3 days in seconds (259,200 seconds)
+
+// Helper function to format dates
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return format(date, "MMMM dd, yyyy");
+  return format(date, "MMMM dd, yyyy hh:mm aa");
+};
+
+const LiveCountdownCell = ({ createdAt }) => {
+  const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    if (!createdAt) return;
+
+    // Parse the createdAt date
+    const createdAtDate = parseISO(createdAt);
+    const expiresAt = addSeconds(createdAtDate, EXPIRATION_TIME); // Add expiration time
+
+    const updateCountdown = () => {
+      const now = new Date();
+      const diffInSeconds = differenceInSeconds(expiresAt, now);
+
+      if (diffInSeconds <= 0) {
+        setCountdown("Expired");
+        clearInterval(intervalId);
+      } else {
+        setCountdown(diffInSeconds);
+      }
+    };
+
+    // Update the countdown every second
+    const intervalId = setInterval(updateCountdown, 1000);
+
+    // Cleanup interval when component is unmounted or createdAt changes
+    return () => clearInterval(intervalId);
+  }, [createdAt]);
+
+  // Format the countdown in a readable way
+  if (countdown === "Expired") {
+    return <Badge variant="destructive2" className="text-[0.65rem] px-2 rounded-sm">Expired</Badge>;
+  }
+
+  // Manually calculate days, hours, minutes, and seconds
+  const days = Math.floor(countdown / (60 * 60 * 24));
+  const hours = Math.floor((countdown % (60 * 60 * 24)) / (60 * 60));
+  const minutes = Math.floor((countdown % (60 * 60)) / 60);
+  const seconds = countdown % 60;
+
+  // Construct a human-readable string
+  let timeString = '';
+  if (days > 0) timeString += `${days} day${days > 1 ? 's' : ''} `;
+  if (hours > 0 || days > 0) timeString += `${hours} hr${hours > 1 ? 's' : ''} `;
+  if (minutes > 0 || hours > 0 || days > 0) timeString += `${minutes} min${minutes > 1 ? 's' : ''} `;
+  timeString += `${seconds} sec${seconds > 1 ? 's' : ''}`;
+
+  return <div>{timeString}</div>;
 };
 
 export const columnsModUnassigned = [
@@ -86,9 +138,11 @@ export const columnsModUnassigned = [
     accessorKey: "report_status",
     title: "Status",
     header: ({ column }) => (
-      <>
-        <DataTableColumnHeader column={column} title="Status" className="text-[0.75rem]"/>
-      </>
+      <DataTableColumnHeader
+        column={column}
+        title="Status"
+        className="text-[0.75rem]"
+      />
     ),
     cell: ({ row }) => {
       const status = row.getValue("report_status")?.stat_name || "Unknown";
@@ -133,7 +187,7 @@ export const columnsModUnassigned = [
     },
     enableSorting: false,
     enableHiding: false,
-  }, 
+  },
   {
     accessorKey: "report_address",
     title: "Address",
@@ -166,6 +220,20 @@ export const columnsModUnassigned = [
       const [startDate, endDate] = value;
       return rowDate >= startDate && rowDate <= endDate;
     },
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "createdAt", // Using createdAt and adding 3 days (EXPIRATION_TIME)
+    title: "Expires In",
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        column={column}
+        title="Expires In"
+        className="text-[0.75rem]"
+      />
+    ),
+    cell: ({ row }) => <LiveCountdownCell createdAt={row.getValue("createdAt")} />,
     enableSorting: false,
     enableHiding: false,
   },
