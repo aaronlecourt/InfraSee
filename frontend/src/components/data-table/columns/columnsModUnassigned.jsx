@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { ModUnassignedDataTableRowActions } from "../ModUnassignedDataTableActions";
 import { differenceInSeconds, addSeconds, parseISO } from "date-fns";
 import { useState, useEffect } from "react";
-import EXPIRATION_TIME from "@/lib/constant";
 
 // Helper function to format dates
 const formatDate = (dateString) => {
@@ -89,7 +88,7 @@ export const columnsModUnassigned = [
             variant="outline"
             className="px-2 rounded-md border-none bg-muted-foreground text-white"
           >
-            {EXPIRATION_TIME}
+            Unread
           </Badge>
         ) : (
           <Badge
