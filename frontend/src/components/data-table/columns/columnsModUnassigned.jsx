@@ -20,7 +20,7 @@ const LiveCountdownCell = ({ createdAt }) => {
 
     // Parse the createdAt date
     const createdAtDate = parseISO(createdAt);
-    const expiresAt = addSeconds(createdAtDate, EXPIRATION_TIME); // Add expiration time
+    const expiresAt = addSeconds(createdAtDate, 2 * 60); // Add expiration time
 
     const updateCountdown = () => {
       const now = new Date();
@@ -89,7 +89,7 @@ export const columnsModUnassigned = [
             variant="outline"
             className="px-2 rounded-md border-none bg-muted-foreground text-white"
           >
-            Unread
+            {EXPIRATION_TIME}
           </Badge>
         ) : (
           <Badge

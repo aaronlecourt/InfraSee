@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 import User from "./user-model.js";
 import Status from "./status-model.js";
 import InfrastructureType from "./infrastructureType-model.js";
-import EXPIRATION_TIME from "../../frontend/src/lib/constant.js";
 
 const reportSchema = mongoose.Schema(
   {
@@ -98,7 +97,7 @@ const reportSchema = mongoose.Schema(
   }
 );
 
-reportSchema.index({ unassignedAt: 1 }, { expireAfterSeconds: EXPIRATION_TIME});
+reportSchema.index({ unassignedAt: 1 }, { expireAfterSeconds: 2 * 60});
 
 const Report = mongoose.models.Report || mongoose.model("Report", reportSchema);
 
@@ -118,7 +117,7 @@ async function ensureIndexes() {
     const unassignedAtIndex = existingIndexes.find(index => index.name === "unassignedAt_1");
 
     // If the index exists with different options, drop it
-    if (unassignedAtIndex && unassignedAtIndex.expireAfterSeconds !== EXPIRATION_TIME) {
+    if (unassignedAtIndex && unassignedAtIndex.expireAfterSeconds !== 2 * 60) {
       console.log("Dropping conflicting index...");
       await collection.dropIndex("unassignedAt_1");
     }
