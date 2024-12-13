@@ -4,9 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ModUnassignedDataTableRowActions } from "../ModUnassignedDataTableActions";
 import { differenceInSeconds, addSeconds, parseISO } from "date-fns";
 import { useState, useEffect } from "react";
-
-// Define EXPIRATION_TIME in seconds (3 days)
-const EXPIRATION_TIME = 3 * 24 * 60 * 60; // 3 days in seconds (259,200 seconds)
+import EXPIRATION_TIME from "@/lib/constant";
 
 // Helper function to format dates
 const formatDate = (dateString) => {
