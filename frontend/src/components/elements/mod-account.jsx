@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 //   SelectTrigger,
 //   SelectValue,
 // } from "@/components/ui/select";
-import { UserRoundXIcon } from "lucide-react";
+import { InfoIcon, UserRoundXIcon } from "lucide-react";
 import {
   Dialog,
   DialogPortal,
@@ -154,8 +154,8 @@ export function ModAccount({ user, userInfo }) {
     const errorMessage = error?.data?.message || "An error occurred during the update.";
     toast.error(errorMessage);
   };
-  
-  
+
+
   // const handleDeactivate = async () => {
   //   try {
   //     await axios.delete("/api/deactivate-account");
@@ -169,12 +169,12 @@ export function ModAccount({ user, userInfo }) {
   // };
 
   // Find the selected infrastructure name
-  
+
   return (
     <div>
       <h1 className="text-xl font-bold mb-2">Account</h1>
       <p className="text-gray-500 text-sm mb-4">
-        View your account details here. As per policy, your details can only be edited by the one who created your account.
+        View your account details here. As per policy, your details can only be edited by the one who created your account{!userInfo.can_create ? " (Main Moderator)" : ""}.
       </p>
       <hr className="mb-4" />
 
@@ -197,7 +197,7 @@ export function ModAccount({ user, userInfo }) {
                     placeholder="Enter a new moderator name"
                     autoComplete="name"
                     readOnly
-                    className="cursor-not-allowed bg-gray-100 text-gray-500" 
+                    className="cursor-not-allowed bg-gray-100 text-gray-500"
                     {...field}
                   />
                 </FormControl>
@@ -220,7 +220,7 @@ export function ModAccount({ user, userInfo }) {
                     placeholder="Enter a new email address"
                     autoComplete="email"
                     readOnly
-                    className="cursor-not-allowed bg-gray-100 text-gray-500" 
+                    className="cursor-not-allowed bg-gray-100 text-gray-500"
                     {...field}
                   />
                 </FormControl>
@@ -246,21 +246,22 @@ export function ModAccount({ user, userInfo }) {
                       "No Infrastructure Type"
                     }
                     readOnly
-                    className="cursor-not-allowed bg-gray-100 text-gray-500" 
+                    className="cursor-not-allowed bg-gray-100 text-gray-500"
                   />
                 </FormControl>
               </FormItem>
             )}
           />
-
+          <span className="text-muted-foreground italic flex gap-1 text-xs font-medium mt-2 justify-start items-center"><InfoIcon size={12} />Account deactivation and reactivation can be requested by sending an email to
+            {(userInfo.isModerator && userInfo.can_create ? " the Administrator" : " your Main Moderator")}.</span>
           {/* <Button type="submit" className="w-full mt-4" disabled={isLoading}>
             {isLoading ? "Updating..." : "Update Account"}
           </Button> */}
 
           {/* Moved DialogTrigger inside Dialog */}
           {!userInfo.isSubModerator && (
-          <Dialog>
-            {/* <DialogTrigger asChild>
+            <Dialog>
+              {/* <DialogTrigger asChild>
               <Button
                 variant="outline"
                 className="flex gap-x-2 w-full text-destructive font-semibold"
@@ -270,20 +271,20 @@ export function ModAccount({ user, userInfo }) {
               </Button>
             </DialogTrigger> */}
 
-            {/* Confirmation Dialog */}
-            <DialogPortal>
-              <DialogOverlay />
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Account Deactivation</DialogTitle>
-                  <DialogDescription>
-                    Account deactivation and reactivation is requested via email
-                    to i.iirs.infrasee@gmail.com. Deactivating your account
-                    removes your login privileges but does not remove any
-                    records made under your account.
-                  </DialogDescription>
-                </DialogHeader>
-                {/* <DialogFooter>
+              {/* Confirmation Dialog */}
+              <DialogPortal>
+                <DialogOverlay />
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Account Deactivation</DialogTitle>
+                    <DialogDescription>
+                      Account deactivation and reactivation is requested via email
+                      to i.iirs.infrasee@gmail.com. Deactivating your account
+                      removes your login privileges but does not remove any
+                      records made under your account.
+                    </DialogDescription>
+                  </DialogHeader>
+                  {/* <DialogFooter>
                   <DialogClose asChild>
                     <Button variant="outline">Cancel</Button>
                   </DialogClose>
@@ -291,9 +292,9 @@ export function ModAccount({ user, userInfo }) {
                     Deactivate Account
                   </Button>
                 </DialogFooter> */}
-              </DialogContent>
-            </DialogPortal>
-          </Dialog>
+                </DialogContent>
+              </DialogPortal>
+            </Dialog>
           )}
         </form>
       </Form>

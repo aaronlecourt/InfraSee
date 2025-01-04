@@ -52,7 +52,7 @@ export const exportExcel = (rows, userInfo, activeTab, activeButton, table) => {
         filenameSuffix = "";
     }
   } else if (userInfo.isModerator) {
-    filenameSuffix = activeTab === "reports" ? "_Reports" : "_Hidden-Reports";
+    filenameSuffix = activeTab === "reports" ? "_Reports" : activeTab === "hidden" ? "_Archives" : "";
   } else if (userInfo.isSubModerator) {
     filenameSuffix = activeTab === "reports" ? "_Reports" : "";
   }
